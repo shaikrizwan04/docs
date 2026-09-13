@@ -1,16 +1,16 @@
 ---
-title: "Get Daily Uncle Block Count and Rewards"
+title: "Get Daily Uncle Block Count and Rewards by Date Range"
 sidebarTitle: "Uncle Block Count"
-description: "Retrieve the daily count of uncle blocks and their associated ETH rewards over a specified date range. Requires a Standard plan API key."
+description: "Retrieve the daily count of uncle blocks and their associated ETH rewards over a specified date range. Requires a Standard plan API key or above."
 ---
 
 Use this endpoint to track daily uncle block production and the corresponding rewards paid to uncle miners. Uncle blocks are valid blocks that were mined but not included in the main chain. Monitoring uncle rates helps evaluate network propagation health and miner competition intensity. This endpoint covers pre-merge Ethereum data.
 
 <Note>
-  This is a PRO endpoint, available on the [Standard Plan](/rate-limits) and above.
+  This is a **PRO endpoint**, available on the [Standard Plan](/rate-limits) and above.
 </Note>
 
-## Query Parameters
+## Parameters
 
 <ParamField query="chainid" type="string" required>
   The chain ID to query. For example, `1` for Ethereum mainnet. See the full list of [supported chains](/supported-chains).
@@ -40,7 +40,7 @@ Use this endpoint to track daily uncle block production and the corresponding re
   Your Etherscan API key. [Set one up](/set-up-your-api-key) if you don't have one.
 </ParamField>
 
-## Response Fields
+## Response
 
 <ResponseField name="status" type="string">
   `1` if the request returned data, `0` otherwise.

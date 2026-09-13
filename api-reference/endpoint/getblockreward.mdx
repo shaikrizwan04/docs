@@ -1,12 +1,12 @@
 ---
-title: "Get Block and Uncle Rewards by Block Number"
+title: "Get Block and Uncle Rewards for Any EVM Block Number"
 sidebarTitle: "Block Reward"
-description: "Retrieve the block reward and associated uncle block rewards for any mined block number across supported EVM chains."
+description: "Retrieve the block reward and uncle block rewards for any mined block number across supported EVM chains. All reward values are returned in wei."
 ---
 
 Use this endpoint to look up the mining reward issued for a specific block, including any uncle block rewards that were included. All reward values are returned in wei — use the [unit converter](https://etherscan.io/unitconverter) to convert to ETH.
 
-## Query Parameters
+## Parameters
 
 <ParamField query="chainid" type="string" required>
   The chain ID to query. For example, `1` for Ethereum mainnet or `42161` for Arbitrum. See the full list of [supported chains](/supported-chains).
@@ -28,7 +28,7 @@ Use this endpoint to look up the mining reward issued for a specific block, incl
   Your Etherscan API key. [Set one up](/set-up-your-api-key) if you don't have one.
 </ParamField>
 
-## Response Fields
+## Response
 
 <ResponseField name="status" type="string">
   `1` if the request returned data, `0` if no records were found or an error occurred.

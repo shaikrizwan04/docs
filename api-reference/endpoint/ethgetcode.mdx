@@ -1,7 +1,7 @@
 ---
-title: "Get Contract Bytecode at an Address"
+title: "Get the Deployed Smart Contract Bytecode at an Address"
 sidebarTitle: "eth_getCode"
-description: "Returns the deployed bytecode stored at a given address at a specified block. Returns 0x for externally owned accounts."
+description: "Returns deployed EVM bytecode at a given address at a specified block, mirroring eth_getCode. Returns 0x for externally owned accounts."
 ---
 
 This endpoint mirrors the standard `eth_getCode` JSON-RPC method, returning the bytecode deployed at an address. For smart contracts, this is the compiled EVM bytecode. For externally owned accounts (wallets), the result is `0x` — an empty byte string. Use this to verify whether an address is a contract, to retrieve bytecode for analysis, or to check that deployment was successful.

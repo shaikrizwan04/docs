@@ -1,7 +1,7 @@
 ---
-title: "Execute a Read-Only Smart Contract Call"
+title: "Execute a Read-Only Smart Contract View Call (eth_call)"
 sidebarTitle: "eth_call"
-description: "Executes a read-only (view/pure) call against a smart contract at a given block state without creating a transaction."
+description: "Executes a read-only view or pure function call against a smart contract at a specified block state without broadcasting a transaction or spending gas."
 ---
 
 This endpoint mirrors the standard `eth_call` JSON-RPC method, allowing you to call smart contract view or pure functions without submitting a transaction or spending gas. The call executes against the state of the chain at the specified block. Use it to read return values from contracts, simulate call outcomes, or query any function that doesn't modify chain state.

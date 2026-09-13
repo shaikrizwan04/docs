@@ -1,7 +1,7 @@
 ---
-title: "Get L2→L1 Withdrawal Transactions by Address"
+title: "Get L2-to-L1 Withdrawal Transactions for an Address"
 sidebarTitle: "getwithdrawaltxs"
-description: "Returns cross-chain withdrawal transactions from an L2 network back to Ethereum L1 for a specified address, including withdrawal status."
+description: "Returns L2-to-L1 withdrawal transactions for a given address, including withdrawal status and the finalizing L1 transaction hash once available."
 ---
 
 Withdrawals from an L2 chain back to Ethereum mainnet go through a multi-step challenge process. This endpoint retrieves those outbound L2-to-L1 withdrawal records for a given address, including the current status of each withdrawal, the originating L2 transaction hash, and the L1 transaction that finalizes the withdrawal (once it is executed). Use it to monitor pending withdrawals or to build cross-chain accounting tools.

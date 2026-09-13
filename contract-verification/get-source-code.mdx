@@ -110,6 +110,18 @@ Each field in the result object describes a specific aspect of the verified cont
   The Swarm content hash embedded in the contract bytecode metadata, if present.
 </ResponseField>
 
+<ResponseField name="ContractFileName" type="string">
+  The file name of the contract source (for example, `MyToken.sol`) when submitted as part of a multi-file or Standard JSON verification. Empty for single-file verifications.
+</ResponseField>
+
+<ResponseField name="LicenseType" type="string">
+  The SPDX license identifier associated with the contract, such as `MIT`. Empty if no license was specified during verification.
+</ResponseField>
+
+<ResponseField name="SimilarMatch" type="string">
+  If the contract was verified through the Similar Match mechanism rather than a direct source submission, this field contains the address of the matching verified contract. Empty for contracts verified with their own source code.
+</ResponseField>
+
 ## Check whether a contract is verified
 
 You can call `getsourcecode` on any address — including unverified ones. For an unverified contract, the response still returns `status: 1`, but the `ABI` field reads `Contract source code not verified` and `SourceCode` is empty. Always check these fields before attempting to use the source or ABI.

@@ -1,7 +1,7 @@
 ---
-title: "Get Transaction Count in Block by Number"
+title: "Get Transaction Count in Block by Block Number (Proxy)"
 sidebarTitle: "eth_getBlockTransactionCountByNumber"
-description: "Returns the total number of transactions in a block identified by its block number, as a hex-encoded integer."
+description: "Returns the total number of transactions in a block identified by its block number as a hex-encoded integer, mirroring the standard JSON-RPC method."
 ---
 
 This endpoint mirrors the standard `eth_getBlockTransactionCountByNumber` JSON-RPC method. Use it to quickly determine how many transactions are packed into a specific block without fetching the full block data. This is useful for pagination calculations when you want to iterate over transactions in a block one by one.

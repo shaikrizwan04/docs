@@ -1,7 +1,7 @@
 ---
-title: "Get Daily Average Network Gas Utilization"
+title: "Get Daily Average Network Block Gas Utilization Ratio"
 sidebarTitle: "dailynetutilization"
-description: "Returns the daily average ratio of gas used to gas limit across all blocks, as a value between 0 and 1. PRO endpoint."
+description: "Returns the daily average gas utilization ratio (gasUsed/gasLimit) across all blocks, as a decimal between 0 and 1. PRO endpoint — Standard plan and above."
 ---
 
 Network utilization measures how full blocks are on average — a ratio of `gasUsed / gasLimit` per block, averaged over each day. A value near `1.0` means blocks are consistently full, a sign that demand exceeds capacity and users are competing aggressively for block space. Values well below `1.0` indicate spare capacity. Use this metric alongside gas price data to understand fee market dynamics over time.

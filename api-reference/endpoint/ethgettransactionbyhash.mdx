@@ -1,7 +1,7 @@
 ---
-title: "Get Transaction Details by Hash"
+title: "Get Transaction Details by Hash (eth_getTransactionByHash)"
 sidebarTitle: "eth_getTransactionByHash"
-description: "Returns the full transaction object for a given transaction hash, including sender, recipient, value, gas, and input data."
+description: "Returns the full transaction object for a given hash, including sender, recipient, ETH value, gas parameters, and input data, via the JSON-RPC proxy."
 ---
 
 This endpoint mirrors the standard `eth_getTransactionByHash` JSON-RPC method. Pass a transaction hash to retrieve all fields of the transaction as it was submitted to the network — including the sender address, recipient, ETH value, gas parameters, and raw input data. Note that this returns the transaction as broadcast, not the execution result; use `eth_getTransactionReceipt` for execution outcomes.

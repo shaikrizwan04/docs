@@ -1,7 +1,7 @@
 ---
-title: "Get Transaction by Block Number and Index"
+title: "Get Transaction by Block Number and Index Position"
 sidebarTitle: "eth_getTransactionByBlockNumberAndIndex"
-description: "Returns the transaction at a specific index position within a block, identified by block number and transaction index."
+description: "Returns the full transaction object at a specific index position within a block identified by block number, mirroring the standard JSON-RPC method."
 ---
 
 This endpoint mirrors the standard `eth_getTransactionByBlockNumberAndIndex` JSON-RPC method. When you know the block number and the position of a transaction within that block, you can retrieve the full transaction object directly — without needing the transaction hash. This is useful when iterating over all transactions in a block in order.

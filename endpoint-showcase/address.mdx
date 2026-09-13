@@ -1,5 +1,5 @@
 ---
-title: "Endpoints Behind an Etherscan Address Page"
+title: "Etherscan Address Page: API Endpoints Behind Every Section"
 sidebarTitle: "Address Page"
 description: "Discover the Etherscan API endpoints that power every section of an address page, from ETH balance to token transfers and NFT holdings."
 ---
@@ -15,7 +15,7 @@ Every address page on etherscan.io is assembled from multiple API endpoints work
 <Accordion title="Name Tag and Labels">
   The entity name and labels shown beside an address (e.g., "Ethereum Foundation", exchange labels) are powered by the Nametag endpoint.
 
-  **Endpoint:** [`GET /nametag/getaddresstag`](/api-reference/endpoint/getaddresstag) — **PRO**
+  **Endpoint:** [`GET /account/getaddresstag`](/api-reference/endpoint/getaddresstag) — **PRO**
 
   Returns the name tag and entity labels associated with a specific address.
 
@@ -269,7 +269,7 @@ Every address page on etherscan.io is assembled from multiple API endpoints work
 
 | Page Section | Endpoint | Plan |
 |---|---|---|
-| Name tag & labels | `/nametag/getaddresstag` | PRO |
+| Name tag & labels | `/account/getaddresstag` | PRO |
 | ETH balance | `/account/balance` | Free |
 | Historical ETH balance | `/account/balancehistory` | PRO |
 | USD value | `/stats/ethprice` | Free |

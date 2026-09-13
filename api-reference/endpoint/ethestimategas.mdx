@@ -1,7 +1,7 @@
 ---
-title: "Estimate Gas for a Transaction"
+title: "Estimate the Gas Units Required for a Transaction (Proxy)"
 sidebarTitle: "eth_estimateGas"
-description: "Estimates the amount of gas a transaction will consume when executed against the current chain state, without broadcasting it."
+description: "Estimates the gas units a transaction will consume against current chain state without broadcasting, mirroring the eth_estimateGas JSON-RPC method."
 ---
 
 This endpoint mirrors the standard `eth_estimateGas` JSON-RPC method. It simulates a transaction against the current state of the chain and returns an estimate of the gas units needed for successful execution. Use this before broadcasting a transaction to set an appropriate gas limit — setting it too low causes the transaction to revert out of gas, while setting it too high wastes ETH on unused gas capacity.

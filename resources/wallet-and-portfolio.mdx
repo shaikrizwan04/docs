@@ -1,5 +1,5 @@
 ---
-title: "Building Wallet and Portfolio Apps with Etherscan"
+title: "Building Wallet and Portfolio Apps with Etherscan API"
 sidebarTitle: "Wallet & Portfolio"
 description: "Fetch native balances, token holdings, NFTs, and full transaction history across 60+ EVM chains to power wallet and portfolio applications."
 ---
@@ -26,8 +26,19 @@ Start by fetching the assets the wallet currently holds — native coins, ERC-20
     The `tag=latest` parameter returns the balance at the current block. Use `tag=pending` to include unconfirmed transactions.
   </Step>
 
-  <Step title="Get ERC-20 token holdings">
-    Fetch all ERC-20 token balances held by the address. This gives you the complete token portfolio in a single call, including token name, symbol, and decimal precision.
+  <Step title="Get the balance of a specific ERC-20 token">
+    If you already know which token you want to display — for example, USDC or WETH — query its balance directly using the token's contract address. This is a free endpoint and returns the balance in the token's smallest unit.
+
+    ```bash
+    curl --request GET \
+      --url 'https://api.etherscan.io/v2/api?chainid=1&module=account&action=tokenbalance&contractaddress=0xdAC17F958D2ee523a2206206994597C13D831ec7&address=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045&tag=latest&apikey=YOUR_API_KEY'
+    ```
+
+    Divide the result by `10^tokenDecimals` to convert to a human-readable value (e.g., divide by 10⁶ for USDT).
+  </Step>
+
+  <Step title="Get all ERC-20 token holdings">
+    Fetch every ERC-20 token balance held by the address in a single call, including token name, symbol, and decimal precision. Use this for a full portfolio view when you don't know which tokens the wallet holds in advance.
 
     <Note>
       `addresstokenbalance` is a PRO endpoint available on the **Standard plan and above**. See [PRO Endpoints](/endpoint-overview) for details.
@@ -141,7 +152,7 @@ Combine the endpoints from this guide to build every component of a wallet app:
 
 <CardGroup cols={2}>
   <Card title="Portfolio View" icon="wallet">
-    `balance` + `addresstokenbalance` + `addresstokennftbalance` — show everything the wallet currently holds.
+    `balance` + `tokenbalance` + `addresstokenbalance` + `addresstokennftbalance` — show everything the wallet currently holds, from a single known token to the full portfolio.
   </Card>
   <Card title="Activity Feed" icon="list">
     `txlist` + `txlistinternal` + `tokentx` + `tokennfttx` — display every fund movement in chronological order.

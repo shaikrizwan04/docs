@@ -1,7 +1,7 @@
 ---
-title: "Get Event Logs by Address and Topics"
-sidebarTitle: "getLogs (Address + Topics)"
-description: "Retrieve event logs from a contract address filtered by topic values and a block range, combining address and topic constraints."
+title: "Get Event Logs by Contract Address and Topic Filters"
+sidebarTitle: "getLogs (Combined)"
+description: "Retrieve event logs from a contract address filtered by EVM topic values and block range, combining both address and topic constraints in one query."
 ---
 
 This endpoint combines address-based and topic-based filtering so you can narrow results to a specific contract's logs that also match particular event types or indexed parameters. It is the most precise variant of the `getLogs` family — use it when you know both the emitting contract and the events you want to observe, such as tracking NFT sales at a marketplace contract by filtering for the sale event signature alongside a specific seller address.

@@ -1,7 +1,7 @@
 ---
-title: "Export Address Tags by Label (Multichain)"
+title: "Export All Address Tags by Label — Multichain (v2)"
 sidebarTitle: "exportaddresstags v2"
-description: "Returns a temporary download URL for all addresses tagged with a given label, as a CSV or ZIP file. Enterprise plan required."
+description: "Returns a pre-signed download URL for all addresses under a given Etherscan label as CSV or ZIP. Enterprise plan required — URL valid for 5 minutes."
 ---
 
 Etherscan labels tens of thousands of addresses across every chain it indexes. This endpoint generates a pre-signed download URL (valid for 5 minutes) for a CSV or ZIP export of all addresses that carry a specific label — such as `phish-hack`, `ofac-sanctioned`, or `binance`. You can also pass `all` to export every labeled address in a single file. To discover valid label slugs, first call the [Export Label Master List](/api-reference/endpoint/getlabelmasterlist-v2) endpoint.

@@ -1,7 +1,7 @@
 ---
-title: "Broadcast a Signed Raw Transaction"
+title: "Broadcast a Signed Raw Transaction to the EVM Network"
 sidebarTitle: "eth_sendRawTransaction"
-description: "Submits a signed, RLP-encoded transaction to the network for broadcast. Returns the transaction hash on success."
+description: "Submits a locally signed, RLP-encoded transaction to the network for broadcast and returns the transaction hash on success via the JSON-RPC proxy."
 ---
 
 This endpoint mirrors the standard `eth_sendRawTransaction` JSON-RPC method. It accepts a signed, RLP-encoded transaction in hex format and broadcasts it to the Ethereum network. The transaction must be signed with the sender's private key before calling this endpoint — Etherscan never handles private keys. On success, the endpoint returns the transaction hash you can use to track confirmation status.

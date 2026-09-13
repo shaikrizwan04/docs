@@ -1,7 +1,7 @@
 ---
-title: "Verify Stylus Smart Contract Source Code"
+title: "Verify and Publish Stylus Smart Contract Source Code"
 sidebarTitle: "Verify Stylus"
-description: "Submit a Stylus smart contract's public Git repository for verification on Arbitrum One or Arbitrum Sepolia via the Etherscan API."
+description: "Submit a Stylus smart contract public Git repository for verification on Arbitrum One or Arbitrum Sepolia via the Etherscan API endpoints."
 ---
 
 Use this endpoint to verify a Stylus contract deployed on Arbitrum. Unlike Solidity or Vyper verification, Stylus verification requires pointing to a publicly accessible Git repository that contains the source code — the API fetches and builds the project from source. After submission, poll [checkverifystatus](/api-reference/endpoint/checkverifystatus) with the returned GUID to confirm the result.

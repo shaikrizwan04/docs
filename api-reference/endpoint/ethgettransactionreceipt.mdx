@@ -1,7 +1,7 @@
 ---
-title: "Get Transaction Receipt by Hash"
+title: "Get Transaction Receipt and Execution Status by Hash"
 sidebarTitle: "eth_getTransactionReceipt"
-description: "Returns the full transaction receipt including execution status, gas used, contract address created, and all emitted logs."
+description: "Returns the full transaction receipt including execution status, gas consumed, deployed contract address, and all emitted logs via the JSON-RPC proxy."
 ---
 
 A transaction receipt captures the result of executing a transaction on-chain. Unlike `eth_getTransactionByHash` which returns what was submitted, the receipt shows what actually happened: whether execution succeeded, how much gas was consumed, what contract was created (if any), and every log emitted. This endpoint mirrors the standard `eth_getTransactionReceipt` JSON-RPC method and is the primary way to confirm that a transaction was successfully processed.

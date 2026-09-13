@@ -141,9 +141,13 @@ The same submit-and-poll flow applies to other contract types. Use the action fo
 | Contract type | Submit action | Poll action |
 |---|---|---|
 | Solidity | `verifysourcecode` | `checkverifystatus` |
-| Vyper | `verifysourcecode` (Vyper) | `checkverifystatus` |
-| zkSync | `verifysourcecode` (zkSync) | `checkverifystatus` |
+| Vyper | `verifysourcecode` | `checkverifystatus` |
+| zkSync Era | `verifysourcecode` | `checkverifystatus` |
 | Proxy | `verifyproxycontract` | `checkproxyverification` |
+
+<Note>
+  All Solidity, Vyper, and zkSync Era contracts use the same `verifysourcecode` and `checkverifystatus` actions. The difference is in the `codeformat` field: use `solidity-standard-json-input` or `solidity-single-file` for Solidity, `vyper-json` for Vyper, and `zksync-solidity-standard-json-input` for zkSync Era contracts. Proxy verification uses distinct actions because it links an existing implementation rather than submitting source code.
+</Note>
 
 ## Prefer to verify from your toolchain?
 

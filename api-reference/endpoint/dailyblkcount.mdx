@@ -1,16 +1,16 @@
 ---
-title: "Get Daily Block Count and Rewards"
+title: "Get Daily Mined Block Count and Total Rewards by Date"
 sidebarTitle: "Daily Block Count"
-description: "Retrieve the daily count of mined blocks and the total block rewards issued per day over a specified date range."
+description: "Retrieve the daily count of mined blocks and the total block rewards issued per UTC day over a date range. Requires a Standard plan API key or above."
 ---
 
 Use this endpoint to track daily block production and associated rewards over a given period. Each result includes the number of blocks mined on that UTC day and the total ETH rewards issued to miners. This data is useful for analyzing network activity, miner income, and emission trends over time.
 
 <Note>
-  This is a PRO endpoint, available on the [Standard Plan](/rate-limits) and above.
+  This is a **PRO endpoint**, available on the [Standard Plan](/rate-limits) and above.
 </Note>
 
-## Query Parameters
+## Parameters
 
 <ParamField query="chainid" type="string" required>
   The chain ID to query. For example, `1` for Ethereum mainnet or `42161` for Arbitrum. See the full list of [supported chains](/supported-chains).
@@ -40,7 +40,7 @@ Use this endpoint to track daily block production and associated rewards over a 
   Your Etherscan API key. [Set one up](/set-up-your-api-key) if you don't have one.
 </ParamField>
 
-## Response Fields
+## Response
 
 <ResponseField name="status" type="string">
   `1` if the request returned data, `0` otherwise.

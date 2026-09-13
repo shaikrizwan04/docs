@@ -1,7 +1,7 @@
 ---
-title: "Get Event Logs by Address"
+title: "Get Event Logs Emitted by a Smart Contract Address"
 sidebarTitle: "getLogs"
-description: "Retrieve event logs emitted by a contract address with optional block range filtering, returned as hex-encoded fields."
+description: "Retrieve event logs emitted by a smart contract address with optional block range filtering. All numeric fields are returned as hex-encoded strings."
 ---
 
 Event logs are the primary mechanism smart contracts use to emit data to external consumers. This endpoint returns all logs from a specific contract address, letting you filter by block range and paginate through large result sets. All numeric fields in the response — including block numbers, gas values, and timestamps — are hex-encoded strings.

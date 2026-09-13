@@ -1,12 +1,12 @@
 ---
-title: "Get Estimated Block Countdown by Block Number"
+title: "Get Estimated Countdown Time Until a Future Block Is Mined"
 sidebarTitle: "Block Countdown"
-description: "Retrieve the estimated time remaining in seconds until a specified future block number is mined on any supported EVM chain."
+description: "Retrieve the estimated countdown in seconds until a specified future block number is mined, with remaining block count and current block number."
 ---
 
 Use this endpoint to check how long until a future block is mined. The response includes the current block, the number of remaining blocks, and an estimated time in seconds. This is useful for scheduling actions tied to a specific block height, such as governance votes or vesting unlocks.
 
-## Query Parameters
+## Parameters
 
 <ParamField query="chainid" type="string" required>
   The chain ID to query. For example, `1` for Ethereum mainnet or `42161` for Arbitrum. See the full list of [supported chains](/supported-chains).
@@ -28,7 +28,7 @@ Use this endpoint to check how long until a future block is mined. The response 
   Your Etherscan API key. [Set one up](/set-up-your-api-key) if you don't have one.
 </ParamField>
 
-## Response Fields
+## Response
 
 <ResponseField name="status" type="string">
   `1` if the request returned data, `0` otherwise.

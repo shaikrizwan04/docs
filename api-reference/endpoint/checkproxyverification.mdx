@@ -1,7 +1,7 @@
 ---
-title: "Check Proxy Contract Verification Status"
+title: "Check the Status of a Proxy Contract Verification Request"
 sidebarTitle: "Check Proxy Status"
-description: "Poll the result of a proxy contract verification submission using the GUID returned by the verifyproxycontract endpoint."
+description: "Poll the result of a proxy contract verification using the GUID returned by verifyproxycontract. Returns the linked implementation address on success."
 ---
 
 Use this endpoint to check whether a proxy contract verification has completed. Pass the GUID returned by [verifyproxycontract](/api-reference/endpoint/verifyproxycontract) and poll until you receive a terminal result. A successful response links the proxy to its detected implementation contract on Etherscan.

@@ -1,7 +1,7 @@
 ---
-title: "Verify Solidity Source Code"
+title: "Verify and Publish Solidity Smart Contract Source Code"
 sidebarTitle: "Verify Solidity"
-description: "Submit a Solidity smart contract's source code for on-chain verification. Supports single-file and standard JSON input formats."
+description: "Submit a Solidity smart contract source code for on-chain verification. Supports single-file and standard JSON input compilation formats."
 ---
 
 Use this endpoint to programmatically verify a Solidity contract's source code on Etherscan. Send the source code alongside compiler settings as a `POST` request with `application/x-www-form-urlencoded` body. After submission, you receive a GUID that you can poll with [checkverifystatus](/api-reference/endpoint/checkverifystatus) to track the result.

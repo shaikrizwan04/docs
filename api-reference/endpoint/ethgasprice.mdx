@@ -1,7 +1,7 @@
 ---
-title: "Get Current Gas Price in Wei"
+title: "Get the Current Network Gas Price in Wei (eth_gasPrice)"
 sidebarTitle: "eth_gasPrice"
-description: "Returns the current gas price in wei as reported by the node, mirroring the standard JSON-RPC eth_gasPrice method."
+description: "Returns the current median network gas price in wei, mirroring the JSON-RPC eth_gasPrice method. Use for legacy-type transactions on EVM chains."
 ---
 
 This endpoint mirrors the standard `eth_gasPrice` JSON-RPC method, returning the current gas price in wei as a hex-encoded string. This is the median gas price reported by the connected node based on recent blocks. For EIP-1559 transactions you'll want to use the [Gas Oracle](/api-reference/endpoint/gasoracle) instead, which provides base fee and priority fee recommendations. Use `eth_gasPrice` when you need a simple wei-denominated price for legacy transaction types.

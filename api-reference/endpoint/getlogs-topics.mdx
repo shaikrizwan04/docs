@@ -1,7 +1,7 @@
 ---
-title: "Get Event Logs Filtered by Topics"
+title: "Get Event Logs Filtered by Up to Four EVM Log Topics"
 sidebarTitle: "getLogs (Topics)"
-description: "Retrieve event logs within a block range filtered by up to four EVM topics, with configurable AND/OR operators between them."
+description: "Retrieve event logs within a block range filtered by up to four EVM log topics, with configurable AND/OR operator logic between each topic pair."
 ---
 
 EVM event logs carry up to four indexed topics that can uniquely identify an event type, a sender, a recipient, or any other indexed value. This endpoint lets you search for logs purely by topic values — without tying the query to a specific contract address — making it ideal for cross-contract event aggregation. Combine multiple topics using the `topic0_1_opr`, `topic0_2_opr`, and similar operator parameters to control whether the match logic is conjunctive (`and`) or disjunctive (`or`).

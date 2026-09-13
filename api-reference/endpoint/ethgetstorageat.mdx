@@ -1,7 +1,7 @@
 ---
-title: "Get Storage Value at a Position for an Address"
+title: "Get Raw Storage Value at a Slot for a Contract Address"
 sidebarTitle: "eth_getStorageAt"
-description: "Returns the raw 32-byte storage value at a specific slot index in a contract's storage trie at a given block."
+description: "Returns the raw 32-byte value stored at a specific slot in a contract at a given block number, mirroring the eth_getStorageAt JSON-RPC method."
 ---
 
 Smart contracts store persistent data in a key-value store called storage. Each slot is a 32-byte position that maps to a 32-byte value. This endpoint mirrors the standard `eth_getStorageAt` JSON-RPC method and lets you read raw storage values at any position in any contract's storage. It's particularly useful for reading values from contracts that don't expose public getter functions, or for verifying proxy contract implementation addresses.

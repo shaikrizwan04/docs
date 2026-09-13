@@ -1,7 +1,7 @@
 ---
-title: "Get Block Information by Block Number"
+title: "Get Full Block Data by Block Number (eth_getBlockByNumber)"
 sidebarTitle: "eth_getBlockByNumber"
-description: "Returns full block data for a given block number, including timestamp, gas metrics, and optionally all transaction objects."
+description: "Returns complete block metadata for a given block number, including timestamp, gas, and optionally full transaction objects, via eth_getBlockByNumber."
 ---
 
 This endpoint mirrors the standard Ethereum JSON-RPC `eth_getBlockByNumber` method, returning complete block metadata for any block you specify. Set the `boolean` parameter to `true` to include full transaction objects in the response, or `false` to include only transaction hashes. Use this endpoint to inspect block headers, retrieve miner/validator information, or enumerate every transaction in a block.

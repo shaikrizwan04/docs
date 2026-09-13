@@ -1,7 +1,7 @@
 ---
-title: "Get L1→L2 Deposit Transactions by Address"
+title: "Get L1-to-L2 Cross-Chain Deposit Transactions by Address"
 sidebarTitle: "getdeposittxs"
-description: "Returns cross-chain deposit transactions from Ethereum L1 to an L2 network (Arbitrum, Optimism) for a specified address."
+description: "Returns L1-to-L2 deposit transactions for an address on Arbitrum or Optimism, including the originating L1 transaction hash and bridge metadata."
 ---
 
 When users or protocols bridge assets from Ethereum mainnet to an L2 chain like Arbitrum or Optimism, the deposit appears as a special system transaction on the L2 side. This endpoint retrieves those inbound L1-to-L2 deposit records for a given address, including the originating L1 transaction hash, token details, and bridge metadata. Use it to reconcile cross-chain balances or to track bridge activity for compliance purposes.

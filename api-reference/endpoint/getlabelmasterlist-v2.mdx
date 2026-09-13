@@ -1,7 +1,7 @@
 ---
-title: "Export Label Master List (Multichain)"
+title: "Export the Full Label Master List — Multichain (v2)"
 sidebarTitle: "getlabelmasterlist v2"
-description: "Returns a temporary download URL for the complete Etherscan label master list in JSON format. Enterprise plan required."
+description: "Returns a pre-signed download URL for the complete Etherscan label master list in JSON format. Enterprise plan required — URL valid for 5 minutes."
 ---
 
 The label master list is the canonical catalog of all label categories Etherscan uses to classify addresses — from exchanges and DeFi protocols to phishing and scam-flagged wallets. This endpoint returns a pre-signed download URL (valid for 5 minutes) for the full JSON export. Use the `labelslug` values from this list as inputs to the [Export Address Tags](/api-reference/endpoint/exportaddresstags-v2) endpoint to download all addresses associated with a specific label.

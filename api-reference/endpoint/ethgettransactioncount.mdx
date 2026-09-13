@@ -1,7 +1,7 @@
 ---
-title: "Get Transaction Count (Nonce) for an Address"
+title: "Get Transaction Count and Nonce for an Address (Proxy)"
 sidebarTitle: "eth_getTransactionCount"
-description: "Returns the number of transactions sent from an address — its current nonce — at a specified block. Used to set nonces for new transactions."
+description: "Returns the number of transactions sent from an address (its nonce) at a specified block, mirroring the eth_getTransactionCount JSON-RPC method."
 ---
 
 The transaction count for an address is also its nonce — the value you must include in every new transaction to prevent replay attacks and ensure ordering. This endpoint mirrors the standard `eth_getTransactionCount` JSON-RPC method. Use `latest` for the most recent nonce, or specify a block number to query the historical nonce at that point in time.

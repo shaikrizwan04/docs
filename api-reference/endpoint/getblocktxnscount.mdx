@@ -1,7 +1,7 @@
 ---
-title: "Get Block Transaction Counts by Block Number"
+title: "Get Transaction Type Counts for Any EVM Block Number"
 sidebarTitle: "Block Tx Count"
-description: "Retrieve a full breakdown of transaction counts — including ERC-20, ERC-721, and ERC-1155 transfers — for any block number."
+description: "Retrieve a full breakdown of transaction counts — including ERC-20, ERC-721, and ERC-1155 token transfers — for a specific block number."
 ---
 
 Use this endpoint to get a complete count of all transaction types in a specific block. The response breaks down regular transactions, internal transactions, and token transfer events by standard, giving you a quick overview of block activity.
@@ -10,7 +10,7 @@ Use this endpoint to get a complete count of all transaction types in a specific
   This endpoint is currently available for Ethereum mainnet only.
 </Note>
 
-## Query Parameters
+## Parameters
 
 <ParamField query="chainid" type="string" required>
   The chain ID to query. Use `1` for Ethereum mainnet. See the full list of [supported chains](/supported-chains).
@@ -32,7 +32,7 @@ Use this endpoint to get a complete count of all transaction types in a specific
   Your Etherscan API key. [Set one up](/set-up-your-api-key) if you don't have one.
 </ParamField>
 
-## Response Fields
+## Response
 
 <ResponseField name="status" type="string">
   `1` if the request returned data, `0` otherwise.

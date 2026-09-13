@@ -1,12 +1,12 @@
 ---
-title: "Get Block Number by Timestamp"
+title: "Get the Closest EVM Block Number to a Unix Timestamp"
 sidebarTitle: "Block by Timestamp"
-description: "Retrieve the block number closest to a given Unix timestamp, either the block mined just before or just after that point in time."
+description: "Retrieve the block number closest to a given Unix timestamp on any supported EVM chain. Use the closest parameter to select before or after."
 ---
 
 Use this endpoint to convert a Unix timestamp into a block number. Specify `before` to get the last block mined at or before the timestamp, or `after` to get the first block mined at or after it. This is commonly used when you need to query on-chain state as it existed at a specific moment in time.
 
-## Query Parameters
+## Parameters
 
 <ParamField query="chainid" type="string" required>
   The chain ID to query. For example, `1` for Ethereum mainnet or `42161` for Arbitrum. See the full list of [supported chains](/supported-chains).
@@ -32,7 +32,7 @@ Use this endpoint to convert a Unix timestamp into a block number. Specify `befo
   Your Etherscan API key. [Set one up](/set-up-your-api-key) if you don't have one.
 </ParamField>
 
-## Response Fields
+## Response
 
 <ResponseField name="status" type="string">
   `1` if the request returned data, `0` otherwise.

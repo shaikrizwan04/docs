@@ -1,7 +1,7 @@
 ---
-title: "Verify Source Code on zkSync Era"
+title: "Verify Smart Contract Source Code on zkSync Era Networks"
 sidebarTitle: "Verify zkSync"
-description: "Submit a Solidity or EraVM smart contract source code for verification on zkSync Era and other zkSync-based networks."
+description: "Submit a Solidity or EraVM smart contract source code for verification on zkSync Era. Requires the zksolc compiler version parameter."
 ---
 
 Use this endpoint to verify a contract deployed on a zkSync-based network. Verification works similarly to standard Solidity verification, but requires an additional `zksolcVersion` parameter for EraVM contracts. After submission, use the returned GUID to poll [checkverifystatus](/api-reference/endpoint/checkverifystatus) for the result.

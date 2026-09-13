@@ -1,7 +1,7 @@
 ---
-title: "Get Total Circulating Supply of Ether"
+title: "Get Total Circulating ETH Supply in Wei from Rewards"
 sidebarTitle: "ethsupply"
-description: "Returns the current circulating supply of ETH in wei, excluding ETH2 staking rewards and EIP-1559 burned fees."
+description: "Returns total circulating supply of Ether in wei from block rewards, excluding ETH2 staking rewards, EIP-1559 burns, and Beacon Chain withdrawals."
 ---
 
 This endpoint returns the total supply of Ether minted from block rewards, expressed in wei. Note that this figure excludes two important adjustments introduced after the Merge: ETH staked on the Beacon Chain and fees burned by EIP-1559. For a comprehensive view of all supply-side factors, use the [ethsupply2](/api-reference/endpoint/ethsupply2) endpoint instead.

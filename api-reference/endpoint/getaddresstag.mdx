@@ -1,7 +1,7 @@
 ---
-title: "Get Name Tags and Metadata for an Address"
+title: "Get Etherscan Name Tags and Labels for an Address (PRO)"
 sidebarTitle: "getaddresstag"
-description: "Returns Etherscan name tags, labels, reputation scores, and metadata for up to 100 addresses per call. PRO Plus tier required."
+description: "Returns Etherscan name tags, labels, and reputation scores for up to 100 addresses per call. Requires Pro Plus plan — throttled to 2 calls/second."
 ---
 
 Etherscan maintains a curated database of address metadata — name tags, labels, official URLs, short descriptions, reputation scores, and other attributes. This endpoint lets you look up that metadata for any address programmatically. It's particularly useful for compliance tooling (reputation scoring), analytics dashboards (entity labeling), and dApp UIs that want to display human-readable names for counterparties. You can submit up to 100 comma-separated addresses per call.
@@ -48,7 +48,7 @@ Etherscan maintains a curated database of address metadata — name tags, labels
   <Expandable title="Address metadata fields">
     <ResponseField name="address" type="string">The address the metadata applies to.</ResponseField>
     <ResponseField name="nametag" type="string">Public name tag assigned to the address, e.g. `Coinbase 10`.</ResponseField>
-    <ResponseField name="internal_nametag" type="string">Internal name tag, if present.</ResponseField>
+    <ResponseField name="internal_nametag" type="string">Secondary name tag for the address, if available. May be empty.</ResponseField>
     <ResponseField name="url" type="string">Official URL associated with the address.</ResponseField>
     <ResponseField name="shortdescription" type="string">Short description of the address or entity.</ResponseField>
     <ResponseField name="notes_1" type="string">Additional note about the address.</ResponseField>

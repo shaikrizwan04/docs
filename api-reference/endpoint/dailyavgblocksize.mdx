@@ -1,16 +1,16 @@
 ---
-title: "Get Daily Average Block Size"
+title: "Get Daily Average Block Size in Bytes by Date Range"
 sidebarTitle: "Avg Block Size"
-description: "Retrieve the daily average block size in bytes over a date range. Requires a Standard plan or above API key."
+description: "Retrieve the daily average block size in bytes over a specified date range on any supported EVM chain. Requires a Standard plan API key or above."
 ---
 
 Use this endpoint to track how average block sizes have changed over time for a given chain. Results are aggregated per UTC day and returned in bytes. This data is useful for understanding network throughput trends and storage growth over time.
 
 <Note>
-  This is a PRO endpoint, available on the [Standard Plan](/rate-limits) and above.
+  This is a **PRO endpoint**, available on the [Standard Plan](/rate-limits) and above.
 </Note>
 
-## Query Parameters
+## Parameters
 
 <ParamField query="chainid" type="string" required>
   The chain ID to query. For example, `1` for Ethereum mainnet or `42161` for Arbitrum. See the full list of [supported chains](/supported-chains).
@@ -40,7 +40,7 @@ Use this endpoint to track how average block sizes have changed over time for a 
   Your Etherscan API key. [Set one up](/set-up-your-api-key) if you don't have one.
 </ParamField>
 
-## Response Fields
+## Response
 
 <ResponseField name="status" type="string">
   `1` if the request returned data, `0` otherwise.

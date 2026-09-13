@@ -1,7 +1,7 @@
 ---
-title: "Get Uncle Block by Number and Index"
+title: "Get Uncle Block by Parent Block Number and Uncle Index"
 sidebarTitle: "eth_getUncleByBlockNumberAndIndex"
-description: "Returns information about an uncle block by its parent block number and uncle index position in the uncles list."
+description: "Returns uncle (ommer) block data by parent block number and uncle index position, mirroring the eth_getUncleByBlockNumberAndIndex JSON-RPC method."
 ---
 
 Uncle blocks (also called ommer blocks) are valid Proof-of-Work blocks that were mined at the same time as the canonical block but were not selected as the primary chain. This endpoint mirrors the standard `eth_getUncleByBlockNumberAndIndex` JSON-RPC method and returns the full uncle block object. Note that uncle blocks do not contain transaction lists.

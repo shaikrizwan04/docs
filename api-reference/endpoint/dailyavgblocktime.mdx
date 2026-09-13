@@ -1,16 +1,16 @@
 ---
-title: "Get Daily Average Block Time"
+title: "Get Daily Average Block Time in Seconds by Date Range"
 sidebarTitle: "Avg Block Time"
-description: "Retrieve the daily average time between mined blocks in seconds over a specified date range. Requires a Standard plan API key."
+description: "Retrieve the daily average time between mined blocks in seconds over a specified date range on any supported EVM chain. Requires a Standard plan API key."
 ---
 
 Use this endpoint to track how quickly blocks were being produced on a given day. The average block time is calculated from all blocks mined within each UTC day. This metric is a useful proxy for network health, validator performance, and hash rate trends over time.
 
 <Note>
-  This is a PRO endpoint, available on the [Standard Plan](/rate-limits) and above.
+  This is a **PRO endpoint**, available on the [Standard Plan](/rate-limits) and above.
 </Note>
 
-## Query Parameters
+## Parameters
 
 <ParamField query="chainid" type="string" required>
   The chain ID to query. For example, `1` for Ethereum mainnet or `42161` for Arbitrum. See the full list of [supported chains](/supported-chains).
@@ -40,7 +40,7 @@ Use this endpoint to track how quickly blocks were being produced on a given day
   Your Etherscan API key. [Set one up](/set-up-your-api-key) if you don't have one.
 </ParamField>
 
-## Response Fields
+## Response
 
 <ResponseField name="status" type="string">
   `1` if the request returned data, `0` otherwise.
