@@ -1,0 +1,66 @@
+---
+title: "Verify Smart Contracts on Etherscan Using Remix IDE"
+sidebarTitle: "Verify with Remix"
+description: "Use the Etherscan Contract Verification plugin in Remix IDE to verify your deployed contracts directly from the browser without any CLI setup."
+---
+
+Remix IDE includes a built-in Etherscan Contract Verification plugin that lets you verify a deployed contract without leaving your browser. It's the fastest path from writing code in Remix to seeing the green verified checkmark on the explorer — no CLI, no configuration files, just your API key and a few clicks.
+
+<Note>
+  You need an [Etherscan API key](https://etherscan.io/myapikey) before you can use the verification plugin.
+</Note>
+
+## Activate the plugin
+
+<Steps>
+  <Step title="Open the Plugin Manager">
+    After deploying your contract, click the **Plugin Manager** icon in the left sidebar of Remix (it looks like a plug). Search for **Contract Verification** and click **Activate**.
+  </Step>
+
+  <Step title="Add your API key">
+    Once the plugin is active, click the **Enable** link in the Contract Verification panel. Enter your Etherscan API key in the field provided and leave the remaining settings at their defaults.
+
+    The API key is required to authenticate your verification requests. Without it, the plugin cannot submit to Etherscan.
+  </Step>
+
+  <Step title="Fill in the contract details">
+    In the verification form, enter the following:
+
+    - **Chain** — the network you deployed to (for example, Ethereum Mainnet or Sepolia)
+    - **Contract address** — the `0x` address of your deployed contract
+    - **Contract name** — the name of the contract to verify
+
+    Make sure the **Etherscan** checkbox is enabled before proceeding. Without it checked, the submission will not reach Etherscan's explorer.
+  </Step>
+
+  <Step title="Submit for verification">
+    Click **Verify**. The plugin submits your contract's source code and compiler settings to Etherscan.
+
+    When verification succeeds, a green ✅ appears in the plugin panel, confirming the contract is now publicly verified on the explorer.
+  </Step>
+</Steps>
+
+## Tips for a successful verification
+
+<Tip>
+  Remix captures the compiler version and settings automatically from the active compilation, so they're already in sync with your deployment. If you recompiled with different settings after deploying, re-deploy first or switch back to the matching compiler version before verifying.
+</Tip>
+
+<Warning>
+  Verifying on one chain's explorer does not carry over to other chains. If the same contract is deployed on multiple networks, repeat the verification for each chain.
+</Warning>
+
+## If verification fails
+
+If the plugin returns an error, check the following:
+
+- The contract address matches the deployment on the selected chain
+- The compiler version in the Remix Solidity compiler plugin matches what was used to deploy
+- Optimizer settings (enabled/disabled, runs) match the deployment settings
+- Constructor arguments were provided if the contract requires them
+
+See [Common Verification Errors](/contract-verification/common-verification-errors) for a full list of error messages and how to resolve them.
+
+---
+
+*This open-source integration was built by [@manuelwedler](https://github.com/manuelwedler) and the Remix team.*

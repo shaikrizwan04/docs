@@ -1,0 +1,66 @@
+---
+title: "Etherscan Metadata Address Reputation Score Reference"
+sidebarTitle: "Reputation Reference"
+description: "Complete reference for Etherscan Metadata reputation scores returned in address tag API responses, from UNKNOWN (0) through UNSAFE (3)."
+---
+
+The Etherscan Metadata API includes a numeric reputation score for every labeled address. This score gives you a quick signal about the risk level of interacting with an address — from addresses with no known classification all the way to addresses associated with confirmed malicious activity.
+
+The reputation score is returned as an integer in the `getaddresstag` response. Use it in your application to surface warnings, block interactions, or trigger compliance reviews depending on your risk tolerance.
+
+## Score Levels
+
+The table below describes every possible reputation value.
+
+| Score | Level | Meaning |
+|:-----:|-------|---------|
+| `0` | **UNKNOWN** | Default state. No reputation has been assigned to this address. It may be a new or unclassified address. |
+| `1` | **OK** | A known or public entity. Being marked OK is not an endorsement — it simply means the address is recognized and has no negative signals. |
+| `2` | **CAUTION** | Moderate caution is advised. The address may be associated with activity that warrants extra scrutiny before interacting. |
+| `3` | **UNSAFE** | Extreme caution advised. This address has been associated with harmful, fraudulent, or high-risk activity. |
+
+<Warning>
+  A score of `1` (OK) is **not** an endorsement of the address. It indicates the address is a known or public entity, not that it is trustworthy for all purposes. Always apply your own due diligence for sensitive operations.
+</Warning>
+
+## How the Score Appears in Responses
+
+When you call the [`getaddresstag`](/api-reference/endpoint/getaddresstag) endpoint, the reputation score is included in the response alongside other metadata fields. A typical response might look like:
+
+```json
+{
+  "status": "1",
+  "message": "OK",
+  "result": {
+    "address": "0xde0b295669a9fd93d5f28d9ec85e40f4cb697bae",
+    "nametag": "Ethereum Foundation",
+    "label": "Foundation",
+    "reputation": 1
+  }
+}
+```
+
+## Recommended Handling by Score
+
+Use the score to drive behavior in your integration:
+
+<Accordion title="Score 0 — UNKNOWN">
+  Treat as unverified. Display the raw address with no additional label. Suitable for informational use but don't rely on it for compliance decisions.
+</Accordion>
+
+<Accordion title="Score 1 — OK">
+  Safe to display a nametag if present. No risk warning needed. Suitable for UI enrichment and analytics.
+</Accordion>
+
+<Accordion title="Score 2 — CAUTION">
+  Display a warning to users before they interact with this address. Log the interaction for compliance review if your workflow requires it.
+</Accordion>
+
+<Accordion title="Score 3 — UNSAFE">
+  Block or strongly discourage interaction. Flag immediately in compliance workflows. Consider alerting users and requiring manual override to proceed.
+</Accordion>
+
+## Related Pages
+
+- [Etherscan Metadata Introduction](/metadata/introduction) — Overview of the full metadata dataset and access options.
+- [Other Attributes Reference](/metadata/other-attributes-reference) — Attribute codes for tokens and contracts in metadata responses.

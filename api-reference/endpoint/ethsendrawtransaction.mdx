@@ -1,0 +1,127 @@
+---
+title: "Broadcast a Signed Raw Transaction"
+sidebarTitle: "eth_sendRawTransaction"
+description: "Submits a signed, RLP-encoded transaction to the network for broadcast. Returns the transaction hash on success."
+---
+
+This endpoint mirrors the standard `eth_sendRawTransaction` JSON-RPC method. It accepts a signed, RLP-encoded transaction in hex format and broadcasts it to the Ethereum network. The transaction must be signed with the sender's private key before calling this endpoint — Etherscan never handles private keys. On success, the endpoint returns the transaction hash you can use to track confirmation status.
+
+<Note>
+  This is a **Geth/Parity Proxy** endpoint that wraps the standard JSON-RPC interface. Sign your transaction locally using a library such as ethers.js, web3.py, or viem before sending it here.
+</Note>
+
+<Warning>
+  Never send your private key to any API endpoint. Sign transactions locally and submit only the encoded hex bytes.
+</Warning>
+
+## Parameters
+
+<ParamField query="chainid" type="string" required>
+  The chain to broadcast to. Use `1` for Ethereum mainnet. See [supported chains](/supported-chains) for a full list.
+</ParamField>
+
+<ParamField query="module" type="string" required default="proxy">
+  Set to `proxy`.
+</ParamField>
+
+<ParamField query="action" type="string" required default="eth_sendRawTransaction">
+  Set to `eth_sendRawTransaction`.
+</ParamField>
+
+<ParamField query="hex" type="string" required>
+  The signed, RLP-encoded transaction as a `0x`-prefixed hex string.
+</ParamField>
+
+<ParamField query="apikey" type="string" required>
+  Your Etherscan API key. [Get one here](/set-up-your-api-key).
+</ParamField>
+
+## Response
+
+<ResponseField name="jsonrpc" type="string">
+  JSON-RPC version. Always `"2.0"`.
+</ResponseField>
+
+<ResponseField name="id" type="integer">
+  Request ID echoed back.
+</ResponseField>
+
+<ResponseField name="result" type="string">
+  The transaction hash (`0x`-prefixed) if broadcast was accepted, or an error object if rejected.
+</ResponseField>
+
+## Example
+
+<CodeGroup>
+```bash cURL
+curl "https://api.etherscan.io/v2/api\
+?chainid=1\
+&module=proxy\
+&action=eth_sendRawTransaction\
+&hex=0xf904808...&apikey=YOUR_API_KEY"
+```
+
+```javascript JavaScript
+// Sign the transaction first using ethers.js or viem
+import { Wallet, JsonRpcProvider } from "ethers";
+
+const wallet = new Wallet("YOUR_PRIVATE_KEY");
+const tx = await wallet.signTransaction({
+  to: "0xRecipient...",
+  value: BigInt("1000000000000000"), // 0.001 ETH
+  gasLimit: 21000n,
+  gasPrice: BigInt("20000000000"),
+  nonce: 5,
+  chainId: 1,
+});
+
+const params = new URLSearchParams({
+  chainid: "1",
+  module: "proxy",
+  action: "eth_sendRawTransaction",
+  hex: tx,
+  apikey: "YOUR_API_KEY",
+});
+
+const res = await fetch(`https://api.etherscan.io/v2/api?${params}`);
+const data = await res.json();
+console.log(`TX hash: ${data.result}`);
+```
+
+```python Python
+# Sign the transaction first using web3.py
+from web3 import Web3
+
+w3 = Web3()
+signed = w3.eth.account.sign_transaction(
+    {
+        "to": "0xRecipient...",
+        "value": 1_000_000_000_000_000,
+        "gas": 21000,
+        "gasPrice": 20_000_000_000,
+        "nonce": 5,
+        "chainId": 1,
+    },
+    private_key="YOUR_PRIVATE_KEY",
+)
+
+import requests
+params = {
+    "chainid": "1",
+    "module": "proxy",
+    "action": "eth_sendRawTransaction",
+    "hex": signed.rawTransaction.hex(),
+    "apikey": "YOUR_API_KEY",
+}
+r = requests.get("https://api.etherscan.io/v2/api", params=params)
+print(r.json()["result"])
+```
+</CodeGroup>
+
+```json Example Response
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": "0xe670ec64341771606e55d6b4ca35a1a6b75ee3d5145a99d05921026d1527331"
+}
+```

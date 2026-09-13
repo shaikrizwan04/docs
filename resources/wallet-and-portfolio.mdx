@@ -1,0 +1,155 @@
+---
+title: "Building Wallet and Portfolio Apps with Etherscan"
+sidebarTitle: "Wallet & Portfolio"
+description: "Fetch native balances, token holdings, NFTs, and full transaction history across 60+ EVM chains to power wallet and portfolio applications."
+---
+
+Building a wallet or portfolio view means assembling several distinct data sources: the native coin balance, ERC-20 token holdings, NFT assets, transaction history, and human-readable names for the addresses involved. The Etherscan API provides a dedicated endpoint for each piece, and every endpoint works across all 60+ supported chains — just swap the `chainid` parameter to move between networks. This guide walks through each component and shows you how to combine them into a complete wallet experience.
+
+<Tip>
+  Every endpoint in this guide supports all 60+ EVM chains. Switch `chainid=1` (Ethereum) to `chainid=42161` (Arbitrum), `chainid=137` (Polygon), or any other supported network without changing anything else in your request. See [Supported Chains](/supported-chains) for the full list.
+</Tip>
+
+## Portfolio: What the Wallet Holds
+
+Start by fetching the assets the wallet currently holds — native coins, ERC-20 tokens, and NFTs.
+
+<Steps>
+  <Step title="Get the native coin balance">
+    Retrieve the wallet's native coin balance (ETH on mainnet, or the equivalent on other chains). The API returns the value in wei, so divide by 10¹⁸ before displaying it to users.
+
+    ```bash
+    curl --request GET \
+      --url 'https://api.etherscan.io/v2/api?chainid=1&module=account&action=balance&address=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045&tag=latest&apikey=YOUR_API_KEY'
+    ```
+
+    The `tag=latest` parameter returns the balance at the current block. Use `tag=pending` to include unconfirmed transactions.
+  </Step>
+
+  <Step title="Get ERC-20 token holdings">
+    Fetch all ERC-20 token balances held by the address. This gives you the complete token portfolio in a single call, including token name, symbol, and decimal precision.
+
+    <Note>
+      `addresstokenbalance` is a PRO endpoint available on the **Standard plan and above**. See [PRO Endpoints](/endpoint-overview) for details.
+    </Note>
+
+    ```bash
+    curl --request GET \
+      --url 'https://api.etherscan.io/v2/api?chainid=1&module=account&action=addresstokenbalance&address=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045&page=1&offset=100&apikey=YOUR_API_KEY'
+    ```
+
+    Use `page` and `offset` to paginate through wallets with large numbers of token holdings.
+  </Step>
+
+  <Step title="Get ERC-721 (NFT) holdings">
+    Retrieve the ERC-721 NFT assets owned by the address, including token IDs and contract addresses for each NFT.
+
+    <Note>
+      `addresstokennftbalance` is a PRO endpoint available on the **Standard plan and above**.
+    </Note>
+
+    ```bash
+    curl --request GET \
+      --url 'https://api.etherscan.io/v2/api?chainid=1&module=account&action=addresstokennftbalance&address=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045&page=1&offset=100&apikey=YOUR_API_KEY'
+    ```
+  </Step>
+</Steps>
+
+## Activity: What the Wallet Has Done
+
+Build a complete activity feed by combining normal transactions, internal transactions, and token transfers.
+
+<Steps>
+  <Step title="Get normal transactions">
+    Retrieve the transactions the address has signed — sends, receives, and contract interactions. Sort descending (`sort=desc`) to display the most recent activity first.
+
+    ```bash
+    curl --request GET \
+      --url 'https://api.etherscan.io/v2/api?chainid=1&module=account&action=txlist&address=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045&page=1&offset=25&sort=desc&apikey=YOUR_API_KEY'
+    ```
+  </Step>
+
+  <Step title="Get internal transactions">
+    Internal transactions are value transfers triggered by smart contract execution — for example, ETH received from a DeFi protocol withdrawal. They don't appear in normal transaction lists, so you must fetch them separately to show a complete picture of fund movements.
+
+    ```bash
+    curl --request GET \
+      --url 'https://api.etherscan.io/v2/api?chainid=1&module=account&action=txlistinternal&address=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045&page=1&offset=25&sort=desc&apikey=YOUR_API_KEY'
+    ```
+  </Step>
+
+  <Step title="Get ERC-20 token transfers">
+    Fetch every ERC-20 token that has moved in or out of the address. Each record includes the token name, symbol, amount, and contract address, giving you everything you need for a token activity feed.
+
+    ```bash
+    curl --request GET \
+      --url 'https://api.etherscan.io/v2/api?chainid=1&module=account&action=tokentx&address=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045&page=1&offset=25&sort=desc&apikey=YOUR_API_KEY'
+    ```
+  </Step>
+
+  <Step title="Get ERC-721 (NFT) transfers">
+    Retrieve the NFT transfers in and out of the address, showing when each NFT was acquired, sold, or transferred.
+
+    ```bash
+    curl --request GET \
+      --url 'https://api.etherscan.io/v2/api?chainid=1&module=account&action=tokennfttx&address=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045&page=1&offset=25&sort=desc&apikey=YOUR_API_KEY'
+    ```
+  </Step>
+</Steps>
+
+## Identity: Readable Names for Addresses
+
+Raw hex addresses are hard to read. Enrich them with Etherscan's name tags and labels to make counterparties recognizable in your UI.
+
+<Steps>
+  <Step title="Look up an address name tag and labels">
+    Return the same name tag, category labels, and reputation data shown on etherscan.io for any address. Use this to label both the wallet itself and the counterparties in its transaction history — for example, showing "Binance 14" instead of `0x28C6c06298d514Db089934071355E5743bf21d60`.
+
+    <Note>
+      `getaddresstag` is a PRO endpoint available on the **Pro Plus plan**. See [Etherscan Metadata](/metadata/introduction) for the full metadata reference.
+    </Note>
+
+    ```bash
+    curl --request GET \
+      --url 'https://api.etherscan.io/v2/api?chainid=1&module=nametag&action=getaddresstag&address=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045&apikey=YOUR_API_KEY'
+    ```
+  </Step>
+</Steps>
+
+## Aggregating Across Multiple Chains
+
+To build a multi-chain portfolio view, repeat each request above with a different `chainid` and merge the results. You don't need separate API keys or SDKs — a single Etherscan API key works across all supported chains.
+
+```bash
+# Ethereum mainnet
+curl 'https://api.etherscan.io/v2/api?chainid=1&module=account&action=balance&address=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045&tag=latest&apikey=YOUR_API_KEY'
+
+# Arbitrum One
+curl 'https://api.etherscan.io/v2/api?chainid=42161&module=account&action=balance&address=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045&tag=latest&apikey=YOUR_API_KEY'
+
+# Polygon
+curl 'https://api.etherscan.io/v2/api?chainid=137&module=account&action=balance&address=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045&tag=latest&apikey=YOUR_API_KEY'
+```
+
+<Tip>
+  Make these requests concurrently to minimize latency. Sum the balances (converted from their native units) to display a total portfolio value across all chains.
+</Tip>
+
+## Putting It Together
+
+Combine the endpoints from this guide to build every component of a wallet app:
+
+<CardGroup cols={2}>
+  <Card title="Portfolio View" icon="wallet">
+    `balance` + `addresstokenbalance` + `addresstokennftbalance` — show everything the wallet currently holds.
+  </Card>
+  <Card title="Activity Feed" icon="list">
+    `txlist` + `txlistinternal` + `tokentx` + `tokennfttx` — display every fund movement in chronological order.
+  </Card>
+  <Card title="Readable Identities" icon="tag">
+    `getaddresstag` — replace hex addresses with recognizable entity names and labels.
+  </Card>
+  <Card title="Multi-Chain Support" icon="link">
+    Change `chainid` for each supported network — one key, one API, 60+ chains.
+  </Card>
+</CardGroup>

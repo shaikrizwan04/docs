@@ -1,0 +1,114 @@
+---
+title: "Export Label Master List (Legacy)"
+sidebarTitle: "getlabelmasterlist (Legacy)"
+description: "Returns the full Etherscan label master list directly as a JSON array. Legacy endpoint — Enterprise tier. Use v2 for new projects."
+---
+
+This is the legacy version of the label master list export. Unlike the v2 version which returns a pre-signed download URL, this endpoint returns the label data inline in the response body. It is maintained for backward compatibility with existing integrations but does not support multichain queries. For new projects, use the [multichain version](/api-reference/endpoint/getlabelmasterlist-v2) instead.
+
+<Warning>
+  This is the **legacy version** of this endpoint, maintained for existing integrations only. For new projects, use the [multichain version](/api-reference/endpoint/getlabelmasterlist-v2).
+</Warning>
+
+<Note>
+  This is a **PRO endpoint**, available to the [Enterprise tier](https://etherscan.io/apis).
+</Note>
+
+## Endpoint
+
+This endpoint uses the legacy metadata API: `https://api-metadata.etherscan.io/v1/api.ashx`
+
+## Parameters
+
+<ParamField query="module" type="string" required default="nametag">
+  Set to `nametag`.
+</ParamField>
+
+<ParamField query="action" type="string" required default="getlabelmasterlist">
+  Set to `getlabelmasterlist`.
+</ParamField>
+
+<ParamField query="apikey" type="string" required>
+  Your Etherscan API key. [Get one here](/set-up-your-api-key).
+</ParamField>
+
+## Response
+
+<ResponseField name="status" type="string">
+  `1` if records were returned, `0` on error.
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  `OK` on success, or an error description such as `NOTOK`.
+</ResponseField>
+
+<ResponseField name="result" type="array">
+  Array of label objects.
+
+  <Expandable title="Label object fields">
+    <ResponseField name="labelname" type="string">Display name of the label, e.g. `Binance`.</ResponseField>
+    <ResponseField name="labelslug" type="string">Machine-readable slug, e.g. `binance`.</ResponseField>
+    <ResponseField name="shortdescription" type="string">Description of the label.</ResponseField>
+    <ResponseField name="notes" type="string">Additional notes about the label.</ResponseField>
+    <ResponseField name="lastupdatedtimestamp" type="number">Unix timestamp when the label was last updated.</ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Example
+
+<CodeGroup>
+```bash cURL
+curl "https://api-metadata.etherscan.io/v1/api.ashx\
+?module=nametag\
+&action=getlabelmasterlist\
+&apikey=YOUR_API_KEY"
+```
+
+```javascript JavaScript
+const params = new URLSearchParams({
+  module: "nametag",
+  action: "getlabelmasterlist",
+  apikey: "YOUR_API_KEY",
+});
+
+const res = await fetch(`https://api-metadata.etherscan.io/v1/api.ashx?${params}`);
+const data = await res.json();
+console.log(`Total labels: ${data.result.length}`);
+```
+
+```python Python
+import requests
+
+params = {
+    "module": "nametag",
+    "action": "getlabelmasterlist",
+    "apikey": "YOUR_API_KEY",
+}
+
+r = requests.get("https://api-metadata.etherscan.io/v1/api.ashx", params=params)
+print(f"Total labels: {len(r.json()['result'])}")
+```
+</CodeGroup>
+
+```json Example Response (truncated)
+{
+  "status": "1",
+  "message": "OK",
+  "result": [
+    {
+      "labelname": "Axelar",
+      "labelslug": "axelar",
+      "shortdescription": "Axelar delivers secure cross-chain communication for Web3...",
+      "notes": "",
+      "lastupdatedtimestamp": 1712897117
+    },
+    {
+      "labelname": "Binance",
+      "labelslug": "binance",
+      "shortdescription": "Binance is one of the world's leading blockchain ecosystems...",
+      "notes": "",
+      "lastupdatedtimestamp": 1759922816
+    }
+  ]
+}
+```

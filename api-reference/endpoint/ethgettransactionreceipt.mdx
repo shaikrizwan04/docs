@@ -1,0 +1,125 @@
+---
+title: "Get Transaction Receipt by Hash"
+sidebarTitle: "eth_getTransactionReceipt"
+description: "Returns the full transaction receipt including execution status, gas used, contract address created, and all emitted logs."
+---
+
+A transaction receipt captures the result of executing a transaction on-chain. Unlike `eth_getTransactionByHash` which returns what was submitted, the receipt shows what actually happened: whether execution succeeded, how much gas was consumed, what contract was created (if any), and every log emitted. This endpoint mirrors the standard `eth_getTransactionReceipt` JSON-RPC method and is the primary way to confirm that a transaction was successfully processed.
+
+<Note>
+  This is a **Geth/Parity Proxy** endpoint that wraps the standard JSON-RPC interface. Receipts are only available for mined transactions — pending transactions return `null`.
+</Note>
+
+## Parameters
+
+<ParamField query="chainid" type="string" required>
+  The chain to query. Use `1` for Ethereum mainnet. See [supported chains](/supported-chains) for a full list.
+</ParamField>
+
+<ParamField query="module" type="string" required default="proxy">
+  Set to `proxy`.
+</ParamField>
+
+<ParamField query="action" type="string" required default="eth_getTransactionReceipt">
+  Set to `eth_getTransactionReceipt`.
+</ParamField>
+
+<ParamField query="txhash" type="string" required>
+  The transaction hash to look up.
+</ParamField>
+
+<ParamField query="apikey" type="string" required>
+  Your Etherscan API key. [Get one here](/set-up-your-api-key).
+</ParamField>
+
+## Response
+
+<ResponseField name="jsonrpc" type="string">
+  JSON-RPC version. Always `"2.0"`.
+</ResponseField>
+
+<ResponseField name="id" type="integer">
+  Request ID echoed back.
+</ResponseField>
+
+<ResponseField name="result" type="object">
+  Transaction receipt object, or `null` if the transaction is not yet mined.
+
+  <Expandable title="Receipt object fields">
+    <ResponseField name="transactionHash" type="string">The transaction hash.</ResponseField>
+    <ResponseField name="transactionIndex" type="string">Index of this transaction in its block, hex-encoded.</ResponseField>
+    <ResponseField name="blockHash" type="string">Hash of the block containing this transaction.</ResponseField>
+    <ResponseField name="blockNumber" type="string">Block number, hex-encoded.</ResponseField>
+    <ResponseField name="from" type="string">Address that sent the transaction.</ResponseField>
+    <ResponseField name="to" type="string">Recipient address, or `null` for contract creation.</ResponseField>
+    <ResponseField name="cumulativeGasUsed" type="string">Total gas used by all transactions up to and including this one in the block.</ResponseField>
+    <ResponseField name="gasUsed" type="string">Gas consumed by this transaction alone, hex-encoded.</ResponseField>
+    <ResponseField name="contractAddress" type="string">Address of the deployed contract if this was a contract-creation transaction; `null` otherwise.</ResponseField>
+    <ResponseField name="logs" type="array">Array of log objects emitted by this transaction.</ResponseField>
+    <ResponseField name="logsBloom" type="string">Bloom filter for the logs.</ResponseField>
+    <ResponseField name="status" type="string">`0x1` for success, `0x0` for revert. Not present for pre-Byzantium transactions.</ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Example
+
+<CodeGroup>
+```bash cURL
+curl "https://api.etherscan.io/v2/api\
+?chainid=1\
+&module=proxy\
+&action=eth_getTransactionReceipt\
+&txhash=0x1e2910a262b1008d0616a0beb24c1a491d78771baa54a33e66065e03b1f46bc1\
+&apikey=YOUR_API_KEY"
+```
+
+```javascript JavaScript
+const params = new URLSearchParams({
+  chainid: "1",
+  module: "proxy",
+  action: "eth_getTransactionReceipt",
+  txhash: "0x1e2910a262b1008d0616a0beb24c1a491d78771baa54a33e66065e03b1f46bc1",
+  apikey: "YOUR_API_KEY",
+});
+
+const res = await fetch(`https://api.etherscan.io/v2/api?${params}`);
+const { result } = await res.json();
+const success = result.status === "0x1";
+console.log(`Transaction ${success ? "succeeded" : "reverted"}`);
+console.log(`Gas used: ${parseInt(result.gasUsed, 16)}`);
+```
+
+```python Python
+import requests
+
+params = {
+    "chainid": "1",
+    "module": "proxy",
+    "action": "eth_getTransactionReceipt",
+    "txhash": "0x1e2910a262b1008d0616a0beb24c1a491d78771baa54a33e66065e03b1f46bc1",
+    "apikey": "YOUR_API_KEY",
+}
+
+r = requests.get("https://api.etherscan.io/v2/api", params=params)
+receipt = r.json()["result"]
+print(f"Status: {'OK' if receipt['status'] == '0x1' else 'REVERTED'}")
+print(f"Gas used: {int(receipt['gasUsed'], 16)}")
+```
+</CodeGroup>
+
+```json Example Response (truncated)
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "transactionHash": "0x1e2910a262b1008d0616a0beb24c1a491d78771baa54a33e66065e03b1f46bc1",
+    "blockNumber": "0x5BAD55",
+    "from": "0x5cb80b...",
+    "to": "0xbecfd5...",
+    "gasUsed": "0x5208",
+    "status": "0x1",
+    "logs": [],
+    "contractAddress": null
+  }
+}
+```

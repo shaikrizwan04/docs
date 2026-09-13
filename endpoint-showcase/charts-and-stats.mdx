@@ -1,0 +1,202 @@
+---
+title: "Endpoints Behind the Etherscan Charts & Stats Pages"
+sidebarTitle: "Charts & Stats"
+description: "Discover the Etherscan API endpoints that power the charts and stats pages, from ETH price and supply to daily transactions and node counts."
+---
+
+The [charts and stats pages](https://etherscan.io/charts) on etherscan.io visualize network-wide data across four categories: overview stats, market data, blockchain data, and network data. Each chart is driven by a Stats endpoint that returns daily time-series data, giving you programmatic access to the same historical datasets powering the Etherscan UI. This guide maps each chart category to the endpoints behind it. All endpoints use a single API key; most historical series require a PRO plan, but current market data (ETH price and supply) is available to all plans.
+
+<Tip>
+  The `ethprice` and `ethsupply` endpoints are available on the **Free tier**. All historical daily series — transactions, gas, block data, node counts — require a **Standard plan** or above.
+</Tip>
+
+## Chart Categories and Their Endpoints
+
+<Accordion title="Overview Stats">
+  The overview section surfaces three high-level daily metrics: new address growth, transaction throughput, and total gas consumed. These are commonly used to track overall network activity.
+
+  **Endpoints:**
+  - [`GET /stats/dailynewaddress`](/api-reference/endpoint/dailynewaddress) — Daily new address count (**PRO**)
+  - [`GET /stats/dailytx`](/api-reference/endpoint/dailytx) — Daily transaction count (**PRO**)
+  - [`GET /stats/dailygasused`](/api-reference/endpoint/dailygasused) — Daily total gas used (**PRO**)
+
+  <CodeGroup>
+  ```http Daily New Addresses (PRO)
+  GET https://api.etherscan.io/v2/api
+    ?chainid=1
+    &module=stats
+    &action=dailynewaddress
+    &startdate=2024-01-01
+    &enddate=2024-03-31
+    &sort=asc
+    &apikey=YOUR_API_KEY
+  ```
+
+  ```http Daily Transactions (PRO)
+  GET https://api.etherscan.io/v2/api
+    ?chainid=1
+    &module=stats
+    &action=dailytx
+    &startdate=2024-01-01
+    &enddate=2024-03-31
+    &sort=asc
+    &apikey=YOUR_API_KEY
+  ```
+
+  ```http Daily Gas Used (PRO)
+  GET https://api.etherscan.io/v2/api
+    ?chainid=1
+    &module=stats
+    &action=dailygasused
+    &startdate=2024-01-01
+    &enddate=2024-03-31
+    &sort=asc
+    &apikey=YOUR_API_KEY
+  ```
+  </CodeGroup>
+
+  All three endpoints accept `startdate` and `enddate` in `YYYY-MM-DD` format, and a `sort` parameter (`asc` or `desc`) to control chronological order.
+</Accordion>
+
+<Accordion title="Market Data">
+  The market data section covers ETH price and supply — live figures available on the Free tier, plus a historical daily price series for PRO subscribers.
+
+  **Endpoints:**
+  - [`GET /stats/ethprice`](/api-reference/endpoint/ethprice) — Latest ETH price in USD and BTC
+  - [`GET /stats/ethsupply`](/api-reference/endpoint/ethsupply) — Total circulating ETH supply
+  - [`GET /stats/ethdailyprice`](/api-reference/endpoint/ethdailyprice) — Historical daily ETH price (**PRO**)
+
+  <CodeGroup>
+  ```http Current ETH Price
+  GET https://api.etherscan.io/v2/api
+    ?chainid=1
+    &module=stats
+    &action=ethprice
+    &apikey=YOUR_API_KEY
+  ```
+
+  ```http Total ETH Supply
+  GET https://api.etherscan.io/v2/api
+    ?chainid=1
+    &module=stats
+    &action=ethsupply
+    &apikey=YOUR_API_KEY
+  ```
+
+  ```http Historical Daily ETH Price (PRO)
+  GET https://api.etherscan.io/v2/api
+    ?chainid=1
+    &module=stats
+    &action=ethdailyprice
+    &startdate=2024-01-01
+    &enddate=2024-03-31
+    &sort=asc
+    &apikey=YOUR_API_KEY
+  ```
+  </CodeGroup>
+
+  The `ethprice` response includes `ethusd`, `ethbtc`, and their respective timestamps — suitable for displaying a live price ticker or calculating portfolio values.
+</Accordion>
+
+<Accordion title="Blockchain Data">
+  The blockchain data category provides daily statistics about block production: how many blocks were mined, how much was paid to miners, average block time, block size, and gas metrics.
+
+  **Endpoints:**
+  - [`GET /stats/dailyblkcount`](/api-reference/endpoint/dailyblkcount) — Daily block count and rewards (**PRO**)
+  - [`GET /stats/dailyblockrewards`](/api-reference/endpoint/dailyblockrewards) — Daily block rewards distributed (**PRO**)
+  - [`GET /stats/dailyavgblocktime`](/api-reference/endpoint/dailyavgblocktime) — Average block time per day (**PRO**)
+  - [`GET /stats/dailyavgblocksize`](/api-reference/endpoint/dailyavgblocksize) — Average block size per day (**PRO**)
+  - [`GET /stats/dailyavggaslimit`](/api-reference/endpoint/dailyavggaslimit) — Average gas limit per day (**PRO**)
+  - [`GET /stats/dailyavggasprice`](/api-reference/endpoint/dailyavggasprice) — Average gas price per day (**PRO**)
+
+  <CodeGroup>
+  ```http Daily Block Count (PRO)
+  GET https://api.etherscan.io/v2/api
+    ?chainid=1
+    &module=stats
+    &action=dailyblkcount
+    &startdate=2024-01-01
+    &enddate=2024-03-31
+    &sort=asc
+    &apikey=YOUR_API_KEY
+  ```
+
+  ```http Daily Avg Gas Price (PRO)
+  GET https://api.etherscan.io/v2/api
+    ?chainid=1
+    &module=stats
+    &action=dailyavggasprice
+    &startdate=2024-01-01
+    &enddate=2024-03-31
+    &sort=asc
+    &apikey=YOUR_API_KEY
+  ```
+  </CodeGroup>
+
+  These endpoints are useful for building dashboards that track block production efficiency, miner or validator economics, and long-term gas price trends.
+</Accordion>
+
+<Accordion title="Network Data">
+  The network data category covers transaction fee economics, network utilization, and node infrastructure counts — a mix of on-chain and infrastructure-level metrics.
+
+  **Endpoints:**
+  - [`GET /stats/dailytxnfee`](/api-reference/endpoint/dailytxnfee) — Daily transaction fees paid (**PRO**)
+  - [`GET /stats/dailynetutilization`](/api-reference/endpoint/dailynetutilization) — Daily network utilization percentage (**PRO**)
+  - [`GET /stats/nodecount`](/api-reference/endpoint/nodecount) — Current total node count
+  - [`GET /stats/nodecounthistory`](/api-reference/endpoint/nodecounthistory) — Historical daily node count (**PRO**)
+
+  <CodeGroup>
+  ```http Daily Transaction Fees (PRO)
+  GET https://api.etherscan.io/v2/api
+    ?chainid=1
+    &module=stats
+    &action=dailytxnfee
+    &startdate=2024-01-01
+    &enddate=2024-03-31
+    &sort=asc
+    &apikey=YOUR_API_KEY
+  ```
+
+  ```http Current Node Count
+  GET https://api.etherscan.io/v2/api
+    ?chainid=1
+    &module=stats
+    &action=nodecount
+    &apikey=YOUR_API_KEY
+  ```
+
+  ```http Historical Node Count (PRO)
+  GET https://api.etherscan.io/v2/api
+    ?chainid=1
+    &module=stats
+    &action=nodecounthistory
+    &startdate=2024-01-01
+    &enddate=2024-03-31
+    &sort=asc
+    &apikey=YOUR_API_KEY
+  ```
+  </CodeGroup>
+
+  `dailynetutilization` returns the daily average ratio of gas used to gas limit — a proxy for block fullness. `nodecount` returns a snapshot of currently discoverable Ethereum nodes without requiring a date range.
+</Accordion>
+
+## Quick Reference
+
+| Chart Category | Endpoint | Plan |
+|---|---|---|
+| Daily new addresses | `/stats/dailynewaddress` | PRO |
+| Daily transaction count | `/stats/dailytx` | PRO |
+| Daily gas used | `/stats/dailygasused` | PRO |
+| Current ETH price | `/stats/ethprice` | Free |
+| Total ETH supply | `/stats/ethsupply` | Free |
+| Historical ETH price | `/stats/ethdailyprice` | PRO |
+| Daily block count & rewards | `/stats/dailyblkcount` | PRO |
+| Daily block rewards | `/stats/dailyblockrewards` | PRO |
+| Average block time | `/stats/dailyavgblocktime` | PRO |
+| Average block size | `/stats/dailyavgblocksize` | PRO |
+| Average gas limit | `/stats/dailyavggaslimit` | PRO |
+| Average gas price | `/stats/dailyavggasprice` | PRO |
+| Daily transaction fees | `/stats/dailytxnfee` | PRO |
+| Daily network utilization | `/stats/dailynetutilization` | PRO |
+| Current node count | `/stats/nodecount` | Free |
+| Historical node count | `/stats/nodecounthistory` | PRO |

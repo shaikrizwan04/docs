@@ -1,0 +1,117 @@
+---
+title: "Execute a Read-Only Smart Contract Call"
+sidebarTitle: "eth_call"
+description: "Executes a read-only (view/pure) call against a smart contract at a given block state without creating a transaction."
+---
+
+This endpoint mirrors the standard `eth_call` JSON-RPC method, allowing you to call smart contract view or pure functions without submitting a transaction or spending gas. The call executes against the state of the chain at the specified block. Use it to read return values from contracts, simulate call outcomes, or query any function that doesn't modify chain state.
+
+<Note>
+  This is a **Geth/Parity Proxy** endpoint that wraps the standard JSON-RPC interface. The call is executed server-side; no transaction is broadcast and no gas is charged.
+</Note>
+
+## Parameters
+
+<ParamField query="chainid" type="string" required>
+  The chain to query. Use `1` for Ethereum mainnet. See [supported chains](/supported-chains) for a full list.
+</ParamField>
+
+<ParamField query="module" type="string" required default="proxy">
+  Set to `proxy`.
+</ParamField>
+
+<ParamField query="action" type="string" required default="eth_call">
+  Set to `eth_call`.
+</ParamField>
+
+<ParamField query="to" type="string" required>
+  The contract address to call.
+</ParamField>
+
+<ParamField query="data" type="string" required>
+  ABI-encoded calldata: the 4-byte function selector followed by the encoded arguments.
+</ParamField>
+
+<ParamField query="tag" type="string" required>
+  Block parameter: `latest`, `earliest`, `pending`, or a hex-encoded block number.
+</ParamField>
+
+<ParamField query="apikey" type="string" required>
+  Your Etherscan API key. [Get one here](/set-up-your-api-key).
+</ParamField>
+
+## Response
+
+<ResponseField name="jsonrpc" type="string">
+  JSON-RPC version. Always `"2.0"`.
+</ResponseField>
+
+<ResponseField name="id" type="integer">
+  Request ID echoed back.
+</ResponseField>
+
+<ResponseField name="result" type="string">
+  The ABI-encoded return value as a `0x`-prefixed hex string. Decode it using the contract's ABI.
+</ResponseField>
+
+## Example
+
+<CodeGroup>
+```bash cURL
+# Read the ETH balance from the WETH contract's balanceOf function
+curl "https://api.etherscan.io/v2/api\
+?chainid=1\
+&module=proxy\
+&action=eth_call\
+&to=0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2\
+&data=0x70a08231000000000000000000000000abcdef1234567890abcdef1234567890abcdef12\
+&tag=latest\
+&apikey=YOUR_API_KEY"
+```
+
+```javascript JavaScript
+const params = new URLSearchParams({
+  chainid: "1",
+  module: "proxy",
+  action: "eth_call",
+  to: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+  // balanceOf(address) selector + padded address
+  data: "0x70a08231000000000000000000000000abcdef1234567890abcdef1234567890abcdef12",
+  tag: "latest",
+  apikey: "YOUR_API_KEY",
+});
+
+const res = await fetch(`https://api.etherscan.io/v2/api?${params}`);
+const { result } = await res.json();
+console.log(`Balance: ${BigInt(result)} wei`);
+```
+
+```python Python
+import requests
+
+params = {
+    "chainid": "1",
+    "module": "proxy",
+    "action": "eth_call",
+    "to": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+    "data": "0x70a08231000000000000000000000000abcdef1234567890abcdef1234567890abcdef12",
+    "tag": "latest",
+    "apikey": "YOUR_API_KEY",
+}
+
+r = requests.get("https://api.etherscan.io/v2/api", params=params)
+print(r.json()["result"])
+```
+</CodeGroup>
+
+```json Example Response
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": "0x00000000000000000000000000000000000000000000000000000000000000000"
+}
+```
+
+<Tip>
+  Use a library like ethers.js or web3.py to compute the `data` parameter from a function signature and arguments, and to decode the result back into typed values.
+</Tip>

@@ -1,0 +1,261 @@
+---
+title: "Etherscan MCP: Connect AI Agents to Live Chain Data"
+sidebarTitle: "MCP Server"
+description: "Connect AI agents to live Etherscan API data over the Model Context Protocol. One server covers all 60+ supported chains — just pass the chainid."
+---
+
+The Etherscan MCP server exposes the Etherscan API as a set of callable tools that AI agents can invoke directly over the [Model Context Protocol](https://modelcontextprotocol.io). Connect it to a client like Claude Desktop, Claude Code, or Codex Desktop, then ask onchain questions in plain language — the agent selects the right tools, calls the live API, and returns answers grounded in real chain data. A single connection covers all 60+ [supported chains](/supported-chains): the agent automatically passes the correct `chainid` based on your request.
+
+<Tip>
+  One MCP connection covers every chain. Ask about Arbitrum and the agent uses `chainid=42161`. See [Supported chains](/supported-chains) for the full list of chain IDs.
+</Tip>
+
+<Warning>
+  Only one official Etherscan MCP server exists: `https://mcp.etherscan.io/mcp`. Listings on MCP marketplaces or directories that call themselves "Etherscan MCP" are unofficial and unaffiliated with Etherscan. Do not paste your API key into them.
+</Warning>
+
+## Connection details
+
+Point any MCP client at the server using these values:
+
+| Setting | Value |
+|---|---|
+| **URL** | `https://mcp.etherscan.io/mcp` |
+| **Transport** | Streamable HTTP |
+| **Authentication** | `Authorization: Bearer <your API key>` |
+
+[Create a free API key](/set-up-your-api-key) if you do not have one yet.
+
+## Get started
+
+Choose your MCP client and follow the steps end to end.
+
+<Tabs>
+  <Tab title="Claude Desktop">
+    [Claude Desktop](https://claude.ai/download) is Anthropic's desktop chat app.
+
+    <Steps>
+      <Step title="Add Etherscan to your config">
+        In Claude Desktop, open **Settings > Developer > Edit Config** to open the `claude_desktop_config.json` file. Add the `etherscan` server entry below, replacing `YourApiKey` with your key:
+
+        ```json claude_desktop_config.json
+        {
+          "mcpServers": {
+            "etherscan": {
+              "command": "npx",
+              "args": [
+                "-y",
+                "mcp-remote",
+                "https://mcp.etherscan.io/mcp",
+                "--header",
+                "Authorization:${AUTH_TOKEN}"
+              ],
+              "env": {
+                "AUTH_TOKEN": "Bearer YourApiKey"
+              }
+            }
+          }
+        }
+        ```
+
+        <Note>
+          This configuration requires [Node.js](https://nodejs.org) to be installed on your machine.
+        </Note>
+      </Step>
+
+      <Step title="Confirm it's connected">
+        Save the file, then fully quit Claude Desktop and reopen it. Go to **Settings > Developer** and look for `etherscan` under Local MCP servers with a **running** badge.
+      </Step>
+
+      <Step title="Ask your first question">
+        Ask in plain language and approve the tool calls when prompted:
+
+        ```text
+        Give me a one-liner summary for this transaction:
+        0xa44757750f25d11d8d22434a68c39c6962a55ddf369ce202624950ada3080acf
+        ```
+
+        The agent calls `get_transaction_by_hash` for sender, recipient, amount, and input data, and `get_transaction_receipt` to confirm the outcome — then returns a one-line summary. Both tools work on the free API plan.
+
+        To label the addresses with their Etherscan name tags, follow up with:
+
+        ```text
+        Add the Etherscan name tags and labels for the sender and recipient
+        ```
+
+        <Note>
+          `get_address_labels` is a Pro tool that requires a [paid plan](https://etherscan.io/api/pricing).
+        </Note>
+      </Step>
+    </Steps>
+  </Tab>
+
+  <Tab title="Claude Code CLI">
+    [Claude Code](https://code.claude.com/docs/en/quickstart#step-1-install-claude-code) is Anthropic's coding assistant that runs in your terminal.
+
+    <Steps>
+      <Step title="Add the server">
+        Run this command, replacing `YourApiKey` with your key:
+
+        ```bash
+        claude mcp add --transport http etherscan \
+          https://mcp.etherscan.io/mcp \
+          --header "Authorization: Bearer YourApiKey"
+        ```
+      </Step>
+
+      <Step title="Confirm it's connected">
+        Check the server status and look for `Status: ✔ Connected`:
+
+        ```bash
+        claude mcp get etherscan
+        ```
+      </Step>
+
+      <Step title="Ask your first question">
+        Start a Claude Code session by running `claude`, then ask in plain language:
+
+        ```text
+        Give me a one-liner summary for this transaction:
+        0xa44757750f25d11d8d22434a68c39c6962a55ddf369ce202624950ada3080acf
+        ```
+
+        The agent calls `get_transaction_by_hash` and returns a one-line summary. This tool works on the free API plan.
+      </Step>
+    </Steps>
+  </Tab>
+
+  <Tab title="Codex Desktop">
+    Codex Desktop is the ChatGPT desktop app running OpenAI's [Codex](https://developers.openai.com/codex) agent.
+
+    <Steps>
+      <Step title="Add the server">
+        In Codex Desktop, open **Settings > Plugins > Add > Add MCP Server** and enter the following details (replace `YourApiKey` with your key):
+
+        | Field | Value |
+        |---|---|
+        | **Name** | `Etherscan MCP` |
+        | **Type** | Streamable HTTP |
+        | **URL** | `https://mcp.etherscan.io/mcp` |
+        | **Headers** | Key: `AUTHORIZATION` / Value: `Bearer YourApiKey` |
+      </Step>
+
+      <Step title="Confirm it's connected">
+        Save, then fully quit Codex Desktop and reopen it. Run `/mcp` and confirm that `etherscan` is listed as an enabled server.
+      </Step>
+
+      <Step title="Ask your first question">
+        Ask in plain language:
+
+        ```text
+        Give me a one-liner summary for this transaction:
+        0xa44757750f25d11d8d22434a68c39c6962a55ddf369ce202624950ada3080acf. use mcp
+        ```
+
+        The agent calls `get_transaction_by_hash` and `get_transaction_receipt`, then returns a one-line summary.
+      </Step>
+    </Steps>
+  </Tab>
+
+  <Tab title="Codex CLI">
+    [Codex CLI](https://learn.chatgpt.com/docs/codex/cli#getting-started) is OpenAI's coding agent for the terminal.
+
+    <Steps>
+      <Step title="Set your API key as an environment variable">
+        ```bash
+        export ETHERSCAN_API_KEY=YourApiKey
+        ```
+      </Step>
+
+      <Step title="Add the server">
+        ```bash
+        codex mcp add etherscan \
+          --url https://mcp.etherscan.io/mcp \
+          --bearer-token-env-var ETHERSCAN_API_KEY
+        ```
+      </Step>
+
+      <Step title="Confirm it's connected">
+        Check the server and look for `enabled: true`:
+
+        ```bash
+        codex mcp get etherscan
+        ```
+      </Step>
+
+      <Step title="Ask your first question">
+        Start a Codex session by running `codex`, then ask in plain language:
+
+        ```text
+        Give me a one-liner summary for this transaction:
+        0xa44757750f25d11d8d22434a68c39c6962a55ddf369ce202624950ada3080acf. use mcp
+        ```
+      </Step>
+    </Steps>
+  </Tab>
+</Tabs>
+
+## Example prompts
+
+Ask in plain language and let the agent pick the tools. Copy any of these to try it:
+
+```text
+Build a wallet snapshot for 0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045 on Ethereum and
+Arbitrum: native balance, top token holdings, and the 10 most recent transactions.
+```
+
+```text
+Is 0xdAC17F958D2ee523a2206206994597C13D831ec7 verified? Summarize what the contract
+does and who deployed it.
+```
+
+```text
+Who are the top 10 holders of USDT (0xdAC17F958D2ee523a2206206994597C13D831ec7),
+and what share does each hold?
+```
+
+```text
+Trace transaction 0x<hash>: show its internal transfers and whether it succeeded.
+```
+
+```text
+List the 20 most recent ERC-20 token transfers for
+0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045 on Arbitrum.
+```
+
+## Available tools
+
+The server exposes 20 tools. The agent selects and calls them automatically — you rarely need to name a tool yourself.
+
+<Accordion title="View all 20 tools">
+
+| Category | Tool | Returns |
+|---|---|---|
+| **Balances** | `get_native_balance` | Native coin balance for an address |
+| | `get_token_balances` | ERC-20 token holdings for an address, with USD values |
+| **Transactions** | `get_transactions` | Normal (external) transactions an address signed |
+| | `get_internal_transactions` | Contract-triggered internal transfers for an address |
+| | `get_transaction_by_hash` | Full transaction details: sender, recipient, value, input, gas |
+| | `get_transaction_receipt` | Receipt: status, gas used, logs, and any created contract |
+| | `get_transaction_status` | Contract execution status for a transaction |
+| | `get_transaction_receipt_status` | Receipt status (success or fail) for a transaction |
+| **Transfers** | `get_token_transfers` | Token transfers for an address or contract: ERC-20, ERC-721, or ERC-1155 |
+| **Tokens** | `get_token_info` | Project and metadata for a token contract |
+| | `get_token_top_holders` | Largest holders of a token |
+| **Contracts** | `get_contract_source` | Verified source code for a contract |
+| | `get_contract_abi` | ABI for a verified contract |
+| | `get_contract_creation` | Deployer address and creation transaction for a contract |
+| **Logs** | `get_logs` | Event logs filtered by contract address and topics over a block range |
+| **Address intelligence** | `get_address_labels` | Etherscan name tag, labels, and attributes for an address _(Pro)_ |
+| | `get_funded_by` | The address and transaction that first funded an address |
+| **Network** | `get_supported_chains` | Supported chains and their chain IDs |
+| | `get_gas_oracle` | Current gas price recommendations |
+| | `get_block_by_timestamp` | The block number at a given timestamp |
+
+</Accordion>
+
+## Good to know
+
+- **Read-only.** Every tool reads public onchain data. Nothing signs or sends a transaction.
+- **Every tool call uses your API quota.** Each MCP tool call makes one or more Etherscan API requests, and every request counts toward your plan's rate limits exactly as if you called the API directly. See [Rate limits](/rate-limits).
+- **Guard against prompt injection.** Enable your client's human-confirmation prompts, and be cautious when combining Etherscan with other MCP servers in the same session.

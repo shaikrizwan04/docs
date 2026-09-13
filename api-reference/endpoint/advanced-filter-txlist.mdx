@@ -1,0 +1,195 @@
+---
+title: "Normal Transactions with Advanced Directional Filtering"
+sidebarTitle: "Advanced txlist"
+description: "Filter normal transactions by explicit sender and/or recipient address using AND/OR logic, in addition to standard block range and pagination options."
+---
+
+The Advanced Filter variant of the normal transactions endpoint lets you query transactions by specifying distinct `from` and `to` addresses, with an operator that controls whether both must match (`and`) or either can match (`or`). This gives you much more precise filtering than the standard `txlist` endpoint, which matches any transaction involving an address in either direction. Use this endpoint when you need to find all transactions sent to a specific address, all transactions from a specific address, or transactions between two specific addresses.
+
+<Note>
+  This is a **PRO endpoint**, available on the [Standard Plan](/rate-limits) and above. It is currently in **Beta** — behavior may change.
+</Note>
+
+<Tip>
+  You can explore and preview data interactively using the [Advanced Filter](https://etherscan.io/advanced-filter) page on Etherscan before integrating this endpoint.
+</Tip>
+
+## Parameters
+
+<ParamField query="chainid" type="string" required>
+  The chain ID to query. Use `1` for Ethereum mainnet or any chain from the [supported chains](/supported-chains) list.
+</ParamField>
+
+<ParamField query="module" type="string" required default="account">
+  Set to `account` for this endpoint.
+</ParamField>
+
+<ParamField query="action" type="string" required default="txlist">
+  Set to `txlist` for this endpoint.
+</ParamField>
+
+<ParamField query="from" type="string">
+  Filter transactions by sender address. Provide `from`, `to`, or both.
+</ParamField>
+
+<ParamField query="to" type="string">
+  Filter transactions by recipient address. Provide `from`, `to`, or both.
+</ParamField>
+
+<ParamField query="fromto_opr" type="string">
+  Required when `from` or `to` is provided. Use `and` to require both addresses to match, or `or` to match transactions where either address matches.
+</ParamField>
+
+<ParamField query="startblock" type="integer" default="0">
+  Starting block number to search from.
+</ParamField>
+
+<ParamField query="endblock" type="string" default="latest">
+  Ending block number to search to. Use `latest` for the current block.
+</ParamField>
+
+<ParamField query="page" type="integer" default="1">
+  Page number for pagination.
+</ParamField>
+
+<ParamField query="offset" type="integer" default="10">
+  Number of records per page.
+</ParamField>
+
+<ParamField query="sort" type="string" default="desc">
+  Sort order. Use `asc` for oldest first, `desc` for latest first.
+</ParamField>
+
+<ParamField query="apikey" type="string" required>
+  Your Etherscan API key. [Set one up](/set-up-your-api-key) if you don't have one.
+</ParamField>
+
+## Response
+
+<ResponseField name="status" type="string">
+  `1` if the request returned data, `0` otherwise.
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  `OK` on success. See [common error messages](/common-error-messages) for error values.
+</ResponseField>
+
+<ResponseField name="result" type="array">
+  An array of transaction objects matching the filter criteria.
+
+  <Expandable title="result[]">
+    <ResponseField name="blockNumber" type="string">Block number in which the transaction was included.</ResponseField>
+    <ResponseField name="blockHash" type="string">Hash of the block containing the transaction.</ResponseField>
+    <ResponseField name="timeStamp" type="string">Time the block was mined, as a UNIX timestamp in seconds.</ResponseField>
+    <ResponseField name="hash" type="string">The transaction hash.</ResponseField>
+    <ResponseField name="nonce" type="string">Number of transactions sent from the sender before this one.</ResponseField>
+    <ResponseField name="transactionIndex" type="string">Index position of the transaction within the block.</ResponseField>
+    <ResponseField name="from" type="string">Address that sent the transaction.</ResponseField>
+    <ResponseField name="to" type="string">Recipient address. Empty for contract-creation transactions.</ResponseField>
+    <ResponseField name="value" type="string">Amount of the native token transferred, in wei.</ResponseField>
+    <ResponseField name="gas" type="string">Maximum gas the sender allowed for the transaction.</ResponseField>
+    <ResponseField name="gasPrice" type="string">Price paid per unit of gas, in wei.</ResponseField>
+    <ResponseField name="input" type="string">Input data sent with the transaction, as a hex string.</ResponseField>
+    <ResponseField name="methodId" type="string">First four bytes of input data identifying the called function.</ResponseField>
+    <ResponseField name="functionName" type="string">Decoded function signature when the contract is verified.</ResponseField>
+    <ResponseField name="contractAddress" type="string">Address of the contract created, if any. Otherwise empty.</ResponseField>
+    <ResponseField name="cumulativeGasUsed" type="string">Total gas used up to and including this transaction in the block.</ResponseField>
+    <ResponseField name="txreceipt_status" type="string">Transaction receipt status. `1` for success, `0` for failure.</ResponseField>
+    <ResponseField name="gasUsed" type="string">Units of gas actually consumed.</ResponseField>
+    <ResponseField name="confirmations" type="string">Number of blocks mined after the block containing this transaction.</ResponseField>
+    <ResponseField name="isError" type="string">`0` if the transaction succeeded, `1` if it failed.</ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Example
+
+This example fetches all normal transactions sent **to** a specific address using the `or` operator with only a `to` filter.
+
+<CodeGroup>
+```bash cURL
+curl "https://api.etherscan.io/v2/api\
+?chainid=1\
+&module=account\
+&action=txlist\
+&to=0x71c7656ec7ab88b098defb751b7401b5f6d8976f\
+&fromto_opr=or\
+&startblock=0\
+&endblock=latest\
+&page=1\
+&offset=10\
+&sort=desc\
+&apikey=YOUR_API_KEY"
+```
+
+```python Python
+import requests
+
+params = {
+    "chainid": "1",
+    "module": "account",
+    "action": "txlist",
+    "to": "0x71c7656ec7ab88b098defb751b7401b5f6d8976f",
+    "fromto_opr": "or",
+    "startblock": 0,
+    "endblock": "latest",
+    "page": 1,
+    "offset": 10,
+    "sort": "desc",
+    "apikey": "YOUR_API_KEY",
+}
+
+response = requests.get("https://api.etherscan.io/v2/api", params=params)
+print(response.json())
+```
+
+```javascript JavaScript
+const params = new URLSearchParams({
+  chainid: "1",
+  module: "account",
+  action: "txlist",
+  to: "0x71c7656ec7ab88b098defb751b7401b5f6d8976f",
+  fromto_opr: "or",
+  startblock: "0",
+  endblock: "latest",
+  page: "1",
+  offset: "10",
+  sort: "desc",
+  apikey: "YOUR_API_KEY",
+});
+
+const response = await fetch(`https://api.etherscan.io/v2/api?${params}`);
+const data = await response.json();
+console.log(data);
+```
+</CodeGroup>
+
+```json Response
+{
+  "status": "1",
+  "message": "OK",
+  "result": [
+    {
+      "blockNumber": "25115190",
+      "blockHash": "0x761e4c9928f804d020809bb21404787595bd1062f1ad975f4ee667514b9dfd31",
+      "timeStamp": "1779024299",
+      "hash": "0xf292888b132e986f79d95f5788fc21ca08e2096a7fa48ec1c5f265692f01e572",
+      "nonce": "756",
+      "transactionIndex": "180",
+      "from": "0x9480fc2a527bb0f0e5e6a3cf2922bcd123b71302",
+      "to": "0x71c7656ec7ab88b098defb751b7401b5f6d8976f",
+      "value": "1000000000000000",
+      "gas": "21000",
+      "gasPrice": "707543925",
+      "input": "0x",
+      "methodId": "0x",
+      "functionName": "",
+      "contractAddress": "",
+      "cumulativeGasUsed": "23218602",
+      "txreceipt_status": "1",
+      "gasUsed": "21000",
+      "confirmations": "144453",
+      "isError": "0"
+    }
+  ]
+}
+```

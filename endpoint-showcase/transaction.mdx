@@ -1,0 +1,123 @@
+---
+title: "Endpoints Behind an Etherscan Transaction Page"
+sidebarTitle: "Transaction Page"
+description: "Discover the Etherscan API endpoints that power every section of a transaction page, from status and details to logs and internal calls."
+---
+
+A [transaction page](https://etherscan.io/tx/0x558b5e8573d3455f064a3a71a0e90013239ee91d4a99f7a6bf4f284d2503bbab) on etherscan.io presents a complete picture of a single transaction: its current status, the raw call data, internal sub-calls triggered by contract execution, and all emitted event logs. Each section of this page is powered by a specific API endpoint you can call independently. This guide maps every visible panel to the endpoint behind it, so you can reproduce transaction data in your own explorer, alerting system, or debugging tool. All endpoints accept a `chainid` parameter and share the same API key across 60+ supported EVM chains.
+
+## Page Sections and Their Endpoints
+
+<Accordion title="Transaction Details">
+  The main details panel — showing the sender, recipient, ETH value, input data, and gas parameters — comes directly from the JSON-RPC `eth_getTransactionByHash` method proxied through Etherscan.
+
+  **Endpoint:** [`GET /proxy/eth_getTransactionByHash`](/api-reference/endpoint/ethgettransactionbyhash)
+
+  ```http
+  GET https://api.etherscan.io/v2/api
+    ?chainid=1
+    &module=proxy
+    &action=eth_getTransactionByHash
+    &txhash=0x558b5e8573d3455f064a3a71a0e90013239ee91d4a99f7a6bf4f284d2503bbab
+    &apikey=YOUR_API_KEY
+  ```
+
+  The response includes `from`, `to`, `value`, `gas`, `gasPrice`, `input`, `nonce`, and `blockNumber`. This is the raw transaction object as it exists on-chain — no additional processing needed to display the fields shown on the page.
+</Accordion>
+
+<Accordion title="Transaction Status">
+  The status badge ("Success" or "Failed") displayed at the top of a transaction page is determined by two complementary endpoints that check different aspects of transaction execution.
+
+  **Endpoints:**
+  - [`GET /transaction/gettxreceiptstatus`](/api-reference/endpoint/gettxreceiptstatus) — Whether the transaction succeeded (`1`) or failed (`0`)
+  - [`GET /transaction/getstatus`](/api-reference/endpoint/getstatus) — Whether a contract execution error occurred, and the error message if so
+
+  <CodeGroup>
+  ```http Receipt Status
+  GET https://api.etherscan.io/v2/api
+    ?chainid=1
+    &module=transaction
+    &action=gettxreceiptstatus
+    &txhash=0x558b5e8573d3455f064a3a71a0e90013239ee91d4a99f7a6bf4f284d2503bbab
+    &apikey=YOUR_API_KEY
+  ```
+
+  ```http Execution Error Status
+  GET https://api.etherscan.io/v2/api
+    ?chainid=1
+    &module=transaction
+    &action=getstatus
+    &txhash=0x558b5e8573d3455f064a3a71a0e90013239ee91d4a99f7a6bf4f284d2503bbab
+    &apikey=YOUR_API_KEY
+  ```
+  </CodeGroup>
+
+  Use `gettxreceiptstatus` as the primary status check. Use `getstatus` to surface contract-level revert reasons, which can appear even when a transaction is included in a block.
+
+  <Warning>
+    A transaction can be included in a block (mined) but still fail at the contract execution level. Always check both endpoints when you need a definitive success/failure determination.
+  </Warning>
+</Accordion>
+
+<Accordion title="Internal Transactions Tab">
+  The **Internal Txns** tab lists all sub-calls made during the execution of the transaction — for example, ETH transfers initiated by smart contract logic.
+
+  **Endpoint:** [`GET /account/txlistinternal`](/api-reference/endpoint/txlistinternal-txhash) filtered by transaction hash
+
+  ```http
+  GET https://api.etherscan.io/v2/api
+    ?chainid=1
+    &module=account
+    &action=txlistinternal
+    &txhash=0x558b5e8573d3455f064a3a71a0e90013239ee91d4a99f7a6bf4f284d2503bbab
+    &apikey=YOUR_API_KEY
+  ```
+
+  Each internal transaction in the response includes the `from`, `to`, `value`, `type` (e.g., `call`, `delegatecall`), and any error message if the sub-call reverted.
+</Accordion>
+
+<Accordion title="Logs Tab">
+  The **Logs** tab displays all EVM events emitted during the transaction, decoded by topic signature where possible.
+
+  **Endpoint:** [`GET /logs/getLogs`](/api-reference/endpoint/getlogs)
+
+  Query event logs for a specific transaction by filtering on the block number range and the contract address:
+
+  ```http
+  GET https://api.etherscan.io/v2/api
+    ?chainid=1
+    &module=logs
+    &action=getLogs
+    &fromBlock=20000000
+    &toBlock=20000000
+    &address=0xdAC17F958D2ee523a2206206994597C13D831ec7
+    &topic0=0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef
+    &apikey=YOUR_API_KEY
+  ```
+
+  To fetch logs for a single transaction hash, use `eth_getTransactionReceipt` from the Proxy module instead — it returns the logs array directly from the receipt object.
+
+  ```http
+  GET https://api.etherscan.io/v2/api
+    ?chainid=1
+    &module=proxy
+    &action=eth_getTransactionReceipt
+    &txhash=0x558b5e8573d3455f064a3a71a0e90013239ee91d4a99f7a6bf4f284d2503bbab
+    &apikey=YOUR_API_KEY
+  ```
+
+  <Info>
+    `eth_getTransactionReceipt` returns the `logs` array, `gasUsed`, `status`, `contractAddress` (for deployments), and `logsBloom` in a single call — more efficient than querying the Logs endpoint separately when you already have the transaction hash.
+  </Info>
+</Accordion>
+
+## Quick Reference
+
+| Page Section | Endpoint | Plan |
+|---|---|---|
+| Transaction details | `/proxy/eth_getTransactionByHash` | Free |
+| Receipt status (success/fail) | `/transaction/gettxreceiptstatus` | Free |
+| Contract execution error | `/transaction/getstatus` | Free |
+| Internal transactions | `/account/txlistinternal` (by hash) | Free |
+| Event logs | `/logs/getLogs` | Free |
+| Full receipt with logs | `/proxy/eth_getTransactionReceipt` | Free |

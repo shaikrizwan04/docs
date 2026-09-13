@@ -1,0 +1,171 @@
+---
+title: "Etherscan CLI: Query the Etherscan API from Your Terminal"
+sidebarTitle: "CLI"
+description: "Install the Etherscan CLI to query any supported chain from your terminal, scripts, and CI pipelines with structured JSON, table, or CSV output."
+---
+
+The Etherscan CLI lets you explore and script the full Etherscan API from the terminal — across every [supported chain](/supported-chains) by name or numeric ID, with clean JSON output by default (or tables and CSV when you prefer human-readable results). It covers accounts, contracts, tokens, logs, gas, stats, and name tags, and mirrors the same module-and-action structure as the underlying API so commands stay predictable. Use it interactively, pipe it into `jq` or Python, or plug it into CI pipelines and AI agent workflows.
+
+<Info>
+  The source code and full flag reference are on [GitHub](https://github.com/etherscan/etherscan-cli). You can also jump to the [Command reference](#command-reference) below.
+</Info>
+
+## Get started
+
+<Steps>
+  <Step title="Install">
+    Choose the installation method that matches your environment:
+
+    <CodeGroup>
+      ```bash Homebrew (macOS / Linux)
+      brew install etherscan/etherscan-cli/etherscan
+      ```
+
+      ```bash Script (macOS / Linux)
+      curl -fsSL https://raw.githubusercontent.com/etherscan/etherscan-cli/master/scripts/install.sh | sh
+      ```
+
+      ```powershell Windows (PowerShell)
+      irm https://raw.githubusercontent.com/etherscan/etherscan-cli/master/scripts/install.ps1 | iex
+      ```
+
+      ```bash Go
+      # Requires Go 1.25+; ensure GOBIN (or GOPATH/bin) is on your PATH
+      go install github.com/etherscan/etherscan-cli/cmd/etherscan@latest
+      ```
+    </CodeGroup>
+
+    Verify the installation:
+
+    ```bash
+    etherscan version
+    ```
+
+    Upgrade any time with:
+
+    ```bash
+    etherscan update
+    ```
+
+    Prebuilt binaries are also available on the [releases page](https://github.com/etherscan/etherscan-cli/releases).
+  </Step>
+
+  <Step title="Authenticate">
+    [Create a free API key](/set-up-your-api-key) if you do not have one. Then save it locally and confirm your active identity:
+
+    ```bash
+    etherscan login
+    etherscan whoami
+    ```
+  </Step>
+
+  <Step title="Run your first commands">
+    Get a native balance (JSON by default):
+
+    ```bash
+    etherscan account balance 0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045
+    ```
+
+    Run the same query on another chain by name or chain ID:
+
+    ```bash
+    etherscan --chain arbitrum account balance 0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045
+    ```
+
+    List every supported chain:
+
+    ```bash
+    etherscan chains
+    ```
+
+    Or open the full-screen interactive explorer:
+
+    ```bash
+    etherscan tui
+    ```
+  </Step>
+</Steps>
+
+## Command reference
+
+Commands follow the pattern `etherscan <module> <action>`, mirroring the Etherscan API modules. Use `-o table` or `-o csv` to change the output format, `--compact` to strip whitespace from JSON, and `--all` (bounded by `--max-pages`) to page through list endpoints automatically.
+
+| Module | Covers |
+|---|---|
+| `account` | Balances, transactions, transfers, funding |
+| `contract` | ABI, source, creation, verification |
+| `transaction` | Execution and receipt status |
+| `block` | Rewards, counts, timestamps |
+| `gastracker` | Gas oracle and confirmation estimates |
+| `logs` | Event logs |
+| `stats` | Supply, price, and daily network metrics |
+| `token` | Supply, holders, and token metadata |
+| `proxy` | JSON-RPC-compatible calls |
+
+For every option on a module, run:
+
+```bash
+etherscan <module> --help
+```
+
+## Practical workflows
+
+### Follow wallet activity
+
+Fetch the 10 most recent normal transactions:
+
+```bash
+etherscan account txlist 0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045 --page 1 --offset 10
+```
+
+List ERC-20 transfers as a readable table:
+
+```bash
+etherscan account tokentx 0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045 -o table
+```
+
+Collect multiple pages for bulk analysis:
+
+```bash
+etherscan account txlist 0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045 --all --max-pages 50 -o csv
+```
+
+### Inspect a smart contract
+
+Fetch the WETH contract ABI:
+
+```bash
+etherscan contract getabi 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2
+```
+
+Fetch verified source metadata:
+
+```bash
+etherscan contract getsourcecode 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2
+```
+
+### Switch chains
+
+Chain names and numeric IDs both work interchangeably:
+
+```bash
+etherscan --chain arbitrum gastracker oracle
+```
+
+```bash
+etherscan --chain 42161 account balance 0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045
+```
+
+### Build scripts and agent workflows
+
+Pipe compact JSON into `jq` or a Python script:
+
+```bash
+etherscan account txlist 0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045 --compact | jq '.[0]'
+```
+
+Export to CSV for spreadsheets and data pipelines:
+
+```bash
+etherscan account tokentx 0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045 -o csv > token-transfers.csv
+```

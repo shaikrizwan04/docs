@@ -1,0 +1,145 @@
+---
+title: "Endpoints Behind an Etherscan Contract Page"
+sidebarTitle: "Contract Page"
+description: "Discover the Etherscan API endpoints that power the contract page, from verified source code and ABI to event logs and Read/Write interfaces."
+---
+
+A [contract page](https://etherscan.io/address/0x00000000219ab540356cbb839cbe05303d7705fa#code) on etherscan.io presents the complete picture of a verified smart contract: the source code, compiler settings, the interactive Read/Write interface, and a searchable event log. Each of these sections is powered by a specific API endpoint you can call directly. This guide maps every panel of the contract page to the endpoint behind it, so you can integrate contract data — from ABI decoding to event monitoring — into your own tooling. All endpoints use a single API key and work across all 60+ supported chains via the `chainid` parameter.
+
+<Note>
+  The ABI and source code endpoints are available on the **Free tier** for every supported chain — no PRO plan required.
+</Note>
+
+## Page Sections and Their Endpoints
+
+<Accordion title="Verified Source Code">
+  The source code panel is the centrepiece of the contract page. It displays the verified Solidity (or Vyper) source, the compiler version, optimization settings, and constructor arguments. All of this comes from a single endpoint.
+
+  **Endpoint:** [`GET /contract/getsourcecode`](/api-reference/endpoint/getsourcecode)
+
+  ```http
+  GET https://api.etherscan.io/v2/api
+    ?chainid=1
+    &module=contract
+    &action=getsourcecode
+    &address=0x00000000219ab540356cBB839Cbe05303d7705Fa
+    &apikey=YOUR_API_KEY
+  ```
+
+  The response includes:
+  - `SourceCode` — the full contract source (or a JSON object for multi-file contracts)
+  - `ABI` — the contract ABI as a JSON string
+  - `ContractName` — the name of the contract
+  - `CompilerVersion` — the exact compiler version used
+  - `OptimizationUsed` — whether optimization was enabled
+  - `Runs` — number of optimizer runs
+  - `ConstructorArguments` — ABI-encoded constructor arguments
+  - `EVMVersion` — target EVM version
+  - `LicenseType` — SPDX license identifier
+
+  <Tip>
+    For multi-file contracts verified with standard JSON input, the `SourceCode` field contains a JSON object with all source files. Parse it to access each file individually.
+  </Tip>
+</Accordion>
+
+<Accordion title="Read Contract / Write Contract">
+  The **Read Contract** and **Write Contract** tabs on the contract page use the ABI to generate an interactive interface for calling contract functions. Build the same interface in your application with the ABI endpoint.
+
+  **Endpoint:** [`GET /contract/getabi`](/api-reference/endpoint/getabi)
+
+  ```http
+  GET https://api.etherscan.io/v2/api
+    ?chainid=1
+    &module=contract
+    &action=getabi
+    &address=0x00000000219ab540356cBB839Cbe05303d7705Fa
+    &apikey=YOUR_API_KEY
+  ```
+
+  The response returns the ABI as a JSON string. Parse it and pass it to your preferred web3 library to interact with the contract:
+
+  ```javascript
+  const response = await fetch(
+    'https://api.etherscan.io/v2/api?chainid=1&module=contract&action=getabi' +
+    '&address=0x00000000219ab540356cBB839Cbe05303d7705Fa&apikey=YOUR_API_KEY'
+  );
+  const data = await response.json();
+  const abi = JSON.parse(data.result);
+
+  // Use with ethers.js
+  const contract = new ethers.Contract(address, abi, provider);
+  const balance = await contract.balanceOf(walletAddress);
+  ```
+
+  <Warning>
+    `getabi` returns an error if the contract has not been verified on Etherscan. Check the `status` field in the response — a value of `0` means the contract is unverified.
+  </Warning>
+</Accordion>
+
+<Accordion title="Events Log">
+  The **Events** tab on a contract page shows all emitted events, filterable by topic. Query these logs directly using the Logs endpoint.
+
+  **Endpoint:** [`GET /logs/getLogs`](/api-reference/endpoint/getlogs)
+
+  Fetch all events from a contract across a block range:
+
+  ```http
+  GET https://api.etherscan.io/v2/api
+    ?chainid=1
+    &module=logs
+    &action=getLogs
+    &address=0x00000000219ab540356cBB839Cbe05303d7705Fa
+    &fromBlock=0
+    &toBlock=latest
+    &page=1
+    &offset=100
+    &apikey=YOUR_API_KEY
+  ```
+
+  Filter by event signature (topic0) to retrieve only a specific event type. For example, to fetch only `DepositEvent` logs, compute the Keccak-256 hash of the event signature and pass it as `topic0`:
+
+  ```http
+  GET https://api.etherscan.io/v2/api
+    ?chainid=1
+    &module=logs
+    &action=getLogs
+    &address=0x00000000219ab540356cBB839Cbe05303d7705Fa
+    &topic0=0x649bbc62d0e31342afea4e5cd82d4049e7e1ee912fc0889aa790803be39038c5
+    &fromBlock=0
+    &toBlock=latest
+    &apikey=YOUR_API_KEY
+  ```
+
+  See the [Get Event Logs by Address and Topics](/api-reference/endpoint/getlogs-address-topics) endpoint for combined address + topic filtering.
+</Accordion>
+
+<Accordion title="Contract Creator and Creation Transaction">
+  You can retrieve the deployer address and the transaction hash used to deploy the contract — information typically shown in the contract overview panel.
+
+  **Endpoint:** [`GET /contract/getcontractcreation`](/api-reference/endpoint/getcontractcreation)
+
+  ```http
+  GET https://api.etherscan.io/v2/api
+    ?chainid=1
+    &module=contract
+    &action=getcontractcreation
+    &contractaddresses=0x00000000219ab540356cBB839Cbe05303d7705Fa
+    &apikey=YOUR_API_KEY
+  ```
+
+  The response includes:
+  - `contractAddress` — the deployed contract address
+  - `contractCreator` — the deployer's address
+  - `txHash` — the deployment transaction hash
+
+  You can pass up to five contract addresses in a single request by separating them with commas.
+</Accordion>
+
+## Quick Reference
+
+| Page Section | Endpoint | Plan |
+|---|---|---|
+| Verified source code | `/contract/getsourcecode` | Free |
+| Contract ABI | `/contract/getabi` | Free |
+| Event logs | `/logs/getLogs` | Free |
+| Contract creator & creation tx | `/contract/getcontractcreation` | Free |

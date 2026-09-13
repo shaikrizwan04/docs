@@ -1,0 +1,129 @@
+---
+title: "Get Historical Daily Ethereum Node Count"
+sidebarTitle: "nodecounthistory"
+description: "Returns the daily count of discoverable Ethereum nodes over a specified date range. PRO endpoint — Standard plan and above."
+---
+
+While the `nodecount` endpoint gives you the current node count, this endpoint lets you query the historical record — one measurement per day over any date range. Use it to chart network decentralization trends, detect periods of node growth or attrition, and analyze how major protocol upgrades affected the node population.
+
+<Note>
+  This is a **PRO endpoint**, available to the [Standard Plan](/rate-limits) and above. It is also currently scoped to **Ethereum mainnet** only.
+</Note>
+
+## Parameters
+
+<ParamField query="chainid" type="string" required>
+  Set to `1` for Ethereum mainnet. This endpoint is currently Ethereum-only.
+</ParamField>
+
+<ParamField query="module" type="string" required default="stats">
+  Set to `stats`.
+</ParamField>
+
+<ParamField query="action" type="string" required default="nodecounthistory">
+  Set to `nodecounthistory`.
+</ParamField>
+
+<ParamField query="startdate" type="string" required>
+  Start of the date range in `yyyy-MM-dd` format, e.g. `2026-02-01`.
+</ParamField>
+
+<ParamField query="enddate" type="string" required>
+  End of the date range in `yyyy-MM-dd` format, e.g. `2026-02-28`.
+</ParamField>
+
+<ParamField query="sort" type="string">
+  Sort order. Use `asc` for oldest-first or `desc` for newest-first.
+</ParamField>
+
+<ParamField query="apikey" type="string" required>
+  Your Etherscan API key. [Get one here](/set-up-your-api-key).
+</ParamField>
+
+## Response
+
+<ResponseField name="status" type="string">
+  `1` if the request returned data, `0` on error or no records.
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  `OK` on success, or an error description such as `NOTOK`.
+</ResponseField>
+
+<ResponseField name="result" type="array">
+  Array of daily node count measurements.
+
+  <Expandable title="Result item fields">
+    <ResponseField name="UTCDate" type="string">
+      Date of the measurement in `YYYY-MM-DD` format (UTC).
+    </ResponseField>
+    <ResponseField name="TotalNodeCount" type="string">
+      Total number of discoverable nodes on that day.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Example
+
+<CodeGroup>
+```bash cURL
+curl "https://api.etherscan.io/v2/api\
+?chainid=1\
+&module=stats\
+&action=nodecounthistory\
+&startdate=2026-02-01\
+&enddate=2026-02-28\
+&sort=asc\
+&apikey=YOUR_API_KEY"
+```
+
+```javascript JavaScript
+const params = new URLSearchParams({
+  chainid: "1",
+  module: "stats",
+  action: "nodecounthistory",
+  startdate: "2026-02-01",
+  enddate: "2026-02-28",
+  sort: "asc",
+  apikey: "YOUR_API_KEY",
+});
+
+const res = await fetch(`https://api.etherscan.io/v2/api?${params}`);
+const data = await res.json();
+console.log(data.result);
+```
+
+```python Python
+import requests
+
+params = {
+    "chainid": "1",
+    "module": "stats",
+    "action": "nodecounthistory",
+    "startdate": "2026-02-01",
+    "enddate": "2026-02-28",
+    "sort": "asc",
+    "apikey": "YOUR_API_KEY",
+}
+
+r = requests.get("https://api.etherscan.io/v2/api", params=params)
+print(r.json()["result"])
+```
+</CodeGroup>
+
+```json Example Response
+{
+  "status": "1",
+  "message": "OK",
+  "result": [
+    {
+      "UTCDate": "2026-02-01",
+      "TotalNodeCount": "14161"
+    },
+    {
+      "UTCDate": "2026-02-02",
+      "TotalNodeCount": "13938"
+    }
+  ]
+}
+```

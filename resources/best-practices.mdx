@@ -1,0 +1,143 @@
+---
+title: "Etherscan API Best Practices for Developers"
+sidebarTitle: "Best Practices"
+description: "Optimize API usage with pagination, block range filters, caching, rate-limit handling, batch endpoints, and incremental sync patterns for production apps."
+---
+
+Getting the most out of the Etherscan API in a production integration means more than just making correct requests — it means making efficient ones. Poorly scoped queries time out. Uncached responses inflate your request count. Missing rate-limit handling causes silent failures. This guide covers the practical techniques that keep your integration fast, reliable, and within your plan's limits.
+
+## Paginate Results Correctly
+
+Every endpoint that returns a list of records supports `page` and `offset` parameters. Use them to control exactly how many records you retrieve per request and to walk through large result sets incrementally.
+
+<Tip>
+  Only request the records you actually need. If your UI shows the 10 most recent transactions, request `offset=10` — not the default maximum. Smaller responses are faster and consume fewer API credits.
+</Tip>
+
+```bash
+# Fetch the first page of 25 transactions
+curl 'https://api.etherscan.io/v2/api?chainid=1&module=account&action=txlist&address=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045&page=1&offset=25&sort=desc&apikey=YOUR_API_KEY'
+
+# Fetch the second page
+curl 'https://api.etherscan.io/v2/api?chainid=1&module=account&action=txlist&address=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045&page=2&offset=25&sort=desc&apikey=YOUR_API_KEY'
+```
+
+<Warning>
+  Free tier users are limited to a maximum of **1,000 records per request** on most list endpoints. Paid plans support up to 10,000 records per request. Always paginate rather than relying on a single large response.
+</Warning>
+
+## Scope Queries with Block Ranges
+
+When your query covers a known time window — for example, transactions from the last 24 hours, or activity during a specific month — pass `startblock` and `endblock` to limit the scan range. This significantly reduces response time and avoids query timeouts on high-activity addresses.
+
+<Tip>
+  Use `startblock` and `endblock` whenever your block range is known. Open-ended queries against busy addresses or contracts often hit the query timeout limit.
+</Tip>
+
+```bash
+# Convert a timestamp to a block number first
+curl 'https://api.etherscan.io/v2/api?chainid=1&module=block&action=getblocknobytime&timestamp=1735689600&closest=before&apikey=YOUR_API_KEY'
+
+# Then scope the query to that block range
+curl 'https://api.etherscan.io/v2/api?chainid=1&module=account&action=txlist&address=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045&startblock=19000000&endblock=latest&sort=asc&apikey=YOUR_API_KEY'
+```
+
+You can also use the `latest` keyword in `endblock` to scope from a known start block to the current chain tip.
+
+## Sync Incrementally, Not from Scratch
+
+For ongoing data pipelines, avoid re-fetching the entire transaction history on every run. Instead, store the block number of the last record you processed and use it as `startblock` on the next request.
+
+```bash
+# Initial import: fetch from block 0
+curl 'https://api.etherscan.io/v2/api?chainid=1&module=account&action=txlist&address=0xYOUR_ADDRESS&startblock=0&endblock=latest&sort=asc&page=1&offset=1000&apikey=YOUR_API_KEY'
+
+# Subsequent runs: start from the last processed block
+curl 'https://api.etherscan.io/v2/api?chainid=1&module=account&action=txlist&address=0xYOUR_ADDRESS&startblock=21525891&endblock=latest&sort=asc&page=1&offset=1000&apikey=YOUR_API_KEY'
+```
+
+<Tip>
+  Store the `blockNumber` of the last record you successfully processed. On the next sync, use that value as `startblock` (add 1 to avoid re-importing the same record).
+</Tip>
+
+## Use Batch Endpoints to Reduce Call Count
+
+When you need the same data for multiple addresses, batch endpoints let you retrieve it in a single call instead of one call per address. This is especially useful for portfolio trackers, watchlists, or any workflow that monitors a set of addresses.
+
+```bash
+# Fetch native balances for multiple addresses in one call (up to 20 addresses)
+curl --request GET \
+  --url 'https://api.etherscan.io/v2/api?chainid=1&module=account&action=balancemulti&address=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045,0xBE0eB53F46cd790Cd13851d5EFf43D12404d33E8&tag=latest&apikey=YOUR_API_KEY'
+```
+
+The `balancemulti` endpoint accepts a comma-separated list of up to 20 addresses and returns all balances in a single response, counting as a single API call.
+
+## Cache Responses Appropriately
+
+Not all data changes at the same rate. Cache aggressively where data is stable, and refresh only where it isn't:
+
+<Accordion title="Caching guidelines by data type">
+  | Data type | How often it changes | Suggested cache TTL |
+  |---|---|---|
+  | Current block number | Every ~12 seconds | 12–30 seconds |
+  | Account balance | Every new block | 30–60 seconds |
+  | Transaction history | New txs appear over time | 60 seconds for recent, longer for historical |
+  | Token holder list | Changes with each transfer | 5–15 minutes |
+  | Contract source code | Immutable once verified | Indefinitely |
+  | Contract ABI | Immutable once verified | Indefinitely |
+  | Label master list | Updated periodically | 24 hours |
+  | Address name tags | Updated periodically | 1–24 hours |
+  | Daily stats (dailytx, etc.) | Finalized daily | Until next day |
+</Accordion>
+
+Caching contract ABIs and source code indefinitely is safe — verified contract code on a deployed contract never changes. Caching balances and transaction lists for even 30–60 seconds can dramatically reduce your request count in a high-traffic application.
+
+## Handle Rate Limits with Exponential Backoff
+
+When you exceed your plan's rate limit, the API returns a `NOTOK` status with a `Max rate limit reached` message. Implement retry logic with exponential backoff so that transient rate-limit errors don't cause permanent failures.
+
+```javascript
+async function fetchWithBackoff(url, maxRetries = 5) {
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    const response = await fetch(url);
+    const data = await response.json();
+
+    // Success
+    if (data.status === "1") {
+      return data;
+    }
+
+    // Rate limit hit — back off and retry
+    if (data.result && data.result.includes("Max rate limit")) {
+      const delay = Math.min(1000 * Math.pow(2, attempt), 30000);
+      console.log(`Rate limited. Retrying in ${delay}ms...`);
+      await new Promise(resolve => setTimeout(resolve, delay));
+      continue;
+    }
+
+    // Other error — don't retry
+    throw new Error(`API error: ${data.result}`);
+  }
+
+  throw new Error("Max retries exceeded");
+}
+```
+
+<Tip>
+  Add jitter to your backoff delay (e.g., multiply by a random factor between 0.5 and 1.5) to avoid thundering-herd problems if multiple workers hit the limit simultaneously.
+</Tip>
+
+## Monitor Your API Usage
+
+Track your daily usage programmatically to detect approaching limits before they cause failures.
+
+```bash
+curl --request GET \
+  --url 'https://api.etherscan.io/v2/api?module=getapilimit&action=getapilimit&apikey=YOUR_API_KEY'
+```
+
+The response shows your daily call allowance and how many calls you've made today. You'll also receive an email reminder when you approach your plan's usage limit.
+
+<Info>
+  From the [API dashboard](https://etherscan.io/myapikey), you can view usage broken down by IP address and endpoint — useful for spotting unexpected usage patterns or identifying which parts of your integration make the most calls.
+</Info>

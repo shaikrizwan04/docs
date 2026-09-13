@@ -1,0 +1,178 @@
+---
+title: "Get Normal Transactions by Address with Pagination"
+sidebarTitle: "txlist"
+description: "Retrieve the normal (externally-initiated) transaction history for an address with pagination, block range filtering, and sort order control."
+---
+
+Use this endpoint to fetch the list of normal (externally-initiated) transactions sent to or from an address. The response includes transaction metadata such as hash, value, gas details, and execution status. You can filter by block range, paginate through large histories, and control sort order. For internal transactions triggered by smart contracts, see the [Internal Transactions](/api-reference/endpoint/txlistinternal) endpoint.
+
+<Tip>
+  Use `startblock` and `endblock` to narrow results to a specific time window, then combine `page` and `offset` to paginate through results without missing records.
+</Tip>
+
+## Parameters
+
+<ParamField query="chainid" type="string" required>
+  The chain ID to query. Use `1` for Ethereum mainnet, `137` for Polygon, `42161` for Arbitrum, or any chain from the [supported chains](/supported-chains) list.
+</ParamField>
+
+<ParamField query="module" type="string" required default="account">
+  Set to `account` for this endpoint.
+</ParamField>
+
+<ParamField query="action" type="string" required default="txlist">
+  Set to `txlist` for this endpoint.
+</ParamField>
+
+<ParamField query="address" type="string" required>
+  The address to query, for example `0xc5102fE9359FD9a28f877a67E36B0F050d81a3CC`.
+</ParamField>
+
+<ParamField query="startblock" type="integer" default="0">
+  Starting block number to search from. Defaults to `0` (genesis block).
+</ParamField>
+
+<ParamField query="endblock" type="integer" default="999999999">
+  Ending block number to search to. Defaults to `999999999`.
+</ParamField>
+
+<ParamField query="page" type="integer" default="1">
+  Page number for pagination. Starts at `1`.
+</ParamField>
+
+<ParamField query="offset" type="integer" default="10">
+  Number of records per page. Use with `page` to paginate through large result sets.
+</ParamField>
+
+<ParamField query="sort" type="string" default="asc">
+  Sort order. Use `asc` to return oldest transactions first, or `desc` to return the latest transactions first.
+</ParamField>
+
+<ParamField query="apikey" type="string" required>
+  Your Etherscan API key. [Set one up](/set-up-your-api-key) if you don't have one.
+</ParamField>
+
+## Response
+
+<ResponseField name="status" type="string">
+  `1` if the request returned data, `0` if an error occurred or no records were found.
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  `OK` on success. On error, contains a description such as `NOTOK`. See [common error messages](/common-error-messages).
+</ResponseField>
+
+<ResponseField name="result" type="array">
+  An array of transaction objects.
+
+  <Expandable title="result[]">
+    <ResponseField name="blockNumber" type="string">Block number in which the transaction was included.</ResponseField>
+    <ResponseField name="blockHash" type="string">Hash of the block containing the transaction.</ResponseField>
+    <ResponseField name="timeStamp" type="string">Time the block was mined, as a UNIX timestamp in seconds.</ResponseField>
+    <ResponseField name="hash" type="string">The transaction hash.</ResponseField>
+    <ResponseField name="nonce" type="string">Number of transactions sent from the sending address before this one.</ResponseField>
+    <ResponseField name="transactionIndex" type="string">Index position of the transaction within the block.</ResponseField>
+    <ResponseField name="from" type="string">Address that sent the transaction.</ResponseField>
+    <ResponseField name="to" type="string">Recipient address. Empty for contract-creation transactions.</ResponseField>
+    <ResponseField name="value" type="string">Amount of the native token transferred, in wei. Divide by `10^18` for the display value.</ResponseField>
+    <ResponseField name="gas" type="string">Maximum units of gas the sender allowed for the transaction.</ResponseField>
+    <ResponseField name="gasPrice" type="string">Price paid per unit of gas, in wei.</ResponseField>
+    <ResponseField name="input" type="string">Input data sent with the transaction, as a hex string.</ResponseField>
+    <ResponseField name="methodId" type="string">First four bytes of the input data, identifying the called function.</ResponseField>
+    <ResponseField name="functionName" type="string">Decoded function signature, when the target contract is verified on Etherscan.</ResponseField>
+    <ResponseField name="contractAddress" type="string">Address of the contract created, if the transaction deployed a contract. Otherwise empty.</ResponseField>
+    <ResponseField name="cumulativeGasUsed" type="string">Total gas used by all transactions up to and including this one in the block.</ResponseField>
+    <ResponseField name="txreceipt_status" type="string">Transaction receipt status. `1` for success, `0` for failure. Empty for pre-Byzantium blocks.</ResponseField>
+    <ResponseField name="gasUsed" type="string">Units of gas actually consumed by the transaction.</ResponseField>
+    <ResponseField name="confirmations" type="string">Number of blocks mined after the block containing this transaction.</ResponseField>
+    <ResponseField name="isError" type="string">`0` if the transaction executed successfully, `1` if it failed (e.g., reverted).</ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Example
+
+<CodeGroup>
+```bash cURL
+curl "https://api.etherscan.io/v2/api\
+?chainid=1\
+&module=account\
+&action=txlist\
+&address=0xc5102fE9359FD9a28f877a67E36B0F050d81a3CC\
+&startblock=0\
+&endblock=999999999\
+&page=1\
+&offset=10\
+&sort=desc\
+&apikey=YOUR_API_KEY"
+```
+
+```python Python
+import requests
+
+params = {
+    "chainid": "1",
+    "module": "account",
+    "action": "txlist",
+    "address": "0xc5102fE9359FD9a28f877a67E36B0F050d81a3CC",
+    "startblock": 0,
+    "endblock": 999999999,
+    "page": 1,
+    "offset": 10,
+    "sort": "desc",
+    "apikey": "YOUR_API_KEY",
+}
+
+response = requests.get("https://api.etherscan.io/v2/api", params=params)
+print(response.json())
+```
+
+```javascript JavaScript
+const params = new URLSearchParams({
+  chainid: "1",
+  module: "account",
+  action: "txlist",
+  address: "0xc5102fE9359FD9a28f877a67E36B0F050d81a3CC",
+  startblock: "0",
+  endblock: "999999999",
+  page: "1",
+  offset: "10",
+  sort: "desc",
+  apikey: "YOUR_API_KEY",
+});
+
+const response = await fetch(`https://api.etherscan.io/v2/api?${params}`);
+const data = await response.json();
+console.log(data);
+```
+</CodeGroup>
+
+```json Response
+{
+  "status": "1",
+  "message": "OK",
+  "result": [
+    {
+      "blockNumber": "23467053",
+      "blockHash": "0xf5646226f819fbdd6b2f1cb99de6e5d17da3d876ec166e69f4e9736c8ebf7ab4",
+      "timeStamp": "1759129619",
+      "hash": "0xf9db905d77704596d3600816bc70201586cfeec13bcf576320e2f38d6ca851a0",
+      "nonce": "8",
+      "transactionIndex": "184",
+      "from": "0x2449ecef5012f0a0e153b278ef4fcc9625bc4c78",
+      "to": "0xc5102fe9359fd9a28f877a67e36b0f050d81a3cc",
+      "value": "0",
+      "gas": "73271",
+      "gasPrice": "238744402",
+      "input": "0x5c19a95c0000000000000000000000002449ecef5012f0a0e153b278ef4fcc9625bc4c78",
+      "methodId": "0x5c19a95c",
+      "functionName": "delegate(address to)",
+      "contractAddress": "",
+      "cumulativeGasUsed": "22498564",
+      "txreceipt_status": "1",
+      "gasUsed": "48847",
+      "confirmations": "589",
+      "isError": "0"
+    }
+  ]
+}
+```

@@ -1,0 +1,113 @@
+---
+title: "Get Uncle Block by Number and Index"
+sidebarTitle: "eth_getUncleByBlockNumberAndIndex"
+description: "Returns information about an uncle block by its parent block number and uncle index position in the uncles list."
+---
+
+Uncle blocks (also called ommer blocks) are valid Proof-of-Work blocks that were mined at the same time as the canonical block but were not selected as the primary chain. This endpoint mirrors the standard `eth_getUncleByBlockNumberAndIndex` JSON-RPC method and returns the full uncle block object. Note that uncle blocks do not contain transaction lists.
+
+<Note>
+  This is a **Geth/Parity Proxy** endpoint that wraps the standard JSON-RPC interface. Uncle blocks are only relevant to the pre-Merge Proof-of-Work era; post-Merge blocks do not have uncles.
+</Note>
+
+## Parameters
+
+<ParamField query="chainid" type="string" required>
+  The chain to query. Use `1` for Ethereum mainnet. See [supported chains](/supported-chains) for a full list.
+</ParamField>
+
+<ParamField query="module" type="string" required default="proxy">
+  Set to `proxy`.
+</ParamField>
+
+<ParamField query="action" type="string" required default="eth_getUncleByBlockNumberAndIndex">
+  Set to `eth_getUncleByBlockNumberAndIndex`.
+</ParamField>
+
+<ParamField query="tag" type="string" required>
+  Hex-encoded block number of the block that contains the uncle, e.g. `0x29c`.
+</ParamField>
+
+<ParamField query="index" type="string" required>
+  Hex-encoded index of the uncle in the block's uncles list. The first uncle is `0x0`.
+</ParamField>
+
+<ParamField query="apikey" type="string" required>
+  Your Etherscan API key. [Get one here](/set-up-your-api-key).
+</ParamField>
+
+## Response
+
+<ResponseField name="jsonrpc" type="string">
+  JSON-RPC version. Always `"2.0"`.
+</ResponseField>
+
+<ResponseField name="id" type="integer">
+  Request ID echoed back.
+</ResponseField>
+
+<ResponseField name="result" type="object">
+  Uncle block object, or `null` if not found. Contains the standard block header fields (number, hash, parentHash, miner, difficulty, gasLimit, gasUsed, timestamp, etc.) but without a `transactions` array.
+</ResponseField>
+
+## Example
+
+<CodeGroup>
+```bash cURL
+curl "https://api.etherscan.io/v2/api\
+?chainid=1\
+&module=proxy\
+&action=eth_getUncleByBlockNumberAndIndex\
+&tag=0x29c\
+&index=0x0\
+&apikey=YOUR_API_KEY"
+```
+
+```javascript JavaScript
+const params = new URLSearchParams({
+  chainid: "1",
+  module: "proxy",
+  action: "eth_getUncleByBlockNumberAndIndex",
+  tag: "0x29c",
+  index: "0x0",
+  apikey: "YOUR_API_KEY",
+});
+
+const res = await fetch(`https://api.etherscan.io/v2/api?${params}`);
+const data = await res.json();
+console.log(data.result);
+```
+
+```python Python
+import requests
+
+params = {
+    "chainid": "1",
+    "module": "proxy",
+    "action": "eth_getUncleByBlockNumberAndIndex",
+    "tag": "0x29c",
+    "index": "0x0",
+    "apikey": "YOUR_API_KEY",
+}
+
+r = requests.get("https://api.etherscan.io/v2/api", params=params)
+print(r.json()["result"])
+```
+</CodeGroup>
+
+```json Example Response (truncated)
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "difficulty": "0x57f117f5c",
+    "extraData": "0x476574682f76312e302e302f77696e646f77732f676f312e342e32",
+    "gasLimit": "0x1388",
+    "gasUsed": "0x0",
+    "hash": "0x932bdf904546a2287a2c9b2ede37925f698a7657484b172d4e5184f80bdd464d",
+    "miner": "0xf8b483dba2c3b7176a3da549ad41a48bb3121069",
+    "number": "0x29b",
+    "timestamp": "0x55ba4827"
+  }
+}
+```

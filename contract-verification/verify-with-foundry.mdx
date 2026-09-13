@@ -1,0 +1,119 @@
+---
+title: "Verify and Publish Contracts on Etherscan with Foundry"
+sidebarTitle: "Verify with Foundry"
+description: "Use forge verify-contract or verify at deploy time with forge create to publish your contract source on Etherscan across any supported chain."
+---
+
+Foundry's `forge` CLI integrates directly with Etherscan, letting you verify contracts at the time of deployment or after the fact with a single command. Whether you're targeting Ethereum mainnet, a popular L2, or a newer chain with a custom explorer, Foundry handles the submission and polls for the result automatically.
+
+<Info>
+  Make sure you're running the latest version of Foundry before you start. Run `foundryup` to update.
+</Info>
+
+## Prerequisites
+
+Before verifying, you need:
+
+- A [Foundry project](https://getfoundry.sh/guides/project-setup/creating-a-new-project) with your contract compiled
+- An [Etherscan API key](https://etherscan.io/myapikey)
+- The contract address if you're verifying an already-deployed contract
+
+## Deploy and verify in one step
+
+Pass `--verify` to `forge create` to deploy and verify in a single command. Foundry submits the source to Etherscan immediately after the deployment transaction confirms.
+
+```bash
+forge create \
+  --broadcast \
+  --rpc-url https://rpc.sepolia.ethpandaops.io \
+  --private-key YourPrivateKey \
+  src/ContractFile.sol:ContractName \
+  --verify \
+  --verifier etherscan \
+  --etherscan-api-key YourApiKeyToken
+```
+
+<Warning>
+  Never hard-code your private key in scripts or commit it to version control. Use an environment variable such as `$PRIVATE_KEY` or a hardware wallet integration instead.
+</Warning>
+
+## Verify an existing contract
+
+If the contract is already deployed, use `forge verify-contract` with the contract address and source path. The `--watch` flag tells Foundry to poll until verification completes.
+
+```bash
+forge verify-contract \
+  --watch \
+  --chain sepolia \
+  0x324eca20b358b18e48f2611f7452560ce3b3c1bb \
+  src/ContractFile.sol:ContractName \
+  --verifier etherscan \
+  --etherscan-api-key YourApiKeyToken
+```
+
+## Configure Etherscan in foundry.toml
+
+Rather than passing `--etherscan-api-key` on every command, store your API key in `foundry.toml`. You can define separate keys for different networks.
+
+```toml
+[profile.default]
+src = "src"
+out = "out"
+libs = ["lib"]
+
+[etherscan]
+mainnet = { key = "${ETHERSCAN_API_KEY}" }
+sepolia = { key = "${ETHERSCAN_API_KEY}" }
+arbitrum = { key = "${ETHERSCAN_API_KEY}", chain = 42161 }
+optimism  = { key = "${ETHERSCAN_API_KEY}", chain = 10 }
+```
+
+<Tip>
+  Store the key value as an environment variable (e.g. `ETHERSCAN_API_KEY`) and reference it with the `${}` syntax. Foundry reads it at runtime so the key never appears in your config file.
+</Tip>
+
+With the `[etherscan]` block in place, you can omit `--etherscan-api-key` from the command line:
+
+```bash
+forge verify-contract \
+  --watch \
+  --chain sepolia \
+  0x324eca20b358b18e48f2611f7452560ce3b3c1bb \
+  src/ContractFile.sol:ContractName \
+  --verifier etherscan
+```
+
+## Verify on custom or newer chains
+
+Most chains with an Etherscan explorer are supported via the `--chain` flag. For very new chains that Foundry doesn't yet recognize natively, pass a `--verifier-url` pointing to the Etherscan V2 API with the correct `chainid`.
+
+The example below verifies on Stable Testnet (chain ID `2201`):
+
+```bash
+forge verify-contract \
+  0x324eca20b358b18e48f2611f7452560ce3b3c1bb \
+  src/ContractFile.sol:ContractName \
+  --verifier etherscan \
+  --verifier-url "https://api.etherscan.io/v2/api?chainid=2201" \
+  --etherscan-api-key YourEtherscanApiKey \
+  --watch
+```
+
+<Note>
+  The `--verifier-url` value must end with `?chainid=<id>`. Foundry appends the remaining query parameters automatically. See [Supported Chains](/supported-chains) for all available chain IDs.
+</Note>
+
+## Troubleshooting
+
+If verification fails, check the following:
+
+- The compiler version in your Foundry profile matches the version used to deploy
+- Optimizer settings (`optimizer`, `optimizer_runs`) in `foundry.toml` match what was used at deployment
+- The contract path and name (`src/ContractFile.sol:ContractName`) are correct
+- Constructor arguments were passed if the contract requires them (use `--constructor-args`)
+
+See [Common Verification Errors](/contract-verification/common-verification-errors) for a full list of error messages and fixes.
+
+---
+
+*This open-source integration was built by [@iainnash](https://github.com/iainnash) and the Foundry team.*

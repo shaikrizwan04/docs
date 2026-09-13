@@ -1,0 +1,133 @@
+---
+title: "Set Up Your Etherscan API Key (Free & Paid)"
+sidebarTitle: "API Key Setup"
+description: "Register a free Etherscan account, create an API key in minutes, and authenticate every request across all 60+ supported EVM chains."
+---
+
+Every request to the Etherscan API requires an API key. The key is free to create, takes less than a minute to set up, and works across all 60+ supported EVM chains with a single credential — no per-chain keys required. Follow the steps below to register your account, generate your key, and start making authenticated requests.
+
+<Steps>
+  <Step title="Register an Etherscan account">
+    Sign up for a free account at [etherscan.io/register](https://etherscan.io/register). You only need an email address and a password. Verify your email when the confirmation message arrives.
+  </Step>
+
+  <Step title="Create your API key">
+    Open your [API key dashboard](https://etherscan.io/myapikey), then select **Add** to create a new key. Give the key a descriptive name (for example, `my-app-prod`) so you can identify it later, then copy the key string and store it somewhere safe — a password manager or secrets manager works well.
+
+    <Note>
+      You can create multiple API keys under a single Etherscan account. All keys share the same daily call quota for your plan, so distributing keys across projects does **not** multiply your rate limits.
+    </Note>
+  </Step>
+
+  <Step title="Add the key to your requests">
+    Pass your key as the `apikey` query parameter on every API call:
+
+    ```bash
+    https://api.etherscan.io/v2/api?chainid=1&module=account&action=balance&address=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045&tag=latest&apikey=YOUR_API_KEY
+    ```
+
+    Replace `YOUR_API_KEY` with the key string you copied from the dashboard. The `chainid` parameter selects which chain to query — `1` is Ethereum mainnet. See [Supported Chains](/supported-chains) for a full list of chain IDs.
+  </Step>
+</Steps>
+
+## API key format
+
+An Etherscan API key is a 34-character alphanumeric string that looks like this:
+
+```text
+YourApiKeyToken
+```
+
+In practice it resembles:
+
+```text
+ABC123XYZ456DEF789GHI012JKL345MNO6
+```
+
+<Tip>
+  Your key works across every chain the Etherscan API supports — Ethereum, Base, Arbitrum, Optimism, Polygon, BNB Smart Chain, and 55+ more. You never need a separate key for a different chain; just change the `chainid` parameter.
+</Tip>
+
+## Free plan limits
+
+A free API key gives you **3 calls per second** and up to **100,000 calls per day**, cumulative across all keys on your account. The free tier covers the majority of supported chains and all community endpoints. [Paid plans](https://etherscan.io/api/pricing) raise the rate limit ceiling, unlock every supported chain, and — starting from the Standard tier — add access to PRO endpoints.
+
+| Feature                 | Free Plan        |
+| ----------------------- | ---------------- |
+| Calls per second        | 3                |
+| Calls per day           | 100,000          |
+| Chains available        | Selected (~90%)  |
+| PRO endpoints           | Not available    |
+
+See [Rate Limits](/rate-limits) for a full breakdown of every plan tier.
+
+## Keep your key secure
+
+Your key counts against your plan's rate limits, so treat it like a password.
+
+<Warning>
+  Never commit your API key to a public repository or ship it in client-side code (browser JavaScript, mobile apps). Always route Etherscan API calls through your own backend server.
+</Warning>
+
+- Store keys in environment variables or a dedicated secrets manager, not in source files.
+- If a key leaks, go to your [API key dashboard](https://etherscan.io/myapikey), delete the exposed key, and create a replacement immediately.
+
+## Example authenticated request
+
+The following request fetches the ETH balance of a well-known address on Ethereum mainnet:
+
+<CodeGroup>
+
+```bash cURL
+curl --request GET \
+  --url 'https://api.etherscan.io/v2/api?chainid=1&module=account&action=balance&address=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045&tag=latest&apikey=YOUR_API_KEY'
+```
+
+```python Python
+import requests
+
+params = {
+    "chainid": 1,
+    "module": "account",
+    "action": "balance",
+    "address": "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
+    "tag": "latest",
+    "apikey": "YOUR_API_KEY",
+}
+
+response = requests.get("https://api.etherscan.io/v2/api", params=params)
+print(response.json())
+```
+
+```javascript JavaScript
+const params = new URLSearchParams({
+  chainid: "1",
+  module: "account",
+  action: "balance",
+  address: "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
+  tag: "latest",
+  apikey: "YOUR_API_KEY",
+});
+
+const res = await fetch(`https://api.etherscan.io/v2/api?${params}`);
+const data = await res.json();
+console.log(data);
+```
+
+</CodeGroup>
+
+A successful response looks like:
+
+```json
+{
+  "status": "1",
+  "message": "OK",
+  "result": "172774397764084972158218"
+}
+```
+
+Ready to go deeper? Continue to the next guide to understand the full query structure and response format.
+
+<Card title="Make Your First Call" icon="rocket" href="/make-your-first-call" horizontal>
+  Walk through the API base URL, query parameters, and response fields step by step.
+</Card>

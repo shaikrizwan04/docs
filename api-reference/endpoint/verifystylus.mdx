@@ -1,0 +1,149 @@
+---
+title: "Verify Stylus Smart Contract Source Code"
+sidebarTitle: "Verify Stylus"
+description: "Submit a Stylus smart contract's public Git repository for verification on Arbitrum One or Arbitrum Sepolia via the Etherscan API."
+---
+
+Use this endpoint to verify a Stylus contract deployed on Arbitrum. Unlike Solidity or Vyper verification, Stylus verification requires pointing to a publicly accessible Git repository that contains the source code — the API fetches and builds the project from source. After submission, poll [checkverifystatus](/api-reference/endpoint/checkverifystatus) with the returned GUID to confirm the result.
+
+<Note>
+  Stylus verification is currently available on **Arbitrum One** (`chainid=42161`) and **Arbitrum Sepolia Testnet** only.
+</Note>
+
+## Query Parameters
+
+<ParamField query="chainid" type="string" required>
+  The chain ID for Arbitrum. Use `42161` for Arbitrum One mainnet. See [supported chains](/supported-chains).
+</ParamField>
+
+<ParamField query="module" type="string" required default="contract">
+  Set to `contract` for this endpoint.
+</ParamField>
+
+<ParamField query="action" type="string" required default="verifysourcecode">
+  Set to `verifysourcecode` for this endpoint.
+</ParamField>
+
+<ParamField query="apikey" type="string" required>
+  Your Etherscan API key. [Set one up](/set-up-your-api-key) if you don't have one.
+</ParamField>
+
+## Request Body
+
+Send the following fields as `application/x-www-form-urlencoded`.
+
+<ParamField body="contractaddress" type="string" required>
+  The address where the Stylus contract is deployed.
+</ParamField>
+
+<ParamField body="sourceCode" type="string" required>
+  URL of the public Git repository containing the Stylus source code. Example: `https://github.com/OffchainLabs/stylus-hello-world`.
+</ParamField>
+
+<ParamField body="codeformat" type="string" required>
+  Set to `stylus` for Stylus contracts.
+</ParamField>
+
+<ParamField body="contractname" type="string" required>
+  The contract name that matches your Stylus deployment. Example: `stylus_hello_world`.
+</ParamField>
+
+<ParamField body="compilerversion" type="string" required>
+  The Stylus compiler version used. Example: `stylus:0.5.3`.
+</ParamField>
+
+<ParamField body="licenseType" type="integer">
+  Numeric license type identifier. Example: `3` for MIT. See [license options](https://arbiscan.io/contract-license-types).
+</ParamField>
+
+## Response Fields
+
+<ResponseField name="status" type="string">
+  `1` if the request was accepted, `0` if it failed.
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  `OK` on success, or an error description such as `NOTOK`.
+</ResponseField>
+
+<ResponseField name="result" type="string">
+  A GUID string for the verification submission. Poll [checkverifystatus](/api-reference/endpoint/checkverifystatus) with this GUID to track the result.
+</ResponseField>
+
+## Example
+
+<CodeGroup>
+```bash cURL
+curl -X POST "https://api.etherscan.io/v2/api\
+?chainid=42161\
+&module=contract\
+&action=verifysourcecode\
+&apikey=YOUR_API_KEY" \
+-d "contractaddress=0xdAC17F958D2ee523a2206206994597C13D831ec7" \
+-d "sourceCode=https://github.com/OffchainLabs/stylus-hello-world" \
+-d "codeformat=stylus" \
+-d "contractname=stylus_hello_world" \
+-d "compilerversion=stylus:0.5.3" \
+-d "licenseType=3"
+```
+
+```javascript JavaScript
+const params = new URLSearchParams({
+  chainid: "42161",
+  module: "contract",
+  action: "verifysourcecode",
+  apikey: "YOUR_API_KEY",
+});
+
+const body = new URLSearchParams({
+  contractaddress: "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+  sourceCode: "https://github.com/OffchainLabs/stylus-hello-world",
+  codeformat: "stylus",
+  contractname: "stylus_hello_world",
+  compilerversion: "stylus:0.5.3",
+  licenseType: "3",
+});
+
+const response = await fetch(
+  `https://api.etherscan.io/v2/api?${params}`,
+  { method: "POST", body }
+);
+const data = await response.json();
+console.log("Verification GUID:", data.result);
+```
+
+```python Python
+import requests
+
+params = {
+    "chainid": "42161",
+    "module": "contract",
+    "action": "verifysourcecode",
+    "apikey": "YOUR_API_KEY",
+}
+
+payload = {
+    "contractaddress": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+    "sourceCode": "https://github.com/OffchainLabs/stylus-hello-world",
+    "codeformat": "stylus",
+    "contractname": "stylus_hello_world",
+    "compilerversion": "stylus:0.5.3",
+    "licenseType": 3,
+}
+
+response = requests.post(
+    "https://api.etherscan.io/v2/api",
+    params=params,
+    data=payload
+)
+print("Verification GUID:", response.json()["result"])
+```
+</CodeGroup>
+
+```json Example Response
+{
+  "status": "1",
+  "message": "OK",
+  "result": "a7lpxkm9kpcpicx7daftmjifrfhiuhf5vqqnawhkfhzfrcpnxj"
+}
+```

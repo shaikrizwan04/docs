@@ -1,0 +1,108 @@
+---
+title: "Etherscan Orchestrator: Route Any Onchain Task Correctly"
+sidebarTitle: "Orchestrator"
+description: "Install the Etherscan Orchestrator skill to let your AI agent pick the right Etherscan interface for any onchain task — website, API, CLI, or MCP."
+---
+
+The Etherscan Orchestrator is an installable agent skill that teaches your AI agent how to pick the right Etherscan interface for any task. When you describe a task in plain language, the skill figures out whether to use the [Etherscan explorer website](https://etherscan.io), the [API](/endpoint-overview), the [CLI](/build-with-ai/cli), or the [MCP server](/build-with-ai/mcp) — then constructs a correct, authenticated request for that interface. It also routes to a specialized skill (such as [Etherscan Flow](/build-with-ai/skills/etherscan-flow)) when a dedicated workflow fits the task better.
+
+## Get started
+
+<Steps>
+  <Step title="Install the skill">
+    <Tabs>
+      <Tab title="Claude Code CLI / Codex CLI">
+        Add the skill with the [skills.sh](https://skills.sh) CLI. The `-g` flag installs it globally (user-level, available in every project) and `-a '*'` installs it for every configured agent:
+
+        ```bash
+        npx skills add https://github.com/etherscan/skills --skill etherscan -g -a '*' -y
+        ```
+
+        Or clone the repository and copy the folder into your agent's skills directory manually:
+
+        ```bash
+        git clone https://github.com/etherscan/skills.git etherscan-skills
+        cp -r etherscan-skills/skills/etherscan ~/.claude/skills/
+        ```
+      </Tab>
+
+      <Tab title="Claude Desktop">
+        Claude Desktop installs a skill from a ZIP file you upload. The ZIP must contain exactly one `SKILL.md` file.
+
+        1. Download the [Etherscan skills repo](https://github.com/etherscan/skills/archive/refs/heads/main.zip), unzip it, and compress just the `skills-main/skills/etherscan` folder into `etherscan.zip`:
+
+           ```
+           skills-main/
+           └── skills/
+               ├── etherscan/               ← zip this folder
+               ├── etherscan-contract-review/
+               ├── etherscan-flow/
+               └── etherscan-transaction-debugger/
+           ```
+
+        2. In Claude Desktop, go to **Settings > Skills > Add > Upload a skill** and select `etherscan.zip`.
+
+        3. The Etherscan Orchestrator skill is now active and ready to use.
+      </Tab>
+    </Tabs>
+  </Step>
+
+  <Step title="Ask your first question">
+    Describe the task in plain language. Include `use etherscan skill` to make sure the agent activates it:
+
+    ```text
+    Get all ERC-20 transfers for 0x9fC3dc011b461664c835F2527fffb1169b3C213e
+    and save them as CSV. use etherscan skill
+    ```
+
+    The skill confirms the chain, then routes to whichever interface you have connected — CLI, MCP, or API — and constructs the request to spec.
+  </Step>
+</Steps>
+
+## More prompts to try
+
+Describe any onchain task in plain language and let the skill pick the right interface:
+
+```text
+Build a wallet snapshot for 0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045 on Ethereum
+and Arbitrum: native balance, top token holdings, and the 10 most recent transactions.
+```
+
+```text
+Is 0xdAC17F958D2ee523a2206206994597C13D831ec7 verified? Summarize what the contract
+does and who deployed it.
+```
+
+```text
+Who are the top 10 holders of USDT (0xdAC17F958D2ee523a2206206994597C13D831ec7),
+and what share does each hold?
+```
+
+```text
+Trace transaction 0x<hash>: show its internal transfers and whether it succeeded.
+```
+
+```text
+Resolve vitalik.eth, show its balance, and include any name tags or labels
+Etherscan has for it.
+```
+
+## How the skill routes tasks
+
+The Orchestrator guides the agent through a task step by step rather than letting it guess:
+
+1. **Routes to a specialized skill when one fits.** For a dedicated workflow like tracing money flows, it hands off to that skill; otherwise it handles the routing itself.
+2. **Clarifies the request.** It confirms the target chain and chain ID, the address or transaction, and the actual intent.
+3. **Discovers what is available.** It runs read-only checks for an installed CLI (and its version) and a connected MCP client, then tells you what it found.
+4. **Selects the interface** best suited to the task, then constructs the request per Etherscan's documented specification, respecting authentication, plan, and rate limits.
+
+| Interface | Best for |
+|---|---|
+| Website | Explorer pages, user-facing tools, exports, token approvals, contract utilities |
+| API | Selecting endpoints, constructing requests, interpreting responses |
+| CLI | Terminal commands, automation, and structured output |
+| MCP | Agent-driven, read-only tool calls |
+
+<Note>
+  The skill never prints your API key and always asks for explicit approval before any state-changing action.
+</Note>

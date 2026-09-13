@@ -1,0 +1,198 @@
+---
+title: "Common Contract Verification Errors and How to Fix Them"
+sidebarTitle: "Verification Errors"
+description: "Diagnose and fix common Etherscan contract verification errors including bytecode mismatch, compiler issues, and invalid constructor arguments."
+---
+
+Contract verification fails when the source code and settings you submit don't reproduce the exact bytecode that was deployed on chain. Most errors come from a single mismatch — the wrong compiler version, a different optimization setting, or a missing constructor argument. The errors below cover every common failure, what causes it, and how to fix it.
+
+<Accordion title='Bytecode does not match — "Compiled contract deployment bytecode does NOT match the transaction deployment bytecode"'>
+
+**What causes it**
+
+The source code or compiler settings you submitted do not reproduce the same bytecode that was deployed on chain. This is the most common verification error and can come from any mismatch between what was deployed and what you submitted.
+
+**How to fix it**
+
+Check each of the following against your actual deployment:
+
+- **Compiler version** — Use the exact version string, including the commit hash, such as `v0.8.28+commit.7893614a`. Check the [supported versions list](https://etherscan.io/solcversions).
+- **Optimization settings** — Whether the optimizer was enabled and the number of runs must match exactly. Even switching from disabled to enabled with 200 runs produces different bytecode.
+- **EVM version** — If you set a non-default EVM target (for example `paris` or `london`), specify the same value during verification.
+- **Source files** — Make sure all imported files are included. Use Standard JSON input (`solidity-standard-json-input`) for contracts with external imports to avoid missing dependency errors.
+
+The safest approach is to use the Standard JSON input produced directly by your build tool (Hardhat, Foundry, etc.) — it captures every setting automatically.
+
+</Accordion>
+
+<Accordion title='Compilation error — "Solidity Compilation Error: Identifier not found or not unique"'>
+
+**What causes it**
+
+The Solidity source you submitted has a syntax or scoping error that prevents it from compiling. This may mean an import is missing, the wrong file was uploaded, or the source was modified after deployment.
+
+**How to fix it**
+
+1. Copy the source code from your verification submission into [Remix](https://remix.ethereum.org/) or your local Hardhat/Foundry project and attempt to compile it.
+2. Fix any compilation errors that appear.
+3. Compare the fixed source to your original deployment — if the content changed, the bytecode will no longer match. You may need to verify using the original source.
+
+Refer to the [Solidity documentation](https://docs.soliditylang.org) for detailed explanations of specific compiler errors.
+
+</Accordion>
+
+<Accordion title='Contract not found — "Unable to locate ContractCode at 0x..."'>
+
+**What causes it**
+
+No contract bytecode was found at the address you specified on the selected chain. This happens when the deployment transaction hasn't been picked up yet, when the wrong address was entered, or when the wrong chain was selected.
+
+**How to fix it**
+
+- Confirm the contract address on the explorer for the correct chain.
+- Check that the deployment transaction succeeded (not reverted).
+- Verify that you've selected the correct `chainid` — a contract deployed on Sepolia will not appear on Ethereum mainnet.
+- If the chain is under high load, Etherscan typically picks up new deployments within a few blocks. Wait a couple of minutes and retry.
+
+If the deployment is confirmed on-chain but the error persists, [contact support](/resources/contact-us) with the transaction hash.
+
+</Accordion>
+
+<Accordion title='Missing library — "Library was required but suitable match not found"'>
+
+**What causes it**
+
+Your contract uses a [Solidity library](https://solidity-by-example.org/library/) that was linked at deployment, but the library name or address was not provided during verification (or was entered incorrectly).
+
+**How to fix it**
+
+- Provide the exact library name and its deployed address during verification. Library names are **case-sensitive** (for example, `PRBMath` is different from `prbmath`).
+- Double-check the library address against the deployment transaction.
+- If you used multiple libraries, provide all of them.
+
+</Accordion>
+
+<Accordion title='Wrong contract name — "Unable to locate ContractName, did you specify the correct Contract Name?"'>
+
+**What causes it**
+
+When you submit multiple files, Etherscan uses the `contractname` field to identify which contract in the source to verify against. If the name doesn't match any contract in the submitted source, verification fails.
+
+**How to fix it**
+
+- Provide the name of the **main contract**, not one of its dependencies or interfaces.
+- For multi-file or Standard JSON submissions, use the full path format: `contracts/MyToken.sol:MyToken`.
+- Check for typos — the name must match the `contract` definition exactly, including capitalisation.
+
+</Accordion>
+
+<Accordion title='Invalid constructor arguments — "Please check if the correct constructor argument was entered"'>
+
+**What causes it**
+
+Your contract's constructor received arguments when it was deployed, but the ABI-encoded arguments you submitted during verification are missing, malformed, or incorrect.
+
+**How to fix it**
+
+- Retrieve the constructor arguments from your original deployment transaction. They appear at the end of the input data on the transaction's page in the explorer.
+- The arguments must be in ABI-encoded hex format (without the `0x` prefix).
+- If your contract has no constructor arguments, leave the field empty rather than submitting a zero value.
+
+For help determining the correct encoding, see [Etherscan's constructor arguments guide](https://info.etherscan.com/contract-verification-constructor-arguments/).
+
+</Accordion>
+
+<Accordion title='Metadata hash mismatch — "Please check if the correct bytecodehash was specified via standard-json verification"'>
+
+**What causes it**
+
+The [bytecode metadata hash](https://docs.soliditylang.org/en/v0.8.17/metadata.html#encoding-of-the-metadata-hash-in-the-bytecode) embedded in your submitted source differs from the one in the deployed bytecode. This usually happens when the metadata hash setting (`ipfs`, `bzzr1`, or `none`) was set differently at deployment.
+
+**How to fix it**
+
+Use Standard JSON input (`solidity-standard-json-input`) format for verification and set the `bytecodeHash` in the `settings.metadata` object to match the value used at deployment:
+
+```json
+{
+  "settings": {
+    "metadata": {
+      "bytecodeHash": "ipfs"
+    }
+  }
+}
+```
+
+<Note>
+  Single-file and multi-file submission formats do not support changing the metadata hash setting — they always use the compiler default. Standard JSON input is required to match a non-default value.
+</Note>
+
+</Accordion>
+
+<Accordion title='Similar match — "This contract already Similar Matches the deployed ByteCode at 0x..."'>
+
+**What causes it**
+
+The contract has already been verified through [Similar Match](https://info.etherscan.com/types-of-contract-verification/) — a mechanism that links contracts with identical bytecode to an existing verified source. This is not an error in the traditional sense, but it means full source attribution hasn't been applied.
+
+**How to fix it**
+
+If you need a Full Match (your own source code displayed rather than the similar match), [contact the Etherscan team](https://info.etherscan.com/update-on-similar-match-contract-verification/) and provide the deployment details.
+
+</Accordion>
+
+<Accordion title='Unsupported compiler version — "Invalid or not supported solc version"'>
+
+**What causes it**
+
+The compiler version you specified is either invalid or below the minimum supported version (`v0.4.11-nightly.2017.3.15+`).
+
+**How to fix it**
+
+Use a version from the [supported Solidity versions list](https://etherscan.io/solcversions). Make sure the version string is formatted correctly, including the `v` prefix and commit hash.
+
+If you need to verify a contract compiled below the minimum supported version, [contact support](/resources/contact-us).
+
+</Accordion>
+
+<Accordion title='Already verified — "Source code already verified"'>
+
+**What causes it**
+
+An Exact Match already exists for this contract address. The contract is fully verified.
+
+**How to fix it**
+
+Nothing — verification is already complete. The green checkmark will appear on the Contract tab of the contract's explorer page.
+
+<Warning>
+  If you believe this is a mistake, check that you're looking at the correct chain. A contract verified on Ethereum mainnet is **not** automatically verified on other chains. Repeat verification with the correct `chainid` for each network.
+</Warning>
+
+</Accordion>
+
+<Accordion title='Unsupported file import — "Source @openzeppelin/contracts/ERC20.sol not found: File import callback not supported"'>
+
+**What causes it**
+
+The submitted source references external imports (such as OpenZeppelin packages or GitHub URLs) that the verification backend cannot resolve. This happens when you submit a single file that still contains `import` statements pointing to external packages.
+
+**How to fix it**
+
+Choose one of the following approaches:
+
+- **Flatten the source** — Combine all files into a single `.sol` file with no external imports. Hardhat provides a `flatten` command: `npx hardhat flatten contracts/MyToken.sol > MyToken.flat.sol`.
+- **Use Standard JSON input** — Generate the Standard JSON input from your build tool (Hardhat or Foundry) and submit it using `codeformat=solidity-standard-json-input`. The JSON includes all source files and resolves imports automatically.
+
+</Accordion>
+
+<Accordion title='Temporary error — "This could be a temporary error, please retry or contact us (Error Code 10001/10002/10003)"'>
+
+**What causes it**
+
+Something went wrong on Etherscan's infrastructure — this could include a service outage, a maintenance window, or a transient backend error.
+
+**How to fix it**
+
+Wait a few minutes and resubmit. Check the [Etherscan status page](https://status.etherscan.io/) for any active incidents. If the error persists after retrying, [contact support](/resources/contact-us) with the error code and your submission details.
+
+</Accordion>

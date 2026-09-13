@@ -1,0 +1,66 @@
+---
+title: "Contact Etherscan Support and Official Channels"
+sidebarTitle: "Contact Us"
+description: "Reach Etherscan support via the official contact form, follow updates on X, and check the status page — plus what to include in your support request."
+---
+
+If you've worked through the [API status page](/api-status) and [common error messages](/common-error-messages) and still need help, the Etherscan team is reachable through a few official channels. This page covers how to reach support, what to include in your request to get a faster resolution, and how to stay informed about service updates.
+
+<Warning>
+  Beware of phishing attempts and messages impersonating the Etherscan team. Etherscan only communicates from **@etherscan.io** email addresses and the official channels listed on this page. Do not share your API key or account credentials with anyone claiming to be from Etherscan through an unofficial channel.
+</Warning>
+
+## Support Tickets
+
+The primary way to get help with API issues, account questions, billing, and anything not covered by the documentation is to submit a support ticket.
+
+<Info>
+  Submit a support request through the official **[Etherscan contact form](https://etherscan.io/contactus)**.
+</Info>
+
+All support email responses come from an **@etherscan.io** address. If you receive a reply from any other domain, treat it as fraudulent.
+
+### What to Include in Your Request
+
+A well-scoped support request gets resolved faster. Include the following when reporting an API issue:
+
+<Steps>
+  <Step title="Describe the problem clearly">
+    Explain what you expected to happen and what actually happened. Include the error message from the `result` field of the API response.
+  </Step>
+  <Step title="Provide the failing request">
+    Include the full request URL with your API key replaced by a placeholder — for example, `apikey=REDACTED`. This lets the support team reproduce the issue immediately.
+
+    ```
+    https://api.etherscan.io/v2/api?chainid=1&module=account&action=txlist&address=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045&apikey=REDACTED
+    ```
+  </Step>
+  <Step title="Include the full response body">
+    Paste the complete JSON response, including the `status`, `message`, and `result` fields. This gives the support team the full context without needing to ask follow-up questions.
+  </Step>
+  <Step title="Note your plan and chain">
+    Mention which API plan you're on and the `chainid` you're querying. Some errors are plan- or chain-specific and can be resolved immediately with this context.
+  </Step>
+</Steps>
+
+<Note>
+  Etherscan is a block explorer and data API service — the team **cannot cancel, refund, or reverse blockchain transactions**. If your question is about a specific transaction rather than the API itself, visit the [Etherscan Information Center](https://info.etherscan.com/) for general blockchain help.
+</Note>
+
+## Follow Etherscan on X
+
+For product updates, new feature announcements, and community discussion, follow Etherscan's official account on X.
+
+<Info>
+  Follow **[@etherscan](https://twitter.com/etherscan)** on X for updates and announcements.
+</Info>
+
+## Service Status
+
+For announcements about ongoing incidents, scheduled maintenance, and service disruptions that may affect the API:
+
+<Info>
+  Check the **[Etherscan status page](https://status.etherscan.io/)** for live uptime and incident history.
+</Info>
+
+The status page is the fastest way to confirm whether an API issue is a known service incident — check it before submitting a support ticket for unexpected failures.

@@ -1,0 +1,173 @@
+---
+title: "Endpoints Behind an Etherscan Token Page"
+sidebarTitle: "Token Page"
+description: "Discover the Etherscan API endpoints that power every section of a token page, from supply and holders to transfers and contract data."
+---
+
+Every token page on etherscan.io — like the page for [USDT](https://etherscan.io/token/0xdac17f958d2ee523a2206206994597c13d831ec7) — pulls together data from multiple API modules. The supply figure, holder count, transfer history, price, and verified contract all come from distinct endpoints you can call independently. This guide maps each section of the token page to the exact endpoint behind it, so you can integrate any of these data points directly into your application. All endpoints accept a `chainid` parameter to target any of the 60+ supported chains with the same API key.
+
+<Tip>
+  Endpoints marked **PRO** require a Standard plan or above. Token supply and transfer endpoints are available on the Free tier.
+</Tip>
+
+## Page Sections and Their Endpoints
+
+<Accordion title="Max Total Supply">
+  The total supply figure shown at the top of a token page reflects the current (or historical) circulating supply of the ERC-20 token.
+
+  **Endpoints:**
+  - [`GET /stats/tokensupply`](/api-reference/endpoint/tokensupply) — Current total supply
+  - [`GET /stats/tokensupplyhistory`](/api-reference/endpoint/tokensupplyhistory) — Historical supply at a specific block (**PRO**)
+
+  <CodeGroup>
+  ```http Current Supply
+  GET https://api.etherscan.io/v2/api
+    ?chainid=1
+    &module=stats
+    &action=tokensupply
+    &contractaddress=0xdAC17F958D2ee523a2206206994597C13D831ec7
+    &apikey=YOUR_API_KEY
+  ```
+
+  ```http Historical Supply (PRO)
+  GET https://api.etherscan.io/v2/api
+    ?chainid=1
+    &module=stats
+    &action=tokensupplyhistory
+    &contractaddress=0xdAC17F958D2ee523a2206206994597C13D831ec7
+    &blockno=17000000
+    &apikey=YOUR_API_KEY
+  ```
+  </CodeGroup>
+
+  The value returned is in the token's smallest unit (similar to wei for ETH). Divide by `10^decimals` to get the human-readable supply.
+</Accordion>
+
+<Accordion title="Holders">
+  The holder count and holder list shown on the token page are powered by three related endpoints.
+
+  **Endpoints:**
+  - [`GET /token/tokenholdercount`](/api-reference/endpoint/tokenholdercount) — Total number of token holders (**PRO**)
+  - [`GET /token/topholders`](/api-reference/endpoint/topholders) — Top holders by balance (**PRO**)
+  - [`GET /token/tokenholderlist`](/api-reference/endpoint/tokenholderlist) — Full paginated holder list (**PRO**)
+
+  <CodeGroup>
+  ```http Holder Count (PRO)
+  GET https://api.etherscan.io/v2/api
+    ?chainid=1
+    &module=token
+    &action=tokenholdercount
+    &contractaddress=0xdAC17F958D2ee523a2206206994597C13D831ec7
+    &apikey=YOUR_API_KEY
+  ```
+
+  ```http Top Holders (PRO)
+  GET https://api.etherscan.io/v2/api
+    ?chainid=1
+    &module=token
+    &action=topholders
+    &contractaddress=0xdAC17F958D2ee523a2206206994597C13D831ec7
+    &page=1
+    &offset=25
+    &apikey=YOUR_API_KEY
+  ```
+
+  ```http Full Holder List (PRO)
+  GET https://api.etherscan.io/v2/api
+    ?chainid=1
+    &module=token
+    &action=tokenholderlist
+    &contractaddress=0xdAC17F958D2ee523a2206206994597C13D831ec7
+    &page=1
+    &offset=100
+    &apikey=YOUR_API_KEY
+  ```
+  </CodeGroup>
+</Accordion>
+
+<Accordion title="Transfers">
+  The transfers list on a token page shows all ERC-20 transfer events for that contract. On etherscan.io this is powered by the Advanced Filter endpoint for richer from/to filtering.
+
+  **Endpoint:** [`GET /account/tokentx`](/api-reference/endpoint/advanced-filter-tokentx) via Advanced Filter
+
+  You can also use the standard `tokentx` endpoint filtered by contract address:
+
+  ```http
+  GET https://api.etherscan.io/v2/api
+    ?chainid=1
+    &module=account
+    &action=tokentx
+    &contractaddress=0xdAC17F958D2ee523a2206206994597C13D831ec7
+    &page=1
+    &offset=25
+    &sort=desc
+    &apikey=YOUR_API_KEY
+  ```
+
+  To filter by both contract and a specific address, add the `address` parameter to scope results to a single wallet.
+</Accordion>
+
+<Accordion title="Price">
+  The token price shown in the overview panel comes from the token info endpoint, which also surfaces the project name, website, and social media links.
+
+  **Endpoint:** [`GET /token/tokeninfo`](/api-reference/endpoint/tokeninfo) — **PRO**
+
+  Returns price, token name, symbol, decimals, website, social links, and more.
+
+  ```http
+  GET https://api.etherscan.io/v2/api
+    ?chainid=1
+    &module=token
+    &action=tokeninfo
+    &contractaddress=0xdAC17F958D2ee523a2206206994597C13D831ec7
+    &apikey=YOUR_API_KEY
+  ```
+
+  The response includes `tokenPriceUSD`, `tokenPriceBTC`, and project metadata — everything displayed in the token summary card.
+</Accordion>
+
+<Accordion title="Contract (Source Code & ABI)">
+  The **Contract** tab on a token page shows the verified source code and exposes the Read/Write contract interface, both driven by the Contracts endpoints.
+
+  **Endpoints:**
+  - [`GET /contract/getsourcecode`](/api-reference/endpoint/getsourcecode) — Verified source code, compiler version, and settings
+  - [`GET /contract/getabi`](/api-reference/endpoint/getabi) — Contract ABI for building and decoding calls
+
+  <CodeGroup>
+  ```http Get Source Code
+  GET https://api.etherscan.io/v2/api
+    ?chainid=1
+    &module=contract
+    &action=getsourcecode
+    &address=0xdAC17F958D2ee523a2206206994597C13D831ec7
+    &apikey=YOUR_API_KEY
+  ```
+
+  ```http Get ABI
+  GET https://api.etherscan.io/v2/api
+    ?chainid=1
+    &module=contract
+    &action=getabi
+    &address=0xdAC17F958D2ee523a2206206994597C13D831ec7
+    &apikey=YOUR_API_KEY
+  ```
+  </CodeGroup>
+
+  <Note>
+    Both the ABI and source code endpoints are available on the Free tier across all supported chains, even if the token is deployed on a non-mainnet chain.
+  </Note>
+</Accordion>
+
+## Quick Reference
+
+| Page Section | Endpoint | Plan |
+|---|---|---|
+| Max total supply | `/stats/tokensupply` | Free |
+| Historical supply | `/stats/tokensupplyhistory` | PRO |
+| Holder count | `/token/tokenholdercount` | PRO |
+| Top holders | `/token/topholders` | PRO |
+| Full holder list | `/token/tokenholderlist` | PRO |
+| Transfer history | `/account/tokentx` | Free |
+| Token price & info | `/token/tokeninfo` | PRO |
+| Verified source code | `/contract/getsourcecode` | Free |
+| Contract ABI | `/contract/getabi` | Free |

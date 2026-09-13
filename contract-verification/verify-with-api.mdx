@@ -1,0 +1,162 @@
+---
+title: "Verify a Smart Contract Programmatically via the API"
+sidebarTitle: "Verify via API"
+description: "Programmatically verify deployed smart contracts using the verifysourcecode endpoint and poll for the result with checkverifystatus."
+---
+
+Verifying a contract publishes its source code on the Etherscan explorer for that chain, so anyone can read it and confirm it matches the deployed bytecode. You can verify from the browser's verify page, or programmatically through the API. This guide covers the API path: submit the source code, receive a request GUID, and poll until verification completes.
+
+<Tip>
+  One API key verifies contracts on any supported chain — just set the `chainid` parameter. For example, use `chainid=42161` to verify a contract on Arbitrum. See [Supported Chains](/supported-chains) for the full list.
+</Tip>
+
+## What you need
+
+Verification succeeds only when the source you submit reproduces the exact bytecode on chain. Gather the following before you start:
+
+<ParamField body="contractaddress" type="string" required>
+  The deployed contract address, with the `0x` prefix.
+</ParamField>
+
+<ParamField body="sourceCode" type="string" required>
+  The exact source code that was deployed — either a single flattened `.sol` file or a Standard JSON input object.
+</ParamField>
+
+<ParamField body="codeformat" type="string" required>
+  `solidity-standard-json-input` for Standard JSON, or `solidity-single-file` for a flattened single file.
+</ParamField>
+
+<ParamField body="contractname" type="string" required>
+  The contract name, including the file path when needed — for example, `contracts/MyToken.sol:MyToken`.
+</ParamField>
+
+<ParamField body="compilerversion" type="string" required>
+  The full compiler version string used at deployment, such as `v0.8.28+commit.7893614a`. See the [supported compiler list](https://etherscan.io/solcversions).
+</ParamField>
+
+<ParamField body="optimizationUsed" type="integer">
+  `1` if optimization was enabled, `0` if not. Required for `solidity-single-file` submissions.
+</ParamField>
+
+<ParamField body="runs" type="integer">
+  The optimizer runs value used at deployment. Required for `solidity-single-file` submissions.
+</ParamField>
+
+<ParamField body="constructorArguments" type="string">
+  ABI-encoded constructor arguments in hex. Leave empty if the contract has no constructor arguments.
+</ParamField>
+
+<ParamField body="evmVersion" type="string">
+  The target EVM version, or `default` to use the compiler default.
+</ParamField>
+
+<ParamField body="licenseType" type="integer">
+  The [SPDX license identifier](https://etherscan.io/contract-license-types) to publish alongside the source, such as `3` for MIT.
+</ParamField>
+
+<Note>
+  A mismatch in any compiler setting — version, optimization, runs, EVM version, or constructor arguments — is the most common reason verification fails. See [Common Verification Errors](/contract-verification/common-verification-errors) for specific failure messages and how to fix them.
+</Note>
+
+## Choose a source format
+
+Set `codeformat` to match how you submit the source:
+
+- **`solidity-standard-json-input`** — the compiler's Standard JSON input. It carries the source files, imports, and every compiler setting in one object. You do not need to send `optimizationUsed`, `runs`, or `evmVersion` separately. Use this for any contract with external imports (such as OpenZeppelin) or non-default compiler settings. Most build tools can export it.
+- **`solidity-single-file`** — one flattened `.sol` file with no external imports. With this format, compiler settings are not embedded, so you must send `optimizationUsed` and `runs` as separate fields.
+
+Standard JSON input is the more reliable choice because the settings travel with the source rather than being re-entered by hand.
+
+## Verify your contract
+
+<Steps>
+  <Step title="Submit the source code">
+    Send a `POST` request to the `verifysourcecode` action. The `chainid` parameter selects the network — use the chain ID of the network your contract is deployed on. The example below uses Standard JSON input format.
+
+    ```bash
+    curl --request POST \
+      --url 'https://api.etherscan.io/v2/api?chainid=1&module=contract&action=verifysourcecode' \
+      --data-urlencode 'apikey=YourApiKey' \
+      --data-urlencode 'contractaddress=0xYourContractAddress' \
+      --data-urlencode 'codeformat=solidity-standard-json-input' \
+      --data-urlencode 'sourceCode={"language":"Solidity","sources":{"contracts/MyToken.sol":{"content":"// SPDX-License-Identifier: MIT\npragma solidity ^0.8.28;\n..."}},"settings":{"optimizer":{"enabled":true,"runs":200},"outputSelection":{"*":{"*":["abi","evm.bytecode"]}}}}' \
+      --data-urlencode 'contractname=contracts/MyToken.sol:MyToken' \
+      --data-urlencode 'compilerversion=v0.8.28+commit.7893614a' \
+      --data-urlencode 'constructorArguments=' \
+      --data-urlencode 'licenseType=3'
+    ```
+
+    For `solidity-single-file`, set `codeformat=solidity-single-file`, provide the flattened source in `sourceCode`, and include `optimizationUsed` and `runs` as additional fields.
+
+    A successful submission returns a `result` field containing a GUID. This is your request ID — not a confirmation that verification passed. Save it for the next step.
+
+    ```json
+    {
+      "status": "1",
+      "message": "OK",
+      "result": "a7lpxkm9kpcpicx7daftmjifrfhiuhf5vqqnawhkfhzfrcpnxj"
+    }
+    ```
+
+    <Note>
+      Verifying on one chain's explorer does not verify the contract on any other chain. Repeat this flow with the matching `chainid` for each network the contract is deployed to.
+    </Note>
+  </Step>
+
+  <Step title="Poll for the verification result">
+    Pass the GUID to the `checkverifystatus` action to check the result. Verification is queued server-side, so the first response may still show processing. Keep polling until `result` resolves.
+
+    ```bash
+    curl --request GET \
+      --url 'https://api.etherscan.io/v2/api?chainid=1&module=contract&action=checkverifystatus&guid=a7lpxkm9kpcpicx7daftmjifrfhiuhf5vqqnawhkfhzfrcpnxj&apikey=YourApiKey'
+    ```
+
+    When verification succeeds, the `result` field reads `Pass - Verified`:
+
+    ```json
+    {
+      "status": "1",
+      "message": "OK",
+      "result": "Pass - Verified"
+    }
+    ```
+
+    If verification fails, `result` returns the specific error message. Correct the mismatched input and resubmit. See [Common Verification Errors](/contract-verification/common-verification-errors) for a full list of errors and fixes.
+  </Step>
+
+  <Step title="Confirm the verified source">
+    Once status reads `Pass - Verified`, a green checkmark appears on the Contract tab of the contract's explorer page. You can also read the published source back with `getsourcecode` to confirm everything looks correct.
+
+    ```bash
+    curl --request GET \
+      --url 'https://api.etherscan.io/v2/api?chainid=1&module=contract&action=getsourcecode&address=0xYourContractAddress&apikey=YourApiKey'
+    ```
+  </Step>
+</Steps>
+
+## Other contract types
+
+The same submit-and-poll flow applies to other contract types. Use the action for your contract's language or pattern:
+
+| Contract type | Submit action | Poll action |
+|---|---|---|
+| Solidity | `verifysourcecode` | `checkverifystatus` |
+| Vyper | `verifysourcecode` (Vyper) | `checkverifystatus` |
+| zkSync | `verifysourcecode` (zkSync) | `checkverifystatus` |
+| Proxy | `verifyproxycontract` | `checkproxyverification` |
+
+## Prefer to verify from your toolchain?
+
+If you'd rather verify without writing raw API calls, use one of the native integrations:
+
+<CardGroup cols={3}>
+  <Card title="Verify with Hardhat" icon="hammer" href="/contract-verification/verify-with-hardhat">
+    Use the hardhat-verify plugin with a single CLI command.
+  </Card>
+  <Card title="Verify with Foundry" icon="fire" href="/contract-verification/verify-with-foundry">
+    Use `forge verify-contract` or verify at deploy time.
+  </Card>
+  <Card title="Verify with Remix" icon="browser" href="/contract-verification/verify-with-remix">
+    Use the Contract Verification plugin inside Remix IDE.
+  </Card>
+</CardGroup>

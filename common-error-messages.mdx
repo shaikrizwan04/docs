@@ -1,0 +1,178 @@
+---
+title: "Etherscan API Common Error Messages Explained"
+sidebarTitle: "Error Messages"
+description: "Understand every error status and message the Etherscan API returns, what each one means, and the exact steps to resolve it."
+---
+
+When an Etherscan API call fails, the response always has `"status": "0"` and `"message": "NOTOK"`. The specific problem is described in the `"result"` field. Knowing what each error means — and how to fix it — will save you significant debugging time. This page covers every error you're likely to encounter, organized by cause.
+
+Every error response follows this structure:
+
+```json
+{
+  "status": "0",
+  "message": "NOTOK",
+  "result": "<error description>"
+}
+```
+
+## Authentication Errors
+
+<Accordion title="Invalid API Key">
+  <Warning>
+    `"Invalid API Key"`
+  </Warning>
+
+  **What it means:** The `apikey` parameter in your request is not recognized as a valid Etherscan API key.
+
+  **How to fix it:**
+  - Confirm you're using an **Etherscan** API key from [etherscan.io/myapikey](https://etherscan.io/myapikey). API keys from other explorers (Polygonscan, Arbiscan, etc.) are **not valid** for the V2 API.
+  - Check for typos or truncation in the key value.
+  - Newly created keys take a few minutes to activate. If the error persists longer than 10 minutes after creation, [contact support](https://etherscan.io/contactus?id=11).
+</Accordion>
+
+<Accordion title="Too Many Invalid API Key Attempts">
+  <Warning>
+    `"Too many invalid api key attempts, please try again later"`
+  </Warning>
+
+  **What it means:** More than 5 invalid API key attempts were made from your IP address within a 30-second window. Your IP is temporarily throttled as a security measure.
+
+  **How to fix it:** Wait at least 30 seconds, then retry with a **valid API key**. The throttle resets automatically after 30 seconds.
+</Accordion>
+
+## Rate Limit Errors
+
+<Accordion title="Max Rate Limit Reached">
+  <Warning>
+    `"Max rate limit reached, please use API Key for higher rate limit"`
+  </Warning>
+
+  **What it means:** You've exceeded the calls-per-second or daily call limit for your API plan.
+
+  **How to fix it:**
+  - Check your current limits on the [Rate Limits](/rate-limits) page.
+  - Add throttling to your code — a token bucket or fixed-interval delay between requests keeps you within limits.
+  - Use batch endpoints like `balancemulti` to retrieve data for multiple addresses in a single call.
+  - If you consistently hit limits, upgrade your [API plan](https://etherscan.io/api/pricing).
+</Accordion>
+
+<Accordion title="Community Free API Limit Reached">
+  <Warning>
+    `"Community Free API limit reached. Resets 2026-06-24 12:00:00 UTC. For higher, uninterrupted limits, please upgrade to API Pro: https://etherscan.io/apis"`
+  </Warning>
+
+  **What it means:** This chain's shared pool of free API calls has been fully consumed. This is a cumulative limit shared across **all free-tier users** of that chain, not a per-key limit. When the pool is depleted, all free-tier requests on that chain are temporarily blocked.
+
+  **How to fix it:** Wait until the reset time shown in the error message, or upgrade to a [paid plan](https://etherscan.io/api/pricing) for a dedicated allocation that is unaffected by the community pool.
+</Accordion>
+
+## Request Errors
+
+<Accordion title="Missing or Unsupported Chain ID">
+  <Warning>
+    `"Missing or unsupported chainid parameter (required for v2 api), please see chainlist for the list of supported chainids"`
+  </Warning>
+
+  **What it means:** The `chainid` parameter is missing, or the chain ID you specified is not supported by the V2 API.
+
+  **How to fix it:**
+  - Make sure every request includes a valid `chainid` parameter. The V2 API requires it.
+  - Only pass **one** chain ID at a time — comma-separated values like `chainid=420,10` are not supported.
+  - See [Supported Chains](/supported-chains) for the complete list of valid chain IDs.
+</Accordion>
+
+<Accordion title="Missing or Invalid Action Name">
+  <Warning>
+    `"Error! Missing Or invalid Action name"`
+  </Warning>
+
+  **What it means:** The `module` or `action` parameter is missing, misspelled, or not valid for the endpoint you're calling.
+
+  **How to fix it:**
+  - Double-check the `module` and `action` values against the [API Reference](/api-reference/endpoint/balance).
+  - Note that PRO endpoints are **only available on mainnet networks**. Calling a PRO endpoint with a testnet `chainid` returns this error. See [Supported Chains](/supported-chains) for the mainnet/testnet distinction.
+  - Copy a sample request from the API Playground and test it in your browser to confirm the parameters are correct.
+</Accordion>
+
+<Accordion title="Free Tier Chain Access">
+  <Warning>
+    `"Free API access is not supported for this chain. Please upgrade your api plan for full chain coverage."`
+  </Warning>
+
+  **What it means:** The chain you've specified is not accessible on the Free tier.
+
+  **How to fix it:** Upgrade to a [paid plan](https://etherscan.io/api/pricing) — even the Lite tier unlocks full chain coverage. See [Supported Chains](/supported-chains) to check which chains are available on each tier.
+</Accordion>
+
+## Query and Timeout Errors
+
+<Accordion title="Query Timeout">
+  <Warning>
+    `"Query Timeout occured. Please select a smaller result dataset"`
+
+    `"Unexpected err, timeout occurred or server too busy. Please try again later"`
+  </Warning>
+
+  **What it means:** Your query was too large to complete within the allowed time, or the server is temporarily under high load.
+
+  **How to fix it:**
+  - Narrow the block range using `startblock` and `endblock`.
+  - Reduce the `offset` to request fewer records per page.
+  - If the timeout happens consistently on a reasonably scoped query, [contact support](/resources/contact-us) — it may be a server-side performance issue.
+</Accordion>
+
+## Endpoint-Specific Errors
+
+<Accordion title="Contract Source Code Not Verified">
+  <Warning>
+    `"Contract source code not verified"`
+  </Warning>
+
+  **What it means:** You called `getsourcecode` or `getabi` on a contract address that has not been verified on Etherscan.
+
+  **How to fix it:** There is no source code to return for unverified contracts. If you control the contract, submit it for verification through [etherscan.io](https://etherscan.io/verifyContract). If you don't, you won't be able to retrieve source code through this endpoint.
+</Accordion>
+
+<Accordion title="Invalid Address Format">
+  <Warning>
+    `"Error! Invalid address format"`
+  </Warning>
+
+  **What it means:** The address you passed doesn't match the expected format — it may be missing the `0x` prefix, be the wrong length, or contain invalid characters.
+
+  **How to fix it:** Ensure the address is a valid EVM address: `0x` followed by exactly 40 hexadecimal characters (e.g., `0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045`).
+</Accordion>
+
+<Accordion title="Block Number Already Passed">
+  <Warning>
+    `"Error! Block number already pass"`
+  </Warning>
+
+  **What it means:** You specified a block number that doesn't exist yet, or used an invalid block reference.
+
+  **How to fix it:** Use a valid block number that already exists on-chain, or use the `latest` keyword to reference the current block.
+</Accordion>
+
+<Accordion title="No Transactions Found">
+  **What it means:** The address or contract you queried has no activity matching your parameters. This is a normal response — not a server error.
+
+  **How to fix it:** Check that the address is correct and has activity on the specified chain. Broaden the block range (or remove `startblock`/`endblock`) to confirm there's no activity at all, rather than just none in your specified range.
+</Accordion>
+
+## Quick Reference
+
+<Accordion title="Error message summary table">
+  | Error message | Likely cause | Fix |
+  |---|---|---|
+  | `Invalid API Key` | Wrong or inactive key | Use a valid Etherscan key |
+  | `Too many invalid api key attempts` | Repeated bad key attempts | Wait 30 seconds, retry with valid key |
+  | `Max rate limit reached` | Exceeded calls-per-second | Add throttling or upgrade plan |
+  | `Community Free API limit reached` | Shared chain pool depleted | Wait for reset or upgrade |
+  | `Missing or unsupported chainid` | Bad or missing `chainid` | Use a valid single chain ID |
+  | `Missing Or invalid Action name` | Bad `module`/`action` | Check spelling against API reference |
+  | `Free API access is not supported` | Chain not on free tier | Upgrade plan |
+  | `Query Timeout` | Query too large | Narrow block range, reduce offset |
+  | `Contract source code not verified` | Contract not verified | No source available; verify contract |
+  | `Invalid address format` | Malformed address | Use valid `0x`-prefixed 40-char hex |
+</Accordion>

@@ -1,0 +1,124 @@
+---
+title: "Etherscan Contract Review: Understand Any Verified Contract"
+sidebarTitle: "Contract Review"
+description: "Install the Contract Review skill to get a developer-first explanation of any verified EVM contract, with a source reference behind every claim."
+---
+
+The Etherscan Contract Review skill produces a developer-first explanation of any verified deployed EVM contract. Give it a contract address and chain and the skill fetches the verified source, ABI, and proxy metadata from the Etherscan API, then explains what the contract does, how its source files fit together, what ordinary users can do, what privileged operators can change, and where assets move — with a specific source reference (file, contract, and function) behind every material claim.
+
+Whether you are onboarding to an unfamiliar protocol, triaging a contract before integration, or conducting a preliminary review, Contract Review gives you a structured, evidence-backed starting point in seconds.
+
+<Note>
+  This is a developer-oriented review for onboarding, integration triage, and preliminary analysis. It is not a security audit, safety certification, or formal verification.
+</Note>
+
+## Get started
+
+<Steps>
+  <Step title="Install the skill">
+    <Tabs>
+      <Tab title="Claude Code CLI / Codex CLI">
+        Add the skill with the [skills.sh](https://skills.sh) CLI. The `-g` flag installs it globally and `-a '*'` installs it for every configured agent:
+
+        ```bash
+        npx skills add https://github.com/etherscan/skills --skill etherscan-contract-review -g -a '*' -y
+        ```
+
+        Or clone the repository and copy the folder manually:
+
+        ```bash
+        git clone https://github.com/etherscan/skills.git etherscan-skills
+        cp -r etherscan-skills/skills/etherscan-contract-review ~/.claude/skills/
+        ```
+      </Tab>
+
+      <Tab title="Claude Desktop">
+        Claude Desktop installs a skill from a ZIP file you upload. The ZIP must contain exactly one `SKILL.md` file.
+
+        1. Download the [Etherscan skills repo](https://github.com/etherscan/skills/archive/refs/heads/main.zip), unzip it, and compress just the `skills-main/skills/etherscan-contract-review` folder into `etherscan-contract-review.zip`:
+
+           ```
+           skills-main/
+           └── skills/
+               ├── etherscan/
+               ├── etherscan-contract-review/    ← zip this folder
+               ├── etherscan-flow/
+               └── etherscan-transaction-debugger/
+           ```
+
+        2. In Claude Desktop, go to **Settings > Skills > Add > Upload a skill** and select `etherscan-contract-review.zip`.
+
+        3. The Etherscan Contract Review skill is now active and ready to use.
+      </Tab>
+    </Tabs>
+  </Step>
+
+  <Step title="Run your first review">
+    Give it a contract address and chain, then ask for a review. Include `use etherscan-contract-review skill` to activate it:
+
+    ```text
+    review 0xdAC17F958D2ee523a2206206994597C13D831ec7 on Ethereum.
+    use etherscan-contract-review skill
+    ```
+  </Step>
+</Steps>
+
+## More prompts to try
+
+Ask a focused question and the skill answers directly with the minimum evidence instead of the full report:
+
+```text
+what are the privileged and admin controls on 0x<address> on Ethereum,
+and who can call them?
+```
+
+```text
+map the architecture and source files of 0x<address> on Arbitrum
+```
+
+```text
+where does 0x<address> move native and token assets, and through which functions?
+```
+
+```text
+is 0x<address> a proxy? resolve the implementation and explain what it does
+```
+
+## What the review covers
+
+By default, the skill returns a structured review that runs from summary to detail:
+
+<Accordion title="Developer overview">
+  The contract's likely role, who uses it, which assets and permissions matter, and what privileged operators can change.
+</Accordion>
+
+<Accordion title="Contract identity">
+  Chain, user-facing and implementation addresses, verification and compiler metadata, and deployment details.
+</Accordion>
+
+<Accordion title="How it works">
+  Separate breakdowns of user flows, admin and operator flows, and asset flows — plus external dependencies.
+</Accordion>
+
+<Accordion title="Code map">
+  Source file responsibilities grouped by entry points, accounting, asset movement, access control, upgradeability, integrations, and validation.
+</Accordion>
+
+<Accordion title="Important functions, events, and storage">
+  Key items grouped by responsibility, with source references.
+</Accordion>
+
+<Accordion title="Evidence and uncertainty">
+  A source reference for each material claim in the format `contracts/Vault.sol:Vault.deposit`, plus a list of what could not be resolved.
+</Accordion>
+
+## Good to know
+
+- **Source references, not name-reading.** Names, comments, and ABI entries are treated as hints. The skill inspects the implementation before making a behavioral claim, then cites the exact file, contract, and function behind it.
+- **Proxies stay separate.** If the address is a proxy, the skill resolves the implementation where metadata allows and keeps storage-layer and implementation responsibilities distinct. When no pattern is confirmed, it preserves the ambiguity rather than guessing.
+- **Unverified source is stated, not inferred.** If source is unverified or incomplete, the skill says so and limits the explanation to confirmed ABI, metadata, and bytecode observations.
+- **API key.** The skill reads verified source through the Etherscan API, preferring the [CLI](/build-with-ai/cli) config or the `ETHERSCAN_API_KEY` environment variable. It never asks for your key in the chat transcript.
+
+<Note>
+  The skill is read-only. It retrieves source, ABI, and metadata only. It never verifies, signs, or broadcasts transactions, and it does not execute retrieved contract code or scripts.
+</Note>

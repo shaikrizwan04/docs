@@ -1,0 +1,117 @@
+---
+title: "Get Extended ETH Supply Including Staking and Burns"
+sidebarTitle: "ethsupply2"
+description: "Returns ETH circulating supply plus ETH2 staking rewards, EIP-1559 burned fees, and total beacon chain withdrawals in wei."
+---
+
+After the Ethereum Merge, the full picture of ETH supply requires tracking four separate values: the base supply from block rewards, ETH locked in Beacon Chain validators, fees burned since EIP-1559 went live, and ETH that has been withdrawn from the Beacon Chain back to the execution layer. This endpoint returns all four figures in a single call, giving you everything you need to compute the true net circulating supply.
+
+## Parameters
+
+<ParamField query="chainid" type="string" required>
+  The chain to query. Use `1` for Ethereum mainnet. See [supported chains](/supported-chains) for a full list.
+</ParamField>
+
+<ParamField query="module" type="string" required default="stats">
+  Set to `stats`.
+</ParamField>
+
+<ParamField query="action" type="string" required default="ethsupply2">
+  Set to `ethsupply2`.
+</ParamField>
+
+<ParamField query="apikey" type="string" required>
+  Your Etherscan API key. [Get one here](/set-up-your-api-key).
+</ParamField>
+
+## Response
+
+<ResponseField name="status" type="string">
+  `1` if the request succeeded, `0` on error.
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  `OK` on success, or an error description such as `NOTOK`.
+</ResponseField>
+
+<ResponseField name="result" type="object">
+  Extended ETH supply breakdown.
+
+  <Expandable title="Result fields">
+    <ResponseField name="EthSupply" type="string">
+      Total ETH minted from block rewards, in wei. This is the same value returned by `ethsupply`.
+    </ResponseField>
+    <ResponseField name="Eth2Staking" type="string">
+      Total ETH currently staked on the Beacon Chain, in wei.
+    </ResponseField>
+    <ResponseField name="BurntFees" type="string">
+      Total ETH burned via EIP-1559 base fees since London, in wei.
+    </ResponseField>
+    <ResponseField name="WithdrawnTotal" type="string">
+      Total ETH withdrawn from the Beacon Chain back to the execution layer, in wei.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Example
+
+<CodeGroup>
+```bash cURL
+curl "https://api.etherscan.io/v2/api\
+?chainid=1\
+&module=stats\
+&action=ethsupply2\
+&apikey=YOUR_API_KEY"
+```
+
+```javascript JavaScript
+const params = new URLSearchParams({
+  chainid: "1",
+  module: "stats",
+  action: "ethsupply2",
+  apikey: "YOUR_API_KEY",
+});
+
+const res = await fetch(`https://api.etherscan.io/v2/api?${params}`);
+const { result } = await res.json();
+const toEth = (wei) => (BigInt(wei) / BigInt(1e18)).toString();
+
+console.log(`Supply:     ${toEth(result.EthSupply)} ETH`);
+console.log(`Staking:    ${toEth(result.Eth2Staking)} ETH`);
+console.log(`Burned:     ${toEth(result.BurntFees)} ETH`);
+console.log(`Withdrawn:  ${toEth(result.WithdrawnTotal)} ETH`);
+```
+
+```python Python
+import requests
+
+params = {
+    "chainid": "1",
+    "module": "stats",
+    "action": "ethsupply2",
+    "apikey": "YOUR_API_KEY",
+}
+
+r = requests.get("https://api.etherscan.io/v2/api", params=params)
+result = r.json()["result"]
+for k, v in result.items():
+    print(f"{k}: {int(v) / 1e18:.2f} ETH")
+```
+</CodeGroup>
+
+```json Example Response
+{
+  "status": "1",
+  "message": "OK",
+  "result": {
+    "EthSupply": "122373866217800000000000000",
+    "Eth2Staking": "2940327167090033000000000",
+    "BurntFees": "4610942856337430575173814",
+    "WithdrawnTotal": "7618584348954597000000000"
+  }
+}
+```
+
+<Tip>
+  To compute the approximate true net circulating supply: `EthSupply - Eth2Staking - BurntFees + WithdrawnTotal`. All values are in wei — divide by 10^18 to express in ETH.
+</Tip>

@@ -1,0 +1,134 @@
+---
+title: "Get Daily Transaction Count on the Network"
+sidebarTitle: "dailytx"
+description: "Returns the total number of transactions executed on the network each day over a specified date range. PRO endpoint."
+---
+
+Daily transaction count is one of the most fundamental blockchain usage metrics. It captures how many transactions were confirmed on-chain each day, giving you a direct measure of network activity. Use this data to chart adoption trends, correlate activity with market events, or compare throughput across chains and time periods.
+
+<Note>
+  This is a **PRO endpoint**, available to the [Standard Plan](/rate-limits) and above. Upgrade your API key to access it.
+</Note>
+
+## Parameters
+
+<ParamField query="chainid" type="string" required>
+  The chain to query. Use `1` for Ethereum mainnet. See [supported chains](/supported-chains) for a full list.
+</ParamField>
+
+<ParamField query="module" type="string" required default="stats">
+  Set to `stats`.
+</ParamField>
+
+<ParamField query="action" type="string" required default="dailytx">
+  Set to `dailytx`.
+</ParamField>
+
+<ParamField query="startdate" type="string" required>
+  Start of the date range in `yyyy-MM-dd` format, e.g. `2019-02-01`.
+</ParamField>
+
+<ParamField query="enddate" type="string" required>
+  End of the date range in `yyyy-MM-dd` format, e.g. `2019-02-28`.
+</ParamField>
+
+<ParamField query="sort" type="string">
+  Sort order. Use `asc` for oldest-first or `desc` for newest-first.
+</ParamField>
+
+<ParamField query="apikey" type="string" required>
+  Your Etherscan API key. [Get one here](/set-up-your-api-key).
+</ParamField>
+
+## Response
+
+<ResponseField name="status" type="string">
+  `1` if the request returned data, `0` on error or no records.
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  `OK` on success, or an error description such as `NOTOK`.
+</ResponseField>
+
+<ResponseField name="result" type="array">
+  Array of daily transaction count data points.
+
+  <Expandable title="Result item fields">
+    <ResponseField name="UTCDate" type="string">
+      Date of the data point in `YYYY-MM-DD` format (UTC).
+    </ResponseField>
+    <ResponseField name="unixTimeStamp" type="string">
+      Start of the UTC date as a Unix timestamp in seconds.
+    </ResponseField>
+    <ResponseField name="transactionCount" type="number">
+      Number of transactions confirmed on this day.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Example
+
+<CodeGroup>
+```bash cURL
+curl "https://api.etherscan.io/v2/api\
+?chainid=1\
+&module=stats\
+&action=dailytx\
+&startdate=2019-02-01\
+&enddate=2019-02-28\
+&sort=asc\
+&apikey=YOUR_API_KEY"
+```
+
+```javascript JavaScript
+const params = new URLSearchParams({
+  chainid: "1",
+  module: "stats",
+  action: "dailytx",
+  startdate: "2019-02-01",
+  enddate: "2019-02-28",
+  sort: "asc",
+  apikey: "YOUR_API_KEY",
+});
+
+const res = await fetch(`https://api.etherscan.io/v2/api?${params}`);
+const data = await res.json();
+console.log(data.result);
+```
+
+```python Python
+import requests
+
+params = {
+    "chainid": "1",
+    "module": "stats",
+    "action": "dailytx",
+    "startdate": "2019-02-01",
+    "enddate": "2019-02-28",
+    "sort": "asc",
+    "apikey": "YOUR_API_KEY",
+}
+
+r = requests.get("https://api.etherscan.io/v2/api", params=params)
+print(r.json()["result"])
+```
+</CodeGroup>
+
+```json Example Response
+{
+  "status": "1",
+  "message": "OK",
+  "result": [
+    {
+      "UTCDate": "2019-02-01",
+      "unixTimeStamp": "1548979200",
+      "transactionCount": 498856
+    },
+    {
+      "UTCDate": "2019-02-02",
+      "unixTimeStamp": "1549065600",
+      "transactionCount": 450314
+    }
+  ]
+}
+```

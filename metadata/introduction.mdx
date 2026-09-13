@@ -1,0 +1,79 @@
+---
+title: "Etherscan Metadata: Address Labels and Identity Layer"
+sidebarTitle: "Introduction"
+description: "Enrich raw blockchain addresses with nametags, labels, categories, and reputation scores across 60+ EVM chains using Etherscan Metadata."
+---
+
+Etherscan Metadata gives you structured, human-readable context for onchain addresses — the same dataset that powers address tags across Etherscan-supported block explorers. By enriching raw addresses with nametags, labels, categories, and reputation scores, you can build applications and workflows that make blockchain data immediately understandable, whether you're screening wallets for compliance, displaying entity names in a UI, or running large-scale analytics across multiple chains.
+
+## What Etherscan Metadata Provides
+
+Every address in the dataset can carry several types of enrichment:
+
+- **Nametags** — A short human-readable label identifying the entity behind an address (e.g., "Binance: Hot Wallet", "Uniswap V3: Router").
+- **Labels** — Broader category labels that describe the type of entity or activity associated with the address.
+- **Categories** — Structured classifications (e.g., exchange, DeFi, scam) that let you group and filter addresses by function.
+- **Reputation scores** — A numeric score from `UNKNOWN` to `UNSAFE` that signals the risk level of interacting with an address. See the [Reputation Reference](/metadata/reputation-reference) for the full score table.
+- **Other attributes** — Additional codes for tokens and contracts such as token type, token reputation, verified contract status, contract name, and ENS name. See the [Other Attributes Reference](/metadata/other-attributes-reference) for the complete list.
+
+## Community Nametags vs. Verified Labels
+
+Not all metadata carries the same confidence level. Understanding the distinction helps you decide how to surface it in your application.
+
+<CardGroup cols={2}>
+  <Card title="Community Nametags" icon="users">
+    Submitted by the Etherscan community. Useful for surfacing well-known addresses, but treat them as informational rather than authoritative.
+  </Card>
+  <Card title="Verified Labels" icon="badge-check">
+    Confirmed by Etherscan's team or submitted by the address owner through a verification process. Carry a higher degree of trust and are suitable for compliance and risk workflows.
+  </Card>
+</CardGroup>
+
+## Access Options
+
+Etherscan Metadata is available in two formats depending on your use case.
+
+<CardGroup cols={2}>
+  <Card title="Address Metadata API" icon="magnifying-glass" href="/api-reference/endpoint/getaddresstag">
+    Real-time metadata lookup for a specific address. Returns structured nametags, labels, categories, and reputation scores. Designed for live applications and UI enrichment.
+  </Card>
+  <Card title="Metadata CSV Export" icon="file-csv" href="/api-reference/endpoint/getlabelmasterlist">
+    Full multichain dataset delivered via API-triggered export. Available as downloadable CSV or ZIP files. Designed for bulk analytics and compliance pipelines. **Available on Enterprise plans.**
+  </Card>
+</CardGroup>
+
+<Note>
+  The CSV export endpoint is available on **Enterprise plans** only. Use the Address Metadata API for per-address lookups on all paid plans.
+</Note>
+
+## Multichain Coverage
+
+The Metadata API covers Ethereum, Base, BNB Smart Chain, Polygon, and 60+ additional EVM-compatible chains. Pass the appropriate `chainid` parameter to query any [supported chain](/supported-chains).
+
+## Common Use Cases
+
+<CardGroup cols={2}>
+  <Card title="Compliance & Risk Monitoring" icon="shield-halved">
+    Screen addresses against reputation scores and entity labels for AML workflows and transaction monitoring.
+  </Card>
+  <Card title="Blockchain Analytics" icon="chart-line">
+    Track activity from exchanges, protocols, and key entities across chains with consistent entity-level labeling.
+  </Card>
+  <Card title="Wallets & Applications" icon="wallet">
+    Display human-readable entity names instead of raw hex addresses to improve the user experience.
+  </Card>
+  <Card title="Trading & Research" icon="telescope">
+    Monitor labeled wallets belonging to exchanges, whales, or known protocols to inform trading and research decisions.
+  </Card>
+</CardGroup>
+
+## Reference Pages
+
+<CardGroup cols={2}>
+  <Card title="Reputation Reference" icon="star" href="/metadata/reputation-reference">
+    Descriptions of every reputation score level from UNKNOWN (0) to UNSAFE (3).
+  </Card>
+  <Card title="Other Attributes Reference" icon="tags" href="/metadata/other-attributes-reference">
+    Attribute codes for tokens and contracts returned in metadata API responses.
+  </Card>
+</CardGroup>

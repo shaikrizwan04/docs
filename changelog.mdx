@@ -1,0 +1,126 @@
+---
+title: "Etherscan API Changelog and Recent Updates"
+sidebarTitle: "Changelog"
+description: "Track recent updates, deprecations, new chain additions, and breaking changes to the Etherscan API — updated as changes are released."
+---
+
+Stay up to date with changes to the Etherscan API. This page documents chain additions and deprecations, endpoint changes, tier and rate limit adjustments, and anything else that may affect your integration. Review this page before upgrading your integration or when you encounter unexpected behavior after a period of inactivity.
+
+<Update label="September 2026">
+  ## Community Free API Limit for Katana
+
+  **Updated:** September 7, 2026
+
+  **Applicable chain:** Katana Mainnet (chainid: 747474)
+
+  Free tier API access on Katana Mainnet has moved to a shared community pool model. Rather than a separate allocation per API key, all Free tier users draw from a single shared pool of daily calls for this chain.
+
+  Once the pool is depleted, Free tier requests on Katana will be temporarily unavailable until the pool resets. The reset time is included in the [error response](/common-error-messages#community-free-api-limit) returned when the pool is empty.
+
+  **What you need to do:** If you use Katana Mainnet on the Free tier and need uninterrupted access, [upgrade to a paid plan](https://etherscan.io/api/pricing).
+</Update>
+
+<Update label="July 2026">
+  ## Gnosis API Moving to Paid Plans
+
+  **Updated:** July 24, 2026 | **Effective date:** September 1, 2026
+
+  The Gnosisscan block explorer (gnosisscan.io) will be discontinued on **August 11, 2026 (23:59 UTC)**. See [Discontinuation of a Block Explorer](https://info.etherscan.com/discontinuation-of-a-block-explorer/) for full details.
+
+  To ease the transition, Gnosis (chainid: 100) community endpoints remain free for all users until **August 31, 2026**. Starting **September 1, 2026**, access changes as follows:
+
+  - **Community endpoints** will require a **Lite plan or above**
+  - **Pro endpoints** will continue to require a **Standard plan or above** (no change)
+  - **Source code and ABI endpoints** are not affected — they remain free on all plans including the Free tier
+
+  **What you need to do:** If your integration uses any non-ABI/source endpoints on Gnosis, check your plan and upgrade if needed before September 1, 2026.
+
+  ---
+
+  ## Community Free API Limit for Celo
+
+  **Updated:** July 16, 2026
+
+  **Applicable chains:** Celo Mainnet (chainid: 42220) and Celo Sepolia Testnet (chainid: 11142220)
+
+  Free tier API access on these chains has moved to the shared community pool model. Each chain has its own pool shared across all Free tier users. When a chain's pool is depleted, Free tier requests are temporarily blocked until the pool resets.
+
+  **What you need to do:** If you rely on uninterrupted access to Celo on the Free tier, [upgrade your plan](https://etherscan.io/api/pricing).
+
+  ---
+
+  ## Moonbeam, Moonriver, and Moonbase Alpha Deprecation
+
+  **Updated:** July 15, 2026 | **Effective date:** July 31, 2026
+
+  API support for the following chains is deprecated effective July 31, 2026:
+
+  - Moonbeam Mainnet (chainid: 1284)
+  - Moonriver Mainnet (chainid: 1285)
+  - Moonbase Alpha Testnet (chainid: 1287)
+
+  After the effective date, API requests to these chains will no longer be supported.
+
+  **What you need to do:** If your integration queries any of these chains, update it before July 31, 2026.
+</Update>
+
+<Update label="May 2026">
+  ## Reduced Maximum Records Per Request on the Free Tier
+
+  **Updated:** May 1, 2026 | **Effective date:** July 1, 2026
+
+  The maximum number of records returned per request is reduced from **10,000 to 1,000** for Free tier users. This affects the following endpoints:
+
+  - [Get Beacon Chain Withdrawals by Address](/api-reference/endpoint/txsbeaconwithdrawal)
+  - [Get Blocks Validated by Address](/api-reference/endpoint/getminedblocks)
+  - [Get ERC-20 Token Transfers by Address](/api-reference/endpoint/tokentx)
+  - [Get ERC-721 Token Transfers by Address](/api-reference/endpoint/tokennfttx)
+  - [Get ERC-1155 Token Transfers by Address](/api-reference/endpoint/token1155tx)
+  - [Get Ethereum Node Sizes](/api-reference/endpoint/chainsize)
+  - [Get Event Logs by Address](/api-reference/endpoint/getlogs)
+  - [Get Internal Transactions by Address](/api-reference/endpoint/txlistinternal)
+  - [Get Normal Transactions by Address](/api-reference/endpoint/txlist)
+  - [Get Plasma Deposits by Address](/api-reference/endpoint/txnbridge)
+
+  **What you need to do:** If your integration uses any of these endpoints on the Free tier, update it to paginate in batches of 1,000 records or fewer. If you don't use these endpoints, no changes are needed.
+
+  ---
+
+  ## Get Internal Transactions by Block Range Moving to Pro Plans
+
+  **Updated:** May 1, 2026 | **Effective date:** July 1, 2026
+
+  [Get Internal Transactions by Block Range](/api-reference/endpoint/txlistinternal-blockrange) is moving to a PRO endpoint, requiring a Standard plan or above.
+
+  **What you need to do:** If your integration uses this endpoint, verify your plan tier and upgrade if needed before July 1, 2026.
+</Update>
+
+<Update label="April 2026">
+  ## Scroll Mainnet and Sepolia Testnet Deprecation
+
+  **Effective date:** April 16, 2026
+
+  API support for Scroll Mainnet (chainid: 534352) and Scroll Sepolia Testnet (chainid: 534351) has been deprecated. API requests to these chains are no longer supported.
+
+  **What you need to do:** Remove or update any integration code that queries these chains.
+</Update>
+
+<Update label="February 2026">
+  ## MemeCore Testnet Migration
+
+  **Effective date:** February 25, 2026
+
+  MemeCore Formicarium Testnet (chainid: 43521) has migrated to Insectarium Testnet (chainid: 43522).
+
+  **What you need to do:** Update any requests targeting chainid 43521 to use chainid 43522 instead.
+
+  ---
+
+  ## Swell Mainnet and Testnet Deprecation
+
+  **Effective date:** February 25, 2026
+
+  API support for Swell Mainnet (chainid: 1923) and Swell Testnet (chainid: 1924) has been deprecated. API requests to these chains are no longer supported.
+
+  **What you need to do:** Remove or update any integration code that queries these chains.
+</Update>

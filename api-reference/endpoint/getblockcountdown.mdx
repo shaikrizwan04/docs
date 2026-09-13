@@ -1,0 +1,111 @@
+---
+title: "Get Estimated Block Countdown by Block Number"
+sidebarTitle: "Block Countdown"
+description: "Retrieve the estimated time remaining in seconds until a specified future block number is mined on any supported EVM chain."
+---
+
+Use this endpoint to check how long until a future block is mined. The response includes the current block, the number of remaining blocks, and an estimated time in seconds. This is useful for scheduling actions tied to a specific block height, such as governance votes or vesting unlocks.
+
+## Query Parameters
+
+<ParamField query="chainid" type="string" required>
+  The chain ID to query. For example, `1` for Ethereum mainnet or `42161` for Arbitrum. See the full list of [supported chains](/supported-chains).
+</ParamField>
+
+<ParamField query="module" type="string" required default="block">
+  Set to `block` for this endpoint.
+</ParamField>
+
+<ParamField query="action" type="string" required default="getblockcountdown">
+  Set to `getblockcountdown` for this endpoint.
+</ParamField>
+
+<ParamField query="blockno" type="integer" required>
+  The future block number to estimate time for. Example: `16701588`.
+</ParamField>
+
+<ParamField query="apikey" type="string" required>
+  Your Etherscan API key. [Set one up](/set-up-your-api-key) if you don't have one.
+</ParamField>
+
+## Response Fields
+
+<ResponseField name="status" type="string">
+  `1` if the request returned data, `0` otherwise.
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  `OK` on success, or an error description such as `NOTOK`.
+</ResponseField>
+
+<ResponseField name="result" type="object">
+  <Expandable title="result fields">
+    <ResponseField name="CurrentBlock" type="string">
+      The most recent block number at the time of the request.
+    </ResponseField>
+    <ResponseField name="CountdownBlock" type="string">
+      The target future block number.
+    </ResponseField>
+    <ResponseField name="RemainingBlock" type="string">
+      Number of blocks still remaining until the target block.
+    </ResponseField>
+    <ResponseField name="EstimateTimeInSec" type="string">
+      Estimated time until the target block is mined, in seconds.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Example
+
+<CodeGroup>
+```bash cURL
+curl "https://api.etherscan.io/v2/api\
+?chainid=1\
+&module=block\
+&action=getblockcountdown\
+&blockno=16701588\
+&apikey=YOUR_API_KEY"
+```
+
+```javascript JavaScript
+const params = new URLSearchParams({
+  chainid: "1",
+  module: "block",
+  action: "getblockcountdown",
+  blockno: "16701588",
+  apikey: "YOUR_API_KEY",
+});
+
+const response = await fetch(`https://api.etherscan.io/v2/api?${params}`);
+const data = await response.json();
+console.log(data.result);
+```
+
+```python Python
+import requests
+
+params = {
+    "chainid": "1",
+    "module": "block",
+    "action": "getblockcountdown",
+    "blockno": 16701588,
+    "apikey": "YOUR_API_KEY",
+}
+
+response = requests.get("https://api.etherscan.io/v2/api", params=params)
+print(response.json()["result"])
+```
+</CodeGroup>
+
+```json Example Response
+{
+  "status": "1",
+  "message": "OK",
+  "result": {
+    "CurrentBlock": "25788160",
+    "CountdownBlock": "25789159",
+    "RemainingBlock": "999",
+    "EstimateTimeInSec": "12003.0"
+  }
+}
+```

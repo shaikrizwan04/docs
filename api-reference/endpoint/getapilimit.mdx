@@ -1,0 +1,112 @@
+---
+title: "Get Your Current API Credit Usage and Limit"
+sidebarTitle: "getapilimit"
+description: "Returns your API key's current credit usage, remaining credits, total daily limit, and time until the usage interval resets."
+---
+
+Every Etherscan API key has a daily credit allowance that resets on a fixed interval. This endpoint lets you monitor your current consumption in real time — how many credits you've used, how many remain, your total limit, and how long until the counter resets. Use it to build usage dashboards, implement rate-limit guards in your integration, or debug unexpected credit depletion.
+
+## Parameters
+
+<ParamField query="module" type="string" required default="usage">
+  Set to `usage`.
+</ParamField>
+
+<ParamField query="action" type="string" required default="getapilimit">
+  Set to `getapilimit`.
+</ParamField>
+
+<ParamField query="apikey" type="string" required>
+  Your Etherscan API key. [Get one here](/set-up-your-api-key).
+</ParamField>
+
+## Response
+
+<ResponseField name="status" type="string">
+  `1` if the request succeeded, `0` on error.
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  `OK` on success, or an error description such as `NOTOK`.
+</ResponseField>
+
+<ResponseField name="result" type="object">
+  API usage data.
+
+  <Expandable title="Result fields">
+    <ResponseField name="creditsUsed" type="number">
+      Number of API credits consumed in the current interval.
+    </ResponseField>
+    <ResponseField name="creditsAvailable" type="number">
+      Number of API credits remaining in the current interval.
+    </ResponseField>
+    <ResponseField name="creditLimit" type="number">
+      Total API credits allowed per interval for your plan.
+    </ResponseField>
+    <ResponseField name="limitInterval" type="string">
+      Duration of the usage interval, e.g. `daily`.
+    </ResponseField>
+    <ResponseField name="intervalExpiryTimespan" type="string">
+      Time remaining until the interval resets, formatted as `HH:MM:SS`.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Example
+
+<CodeGroup>
+```bash cURL
+curl "https://api.etherscan.io/v2/api\
+?module=usage\
+&action=getapilimit\
+&apikey=YOUR_API_KEY"
+```
+
+```javascript JavaScript
+const params = new URLSearchParams({
+  module: "usage",
+  action: "getapilimit",
+  apikey: "YOUR_API_KEY",
+});
+
+const res = await fetch(`https://api.etherscan.io/v2/api?${params}`);
+const { result } = await res.json();
+const usagePct = ((result.creditsUsed / result.creditLimit) * 100).toFixed(1);
+console.log(`Usage: ${result.creditsUsed}/${result.creditLimit} (${usagePct}%)`);
+console.log(`Resets in: ${result.intervalExpiryTimespan}`);
+```
+
+```python Python
+import requests
+
+params = {
+    "module": "usage",
+    "action": "getapilimit",
+    "apikey": "YOUR_API_KEY",
+}
+
+r = requests.get("https://api.etherscan.io/v2/api", params=params)
+result = r.json()["result"]
+pct = result["creditsUsed"] / result["creditLimit"] * 100
+print(f"Used {result['creditsUsed']}/{result['creditLimit']} credits ({pct:.1f}%)")
+print(f"Resets in: {result['intervalExpiryTimespan']}")
+```
+</CodeGroup>
+
+```json Example Response
+{
+  "status": "1",
+  "message": "OK",
+  "result": {
+    "creditsUsed": 22,
+    "creditsAvailable": 1499978,
+    "creditLimit": 1500000,
+    "limitInterval": "daily",
+    "intervalExpiryTimespan": "08:42:34"
+  }
+}
+```
+
+<Tip>
+  This endpoint does not require a `chainid` parameter — it queries your API key's usage globally rather than per-chain.
+</Tip>

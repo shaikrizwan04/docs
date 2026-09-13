@@ -1,0 +1,156 @@
+---
+title: "Onchain Analytics and Research with Etherscan"
+sidebarTitle: "Analytics & Research"
+description: "Build dashboards and research reports using entity labels, token holder distributions, event logs, and network-level stats across 60+ EVM chains."
+---
+
+Turning raw onchain data into a readable analysis means working with several layers: attributing activity to real-world entities, measuring token ownership concentration, indexing protocol events, and tracking network-level trends over time. The Etherscan API provides endpoints for each of these layers, and every endpoint works consistently across all 60+ supported chains — making it straightforward to run the same analysis on multiple networks or compare them side by side.
+
+<Tip>
+  Every endpoint in this guide works across all 60+ supported chains. Switch `chainid=1` (Ethereum) to `chainid=42161` (Arbitrum) or any other supported network to run the same analysis on a different chain. See [Supported Chains](/supported-chains) for the full list.
+</Tip>
+
+## Entity Attribution
+
+Map anonymous addresses to named entities and categories so that fund flows read as "into an exchange" rather than "to an address." This context is the foundation of any meaningful onchain analysis.
+
+<Steps>
+  <Step title="Get the full label master list">
+    Pull the complete list of label categories Etherscan maintains — `Exchange`, `Bridge`, `DEX`, `Staking`, and many others. This list changes slowly, so cache it locally and refresh it periodically.
+
+    ```bash
+    curl --request GET \
+      --url 'https://api.etherscan.io/v2/api?chainid=1&module=nametag&action=getlabelmasterlist&apikey=YOUR_API_KEY'
+    ```
+  </Step>
+
+  <Step title="Resolve an address to its entity">
+    Return the name tag, labels, and category for a specific address, using [Etherscan Metadata](/metadata/introduction). Group transfers by label to report flows by category — for example, the volume of ETH flowing into exchanges versus bridges in a given week.
+
+    <Note>
+      `getaddresstag` is a PRO endpoint available on the **Pro Plus plan**.
+    </Note>
+
+    ```bash
+    curl --request GET \
+      --url 'https://api.etherscan.io/v2/api?chainid=1&module=nametag&action=getaddresstag&address=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045&apikey=YOUR_API_KEY'
+    ```
+  </Step>
+</Steps>
+
+## Token Holder Distribution
+
+Measure how concentrated a token's ownership is — a key metric for understanding token governance power, decentralization, and whale risk.
+
+<Steps>
+  <Step title="Get the token holder list">
+    Retrieve the addresses holding a given token and their current balances. Divide each balance by the token's total supply to compute each holder's share, then rank to identify concentration.
+
+    <Note>
+      `tokenholderlist` is a PRO endpoint available on the **Standard plan and above**.
+    </Note>
+
+    ```bash
+    curl --request GET \
+      --url 'https://api.etherscan.io/v2/api?chainid=1&module=token&action=tokenholderlist&contractaddress=0xdAC17F958D2ee523a2206206994597C13D831ec7&page=1&offset=100&apikey=YOUR_API_KEY'
+    ```
+
+    Use `page` and `offset` to iterate through the full holder list for tokens with large numbers of holders. Cross-reference holder addresses against `getaddresstag` to attribute holdings to known entities like exchanges, funds, and protocols.
+  </Step>
+</Steps>
+
+## Event Indexing
+
+Pull a smart contract's event logs to power real-time dashboards, historical monitors, and protocol usage analytics.
+
+<Steps>
+  <Step title="Get contract event logs">
+    Query logs emitted by a contract, filtered by address, topic hash, and block range. Decode the `topics` and `data` fields against the contract ABI to convert raw logs into structured events — such as `Transfer`, `Swap`, or `Deposit`.
+
+    ```bash
+    curl --request GET \
+      --url 'https://api.etherscan.io/v2/api?chainid=1&module=logs&action=getLogs&address=0xdAC17F958D2ee523a2206206994597C13D831ec7&fromBlock=21000000&toBlock=latest&page=1&offset=1000&apikey=YOUR_API_KEY'
+    ```
+
+    <Tip>
+      Always narrow `fromBlock` and `toBlock` to a specific window and paginate through results. Requesting an unbounded range (e.g., `fromBlock=0&toBlock=latest`) on a high-activity contract will time out. Use [getblocknobytime](/api-reference/endpoint/getblocknobytime) to convert date ranges to block numbers.
+    </Tip>
+  </Step>
+</Steps>
+
+## Network Trends
+
+Read chain-level metrics to track activity over time, compare networks, and produce research-grade statistics.
+
+<Steps>
+  <Step title="Get daily transaction counts">
+    Query the daily transaction count over a date range. Use this to chart activity trends, identify periods of high network usage, or compare transaction volumes across chains.
+
+    <Note>
+      `dailytx` is a PRO endpoint available on the **Standard plan and above**.
+    </Note>
+
+    ```bash
+    curl --request GET \
+      --url 'https://api.etherscan.io/v2/api?chainid=1&module=stats&action=dailytx&startdate=2026-01-01&enddate=2026-01-31&sort=asc&apikey=YOUR_API_KEY'
+    ```
+  </Step>
+
+  <Step title="Get daily average gas price">
+    Track average gas prices over time to understand network congestion patterns and cost trends.
+
+    <Note>
+      `dailyavggasprice` is a PRO endpoint available on the **Standard plan and above**.
+    </Note>
+
+    ```bash
+    curl --request GET \
+      --url 'https://api.etherscan.io/v2/api?chainid=1&module=stats&action=dailyavggasprice&startdate=2026-01-01&enddate=2026-01-31&sort=asc&apikey=YOUR_API_KEY'
+    ```
+  </Step>
+
+  <Step title="Get the total native token supply">
+    Retrieve the current total supply of the chain's native coin. Use this as a denominator for supply-based metrics, or as a data point for monetary economics research.
+
+    ```bash
+    curl --request GET \
+      --url 'https://api.etherscan.io/v2/api?chainid=1&module=stats&action=ethsupply&apikey=YOUR_API_KEY'
+    ```
+  </Step>
+</Steps>
+
+## Querying Historical Data
+
+Most analytical questions span a time range rather than a single block. Use this pattern to scope any historical query:
+
+```bash
+# Step 1: Convert start date to a block number
+curl 'https://api.etherscan.io/v2/api?chainid=1&module=block&action=getblocknobytime&timestamp=1704067200&closest=before&apikey=YOUR_API_KEY'
+
+# Step 2: Convert end date to a block number
+curl 'https://api.etherscan.io/v2/api?chainid=1&module=block&action=getblocknobytime&timestamp=1706745600&closest=before&apikey=YOUR_API_KEY'
+
+# Step 3: Use startblock and endblock to scope the query
+curl 'https://api.etherscan.io/v2/api?chainid=1&module=account&action=txlist&address=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045&startblock=19000000&endblock=19200000&sort=asc&apikey=YOUR_API_KEY'
+```
+
+<Tip>
+  Scoping queries with `startblock` and `endblock` is faster and more reliable than open-ended queries. For large block ranges, divide the range into smaller windows and paginate through each one.
+</Tip>
+
+## Putting It Together
+
+<CardGroup cols={2}>
+  <Card title="Flow-by-Category Reports" icon="chart-bar">
+    `getlabelmasterlist` + `getaddresstag` — attribute fund flows to entity types like exchanges, bridges, and DEXs.
+  </Card>
+  <Card title="Concentration Analysis" icon="chart-pie">
+    `tokenholderlist` against total supply — measure how decentralized a token's ownership actually is.
+  </Card>
+  <Card title="Protocol Event Dashboards" icon="bolt">
+    `getLogs` decoded against the contract ABI — index every swap, deposit, or transfer in real time.
+  </Card>
+  <Card title="Network Trend Tracking" icon="trending-up">
+    `dailytx` + `dailyavggasprice` + `ethsupply` — chart network activity and economics over time.
+  </Card>
+</CardGroup>

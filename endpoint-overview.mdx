@@ -1,0 +1,249 @@
+---
+title: "Etherscan API Endpoint Overview"
+sidebarTitle: "Overview"
+description: "A complete reference to every Etherscan API endpoint, organized by module. One API key works across all 60+ supported EVM chains."
+---
+
+The Etherscan API is organized into modules, each covering a distinct area of onchain data. Whether you need wallet balances, contract source code, gas estimates, or raw JSON-RPC access, every endpoint follows the same pattern: call `https://api.etherscan.io/v2/api`, pass the `chainid` parameter to target a specific chain, and authenticate with your API key. The sections below list every available endpoint with a short description and a direct link to its reference page.
+
+<Card title="Set up your API key" icon="key" href="/set-up-your-api-key" horizontal>
+  Create a free key and make your first call in minutes.
+</Card>
+
+<Tip>
+  Endpoints marked **PRO** require a Standard plan or above. Community endpoint access depends on the chain's plan availability. Source code and ABI endpoints are available on all chains for every API plan, including the Free tier.
+</Tip>
+
+## Modules
+
+<CardGroup cols={2}>
+  <Card title="Account" icon="wallet" href="/api-reference/endpoint/balance">
+    Balances, transaction history, token transfers, internal transactions, and block validation for any address.
+  </Card>
+  <Card title="Blocks" icon="cube" href="/api-reference/endpoint/getblockreward">
+    Block rewards, uncle rewards, transaction counts, block countdowns, and timestamp-to-block lookups.
+  </Card>
+  <Card title="Contracts" icon="file-code" href="/api-reference/endpoint/getabi">
+    ABI retrieval, verified source code, contract creator lookup, and multi-language source code verification.
+  </Card>
+  <Card title="Transactions" icon="arrow-right-arrow-left" href="/api-reference/endpoint/getstatus">
+    Execution status checks and receipt status for any transaction hash.
+  </Card>
+  <Card title="Tokens" icon="coins" href="/api-reference/endpoint/tokensupply">
+    ERC-20 supply, holder lists, holder counts, token info, and address token holdings for ERC-20/721/1155.
+  </Card>
+  <Card title="Logs" icon="list" href="/api-reference/endpoint/getlogs">
+    Flexible event log queries by address, block range, and topics.
+  </Card>
+  <Card title="Gas Tracker" icon="gauge" href="/api-reference/endpoint/gasoracle">
+    Real-time gas price oracle, confirmation time estimates, and historical gas price statistics.
+  </Card>
+  <Card title="Stats" icon="chart-line" href="/api-reference/endpoint/ethprice">
+    ETH price, total supply, daily transaction counts, node counts, and broader network statistics.
+  </Card>
+  <Card title="Geth/Parity Proxy" icon="server" href="/api-reference/endpoint/ethblocknumber">
+    Standard Ethereum JSON-RPC methods proxied through the Etherscan API, including `eth_call`, `eth_getTransactionReceipt`, and more.
+  </Card>
+  <Card title="L2 & Bridges" icon="bridge" href="/api-reference/endpoint/txnbridge">
+    Plasma deposits, deposit transactions, and withdrawal transactions for L2 bridge activity.
+  </Card>
+  <Card title="Metadata & Nametags" icon="tag" href="/api-reference/endpoint/getaddresstag">
+    Address name tags, entity labels, and API usage and credit limits.
+  </Card>
+</CardGroup>
+
+---
+
+## Account
+
+The Account module covers everything related to an address: native token balances, transaction history, internal transactions, token transfers across ERC-20, ERC-721, and ERC-1155 standards, and the blocks an address has validated.
+
+| Endpoint | Description |
+|---|---|
+| [Get Native Balance for an Address](/api-reference/endpoint/balance) | Retrieves the native token balance held by a specific address. |
+| [Get Native Balance for Multiple Addresses](/api-reference/endpoint/balancemulti) | Retrieves the native token balance held by multiple addresses in a single call. |
+| [Get Historical Native Balance for an Address](/api-reference/endpoint/balancehistory) ⭐ PRO | Retrieves the balance of a specified address at a given block height. |
+| [Get Normal Transactions By Address](/api-reference/endpoint/txlist) | Retrieves the transaction history of a specified address, with optional pagination. |
+| [Normal Transactions Advanced Filter](/api-reference/endpoint/advanced-filter-txlist) | Retrieves normal transactions with advanced from and to address filtering. |
+| [Get ERC-20 Token Transfers by Address](/api-reference/endpoint/tokentx) | Retrieves ERC-20 token transfers, filtered by address and/or token contract. |
+| [ERC-20 Token Transfers Advanced Filter](/api-reference/endpoint/advanced-filter-tokentx) | Retrieves ERC-20 token transfers with advanced from and to address filtering. |
+| [Get ERC-721 Token Transfers by Address](/api-reference/endpoint/tokennfttx) | Retrieves ERC-721 token transfers, filtered by address and/or token contract. |
+| [ERC-721 Token Transfers Advanced Filter](/api-reference/endpoint/advanced-filter-tokennfttx) | Retrieves ERC-721 token transfers with advanced from and to address filtering. |
+| [Get ERC-1155 Token Transfers by Address](/api-reference/endpoint/token1155tx) | Retrieves ERC-1155 token transfers, filtered by address and/or token contract. |
+| [ERC-1155 Token Transfers Advanced Filter](/api-reference/endpoint/advanced-filter-token1155tx) | Retrieves ERC-1155 token transfers with advanced from and to address filtering. |
+| [Get Internal Transactions by Address](/api-reference/endpoint/txlistinternal) | Retrieves the internal transaction history of a specified address. |
+| [Internal Transactions Advanced Filter](/api-reference/endpoint/advanced-filter-txlistinternal) | Retrieves internal transactions with advanced from and to address filtering. |
+| [Get Internal Transactions by Block Range](/api-reference/endpoint/txlistinternal-blockrange) ⭐ PRO | Returns internal transactions within a specified block range. |
+| [Get Internal Transactions by Transaction Hash](/api-reference/endpoint/txlistinternal-txhash) | Retrieves internal transactions executed within a specific transaction. |
+| [Get Blocks Validated by Address](/api-reference/endpoint/getminedblocks) | Retrieves the list of blocks validated by a specified address. |
+| [Get Beacon Chain Withdrawals by Address](/api-reference/endpoint/txsbeaconwithdrawal) | Retrieves beacon chain withdrawals, optionally filtered by address. |
+| [Get Address Funded By](/api-reference/endpoint/fundedby) ⭐ PRO | Retrieves the address and transaction that first funded a specific EOA address. |
+
+---
+
+## Blocks
+
+The Blocks module gives you block-level data including mining rewards, transaction counts, block time estimates, and timestamp lookups. PRO endpoints add historical daily statistics for deeper analysis.
+
+| Endpoint | Description |
+|---|---|
+| [Get Block and Uncle Rewards by Block Number](/api-reference/endpoint/getblockreward) | Retrieves block rewards along with associated uncle block rewards. |
+| [Get Block Transaction Counts by Block Number](/api-reference/endpoint/getblocktxnscount) | Retrieves transaction counts for a specified block. |
+| [Get Estimated Block Countdown by Block Number](/api-reference/endpoint/getblockcountdown) | Retrieves the estimated time, in seconds, until a specified block is mined. |
+| [Get Block Number by Timestamp](/api-reference/endpoint/getblocknobytime) | Retrieves the block number mined at a specific timestamp. |
+| [Get Daily Average Block Size](/api-reference/endpoint/dailyavgblocksize) ⭐ PRO | Retrieves the average daily block size over a specified date range. |
+| [Get Daily Block Count and Rewards](/api-reference/endpoint/dailyblkcount) ⭐ PRO | Retrieves the daily count of mined blocks along with corresponding block rewards. |
+| [Get Daily Block Rewards](/api-reference/endpoint/dailyblockrewards) ⭐ PRO | Retrieves the daily distribution of block rewards to miners. |
+| [Get Daily Average Block Time](/api-reference/endpoint/dailyavgblocktime) ⭐ PRO | Retrieves the daily average time taken to successfully mine a block. |
+| [Get Daily Uncle Block Count and Rewards](/api-reference/endpoint/dailyuncleblkcount) ⭐ PRO | Returns the daily count of uncle blocks mined and their associated rewards. |
+
+---
+
+## Contracts
+
+The Contracts module provides access to verified smart contract data and supports programmatic source code submission for verification. ABI and source code endpoints are available to all API plans on every supported chain.
+
+| Endpoint | Description |
+|---|---|
+| [Get Contract ABI](/api-reference/endpoint/getabi) | Retrieve the ABI for a verified smart contract. |
+| [Get Contract Source Code](/api-reference/endpoint/getsourcecode) | Retrieve the source code for a verified smart contract. |
+| [Get Contract Creator and Creation Tx Hash](/api-reference/endpoint/getcontractcreation) | Retrieve a contract's deployer address and creation transaction. |
+
+### Contract Verification
+
+| Endpoint | Description |
+|---|---|
+| [Verify Solidity Source Code](/api-reference/endpoint/verifysourcecode) | Submit a Solidity source code for verification. |
+| [Verify zkSync Source Code](/api-reference/endpoint/verifyzksyncsourcecode) | Submit zkSync source code for verification. |
+| [Verify Vyper Source Code](/api-reference/endpoint/verifyvyper) | Submit a Vyper contract for verification. |
+| [Verify Stylus Source Code](/api-reference/endpoint/verifystylus) | Submit Stylus source code for verification. |
+| [Verify Proxy Contract](/api-reference/endpoint/verifyproxycontract) | Submit a proxy contract for verification. |
+| [Check Source Code Verification Status](/api-reference/endpoint/checkverifystatus) | Check the status of a source code verification request. |
+| [Check Proxy Contract Verification Status](/api-reference/endpoint/checkproxyverification) | Check the status of a proxy contract verification. |
+
+---
+
+## Transactions
+
+The Transactions module provides status checks for submitted transactions. Use these endpoints to confirm whether a transaction succeeded, failed due to a contract error, or ran out of gas.
+
+| Endpoint | Description |
+|---|---|
+| [Check Contract Execution Status](/api-reference/endpoint/getstatus) | Retrieves the current status and execution result of a specific transaction. |
+| [Check Transaction Receipt Status](/api-reference/endpoint/gettxreceiptstatus) | Retrieves the execution status of a specific transaction using its hash. |
+
+---
+
+## Tokens
+
+The Tokens module covers ERC-20, ERC-721, and ERC-1155 token data: circulating supply, holder lists, holder counts, token metadata, and address-level holdings.
+
+| Endpoint | Description |
+|---|---|
+| [Get ERC-20 Token TotalSupply by Contract Address](/api-reference/endpoint/tokensupply) | Returns the amount of an ERC-20 token in circulation. |
+| [Get Historical ERC-20 Token TotalSupply by Contract Address & Block](/api-reference/endpoint/tokensupplyhistory) ⭐ PRO | Returns the circulating supply at a specific block height. |
+| [Get ERC-20 Token Account Balance for Contract Address](/api-reference/endpoint/tokenbalance) | Retrieves the current ERC-20 token balance for a specified address. |
+| [Get Historical ERC-20 Token Account Balance by Block](/api-reference/endpoint/tokenbalancehistory) ⭐ PRO | Retrieves the ERC-20 token balance for an address at a given block height. |
+| [Get Top Token Holders](/api-reference/endpoint/topholders) ⭐ PRO | Returns the list of top holders for a specified ERC-20 token. |
+| [Get Token Holder List by Contract Address](/api-reference/endpoint/tokenholderlist) ⭐ PRO | Retrieves the current list of ERC-20 token holders and their balances. |
+| [Get Token Holder Count by Contract Address](/api-reference/endpoint/tokenholdercount) ⭐ PRO | Retrieves a simple count of ERC-20 token holders. |
+| [Get Token Info by Contract Address](/api-reference/endpoint/tokeninfo) ⭐ PRO | Retrieves project details and social media links for an ERC-20/ERC-721/ERC-1155 token. |
+| [Get Address ERC-20 Token Holding](/api-reference/endpoint/addresstokenbalance) ⭐ PRO | Retrieves the list of ERC-20 tokens and balances held by a specified address. |
+| [Get Address ERC-721 Token Holding](/api-reference/endpoint/addresstokennftbalance) ⭐ PRO | Retrieves the ERC-721 tokens and quantities owned by a specific address. |
+| [Get Address ERC-721 Token Inventory by Contract](/api-reference/endpoint/addresstokennftinventory) ⭐ PRO | Retrieves the ERC-721 token IDs owned by an address for a given NFT contract. |
+
+---
+
+## Logs
+
+The Logs module lets you query event logs with flexible filters: by contract address, by topic hash, or by a combination of both, across any block range.
+
+| Endpoint | Description |
+|---|---|
+| [Get Event Logs by Address](/api-reference/endpoint/getlogs) | Retrieves event logs from a specific address, with optional block range filtering. |
+| [Get Event Logs by Topics](/api-reference/endpoint/getlogs-topics) | Retrieves event logs within a specified block range, filtered by topics. |
+| [Get Event Logs by Address and Topics](/api-reference/endpoint/getlogs-address-topics) | Retrieves event logs from a specified address, filtered by topics and block range. |
+
+---
+
+## Gas Tracker
+
+The Gas Tracker module provides real-time gas price recommendations and confirmation time estimates, plus PRO endpoints for historical daily gas statistics.
+
+| Endpoint | Description |
+|---|---|
+| [Get Estimation of Confirmation Time](/api-reference/endpoint/gasestimate) | Estimate confirmation time based on a provided gas price. |
+| [Get Gas Oracle](/api-reference/endpoint/gasoracle) | Get current low, average, and high gas price recommendations. |
+| [Get Daily Average Gas Limit](/api-reference/endpoint/dailyavggaslimit) ⭐ PRO | Retrieve daily average gas limit statistics. |
+| [Get Ethereum Daily Total Gas Used](/api-reference/endpoint/dailygasused) ⭐ PRO | Retrieves the total daily gas usage for transactions within the network. |
+| [Get Daily Average Gas Price](/api-reference/endpoint/dailyavggasprice) ⭐ PRO | Retrieve daily average gas price statistics. |
+
+---
+
+## Geth/Parity Proxy
+
+The Proxy module exposes standard Ethereum JSON-RPC methods through the Etherscan API, giving you a familiar interface for reading blocks, sending transactions, estimating gas, and more.
+
+| Endpoint | Description |
+|---|---|
+| [eth_blockNumber](/api-reference/endpoint/ethblocknumber) | Fetch the latest block number. |
+| [eth_getBlockByNumber](/api-reference/endpoint/ethgetblockbynumber) | Get block information by number. |
+| [eth_getUncleByBlockNumberAndIndex](/api-reference/endpoint/ethgetunclebyblocknumberandindex) | Get uncle block details by block number and index. |
+| [eth_getBlockTransactionCountByNumber](/api-reference/endpoint/ethgetblocktransactioncountbynumber) | Get the number of transactions in a block. |
+| [eth_getTransactionByHash](/api-reference/endpoint/ethgettransactionbyhash) | Get transaction details by hash. |
+| [eth_getTransactionByBlockNumberAndIndex](/api-reference/endpoint/ethgettransactionbyblocknumberandindex) | Get transaction details by block number and index. |
+| [eth_getTransactionCount](/api-reference/endpoint/ethgettransactioncount) | Get the number of transactions sent from an address. |
+| [eth_sendRawTransaction](/api-reference/endpoint/ethsendrawtransaction) | Broadcast a signed transaction to the network. |
+| [eth_getTransactionReceipt](/api-reference/endpoint/ethgettransactionreceipt) | Get the receipt of a transaction by hash. |
+| [eth_call](/api-reference/endpoint/ethcall) | Execute a call without creating a transaction. |
+| [eth_getCode](/api-reference/endpoint/ethgetcode) | Get the code stored at an address. |
+| [eth_getStorageAt](/api-reference/endpoint/ethgetstorageat) | Get the value at a storage position. |
+| [eth_gasPrice](/api-reference/endpoint/ethgasprice) | Get the current gas price. |
+| [eth_estimateGas](/api-reference/endpoint/ethestimategas) | Estimate the gas required for a transaction. |
+
+---
+
+## Stats
+
+The Stats module covers network-wide data: ETH price, total supply, daily transaction counts, new address growth, node counts, and more. Most historical series require a PRO plan.
+
+| Endpoint | Description |
+|---|---|
+| [Get Total Supply of Ether](/api-reference/endpoint/ethsupply) | Retrieves the current circulating supply of Ether. |
+| [Get Total Supply of Ether 2](/api-reference/endpoint/ethsupply2) | Retrieves the current Ether supply including staking rewards, burned fees, and beacon chain withdrawals. |
+| [Get Ether Last Price](/api-reference/endpoint/ethprice) | Retrieves the latest price of the native token. |
+| [Get Ethereum Nodes Size](/api-reference/endpoint/chainsize) | Retrieves the total size of the Ethereum blockchain within a date range. |
+| [Get Total Nodes Count](/api-reference/endpoint/nodecount) | Retrieves the total count of discoverable Ethereum nodes. |
+| [Get Historical Total Nodes Count](/api-reference/endpoint/nodecounthistory) ⭐ PRO | Retrieves the historical daily count of discoverable Ethereum nodes. |
+| [Get Daily Network Transaction Fee](/api-reference/endpoint/dailytxnfee) ⭐ PRO | Retrieves the total transaction fees paid to miners each day. |
+| [Get Daily New Address Count](/api-reference/endpoint/dailynewaddress) ⭐ PRO | Retrieves the daily count of newly created addresses. |
+| [Get Daily ENS Registration Count](/api-reference/endpoint/dailyensregister) ⭐ PRO | Retrieves the daily count of ENS registrations on Ethereum. |
+| [Get Daily Network Utilization](/api-reference/endpoint/dailynetutilization) ⭐ PRO | Retrieves the daily average percentage of gas used relative to the gas limit. |
+| [Get Daily Average Network Hash Rate](/api-reference/endpoint/dailyavghashrate) ⭐ PRO | Retrieves historical hash rate data for the network. |
+| [Get Daily Transaction Count](/api-reference/endpoint/dailytx) ⭐ PRO | Retrieves the daily number of transactions executed on the blockchain. |
+| [Get Daily Average Network Difficulty](/api-reference/endpoint/dailyavgnetdifficulty) ⭐ PRO | Returns historical mining difficulty data for the network. |
+| [Get Ether Historical Price](/api-reference/endpoint/ethdailyprice) ⭐ PRO | Returns historical daily price data for ETH. |
+
+---
+
+## L2 Deposits & Withdrawals
+
+The L2 module provides access to bridge activity for chains that support Plasma and other deposit/withdrawal mechanisms.
+
+| Endpoint | Description |
+|---|---|
+| [Get Plasma Deposits by Address](/api-reference/endpoint/txnbridge) | Retrieves a list of Plasma deposit transactions received by a specified address. |
+| [Get Deposit Transactions by Address](/api-reference/endpoint/getdeposittxs) | Retrieves all deposit transactions made by a specified address. |
+| [Get Withdrawal Transactions by Address](/api-reference/endpoint/getwithdrawaltxs) | Retrieves all withdrawal transactions made by a specified address. |
+
+---
+
+## Metadata & Usage
+
+Use the Metadata module to look up address name tags and entity labels, and the Usage module to monitor your API credit consumption.
+
+| Endpoint | Description |
+|---|---|
+| [Get Metadata for an Address](/api-reference/endpoint/getaddresstag) ⭐ PRO | Get name tags and metadata for the specified address. |
+| [Get API Usage](/api-reference/endpoint/getapilimit) | Returns your current API credit usage and limit for the interval. |
+| [Chainlist](/api-reference/endpoint/chainlist) | Returns the list of all supported Etherscan mainnet and testnet chains. |

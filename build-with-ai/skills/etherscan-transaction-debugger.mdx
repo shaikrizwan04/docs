@@ -1,0 +1,134 @@
+---
+title: "Etherscan Transaction Debugger: Explain Any Transaction"
+sidebarTitle: "Transaction Debugger"
+description: "Install the Transaction Debugger skill to explain what any transaction did and why, from live Etherscan data with verifiable evidence links."
+---
+
+The Etherscan Transaction Debugger skill explains what a transaction actually did. Give it a transaction hash and the skill reconstructs the execution path from live Etherscan data: it decodes the calls and events, reconciles asset and permission changes, pins down any failure, and returns a structured report with direct Etherscan links so you can verify every claim yourself. Every assertion is tagged by how it was determined — observed in the transaction data, derived by calculation, or inferred from patterns — and rated for confidence.
+
+The skill works on one transaction, or two for a side-by-side comparison. For tracing funds across many hops or profiling an address over time, it hands off to [Etherscan Flow](/build-with-ai/skills/etherscan-flow). Full contract auditing is out of scope.
+
+## Get started
+
+<Steps>
+  <Step title="Install the skill">
+    <Tabs>
+      <Tab title="Claude Code CLI / Codex CLI">
+        Add the skill with the [skills.sh](https://skills.sh) CLI. The `-g` flag installs it globally and `-a '*'` installs it for every configured agent:
+
+        ```bash
+        npx skills add https://github.com/etherscan/skills --skill etherscan-transaction-debugger -g -a '*' -y
+        ```
+
+        Or clone the repository and copy the folder manually:
+
+        ```bash
+        git clone https://github.com/etherscan/skills.git etherscan-skills
+        cp -r etherscan-skills/skills/etherscan-transaction-debugger ~/.claude/skills/
+        ```
+      </Tab>
+
+      <Tab title="Claude Desktop">
+        Claude Desktop installs a skill from a ZIP file you upload. The ZIP must contain exactly one `SKILL.md` file.
+
+        1. Download the [Etherscan skills repo](https://github.com/etherscan/skills/archive/refs/heads/main.zip), unzip it, and compress just the `skills-main/skills/etherscan-transaction-debugger` folder into `etherscan-transaction-debugger.zip`:
+
+           ```
+           skills-main/
+           └── skills/
+               ├── etherscan/
+               ├── etherscan-contract-review/
+               ├── etherscan-flow/
+               └── etherscan-transaction-debugger/    ← zip this folder
+           ```
+
+        2. In Claude Desktop, go to **Settings > Skills > Add > Upload a skill** and select `etherscan-transaction-debugger.zip`.
+
+        3. The Etherscan Transaction Debugger skill is now active and ready to use.
+      </Tab>
+    </Tabs>
+  </Step>
+
+  <Step title="Run your first debug">
+    Paste a transaction hash and ask what happened. Include `use etherscan-transaction-debugger skill` to activate it:
+
+    ```text
+    explain what happened in transaction 0x<txhash>.
+    use etherscan-transaction-debugger skill
+    ```
+  </Step>
+</Steps>
+
+## More prompts to try
+
+```text
+why did transaction 0x<txhash> fail?
+```
+
+```text
+which contracts and internal calls were involved in 0x<txhash>,
+and where did the assets move?
+```
+
+```text
+was a proxy implementation executed in 0x<txhash>, and which call reverted?
+```
+
+```text
+compare 0x<txhash1> and 0x<txhash2> and tell me why they behaved differently
+```
+
+## Choose the depth of explanation
+
+Name the audience and the skill sets the level of detail. If you do not specify one, it infers a useful default.
+
+| Level | What you get |
+|---|---|
+| **Simple** | A short, non-technical summary of the outcome |
+| **Standard** | Outcome, the important calls, and asset changes |
+| **Developer** | Decoded calldata, call semantics, the proxy path, and failure evidence |
+| **Support** | A customer-ready explanation plus escalation notes |
+| **Security** | Permissions, callbacks, delegate calls, recipients, and evidence-backed anomalies |
+
+## What the report covers
+
+The report opens with a one or two sentence verdict, then includes only the sections relevant to your request:
+
+<Accordion title="Transaction summary">
+  Status, decoded method, value transferred, gas used, and fees paid.
+</Accordion>
+
+<Accordion title="What happened">
+  A step-by-step account of the execution, with decoded call semantics.
+</Accordion>
+
+<Accordion title="Execution flow">
+  The call tree, internal transactions, and the proxy path when applicable.
+</Accordion>
+
+<Accordion title="Asset and permission changes">
+  Token transfers, native value movements, and any approval or role changes.
+</Accordion>
+
+<Accordion title="Failure analysis">
+  When the transaction reverted: the reverting frame, the reason string or selector, and the evidence behind the diagnosis.
+</Accordion>
+
+<Accordion title="Security observations">
+  Evidence-backed risk indicators with confidence ratings. Only present when relevant.
+</Accordion>
+
+<Accordion title="Explore on Etherscan">
+  A block of direct Etherscan links for every address, transaction, and contract mentioned in the report.
+</Accordion>
+
+Every claim is tagged as **observed** (present in the transaction data), **derived** (calculated from it), or **inferred** (from patterns). Confidence is rated `High`, `Medium`, or `Low` against the available evidence.
+
+## Good to know
+
+- **Standard and Deep modes.** Standard mode uses Etherscan's transaction, receipt, internal-transaction, ABI, source, proxy, label, and token data, and covers most cases. Deep mode uses a full execution trace for complete internal call trees, `DELEGATECALL` behavior, and exact reverting frames. Without a trace, the call tree is partial and the skill says so rather than guessing.
+- **It does not invent.** Function names, amounts, revert reasons, proxy relationships, and trace edges come from real data, or are shown as a selector, raw value, or `unknown`.
+
+<Note>
+  The skill is read-only. It does not generate exploit code, sign or broadcast transactions, or label a contract malicious from unusual behavior alone. It surfaces evidence-backed risk indicators and always states the uncertainty.
+</Note>

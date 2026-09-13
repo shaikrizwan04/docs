@@ -1,24 +1,11 @@
 {
-  "$schema": "https://mintlify.com/docs.json",
-  "name": "Etherscan API",
+  "projectType": "api-service",
+  "projectName": "Etherscan API",
+  "projectDescription": "The complete onchain data API for the crypto ecosystem, providing explorer-grade blockchain data across 60+ EVM chains through a single API key.",
   "theme": "luma",
-  "logo": {
-    "light": "https://media.brand.dev/17844669-fddd-4567-a312-54fd035a1bab.svg",
-    "dark": "https://media.brand.dev/17844669-fddd-4567-a312-54fd035a1bab.svg"
-  },
-  "favicon": "https://media.brand.dev/775c3a4c-1ee2-414e-b15b-eaf399eb105a.png",
-  "colors": {
-    "primary": "#0784c3",
-    "light": "#24345c",
-    "dark": "#959594"
-  },
-  "navbar": {
-    "primary": {
-      "type": "button",
-      "label": "Get API Key",
-      "href": "https://etherscan.io/myapikey"
-    }
-  },
+  "primaryColor": "#0784c3",
+  "lightColor": "#24345c",
+  "darkColor": "#959594",
   "navigation": {
     "tabs": [
       {
@@ -269,10 +256,55 @@
       }
     ]
   },
-  "footer": {
-    "socials": {
-      "x": "https://twitter.com/etherscan",
-      "github": "https://github.com/etherscan-io"
-    }
-  }
+  "keyFeatures": [
+    "Onchain data API covering 60+ EVM chains with a single API key",
+    "Account endpoints: balances, transactions, token transfers (ERC-20/721/1155), internal transactions",
+    "Contract endpoints: ABI retrieval, source code, verification (Solidity, Vyper, Stylus, zkSync, Proxy)",
+    "Gas Tracker: oracle, estimation, daily statistics",
+    "Token endpoints: supply, balances, holder lists, NFT inventory",
+    "Event logs retrieval by address, topics, or combined filters",
+    "Geth/Parity JSON-RPC proxy for standard eth_ calls",
+    "Etherscan Metadata: nametags, labels, reputation scores for addresses",
+    "Build with AI: MCP server, CLI tool, installable agent skills",
+    "L2 deposit/withdrawal transaction support",
+    "Stats endpoints: network stats, daily metrics, price history",
+    "Beta: Prediction market data APIs"
+  ],
+  "publicApiSurface": [
+    "GET /api?module=account&action=balance",
+    "GET /api?module=account&action=balancemulti",
+    "GET /api?module=account&action=balancehistory",
+    "GET /api?module=account&action=txlist",
+    "GET /api?module=account&action=tokentx",
+    "GET /api?module=account&action=tokennfttx",
+    "GET /api?module=account&action=token1155tx",
+    "GET /api?module=account&action=txlistinternal",
+    "GET /api?module=account&action=getminedblocks",
+    "GET /api?module=account&action=txsbeaconwithdrawal",
+    "GET /api?module=account&action=fundedby",
+    "GET /api?module=block&action=getblockreward",
+    "GET /api?module=block&action=getblockcountdown",
+    "GET /api?module=block&action=getblocknobytime",
+    "GET /api?module=contract&action=getabi",
+    "GET /api?module=contract&action=getsourcecode",
+    "GET /api?module=contract&action=getcontractcreation",
+    "POST /api?module=contract&action=verifysourcecode",
+    "GET /api?module=transaction&action=getstatus",
+    "GET /api?module=transaction&action=gettxreceiptstatus",
+    "GET /api?module=token&action=tokensupply",
+    "GET /api?module=token&action=tokenbalance",
+    "GET /api?module=token&action=tokenholderlist",
+    "GET /api?module=token&action=tokeninfo",
+    "GET /api?module=logs&action=getLogs",
+    "GET /api?module=gastracker&action=gasoracle",
+    "GET /api?module=gastracker&action=gasestimate",
+    "GET /api?module=stats&action=ethsupply",
+    "GET /api?module=stats&action=ethprice",
+    "GET /api?module=proxy&action=eth_blockNumber",
+    "GET /api?module=proxy&action=eth_getTransactionByHash",
+    "GET /api?module=proxy&action=eth_call",
+    "GET /api?module=nametag&action=getaddresstag",
+    "GET /api?module=usage&action=getapilimit",
+    "GET /api?module=usage&action=chainlist"
+  ]
 }

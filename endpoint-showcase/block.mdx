@@ -1,0 +1,151 @@
+---
+title: "Endpoints Behind an Etherscan Block Page"
+sidebarTitle: "Block Page"
+description: "Discover the Etherscan API endpoints that power every section of a block page, from rewards and transaction counts to gas details."
+---
+
+The [blocks page](https://etherscan.io/blocks) on etherscan.io assembles block-level data from the Blocks, Stats, and Proxy modules. Each row in the block list — including timestamps, transaction counts, gas figures, base fees, and miner rewards — is built from specific endpoints you can call directly. This guide maps each visible section to the endpoint powering it, so you can pull block data programmatically for dashboards, analytics, or wallet tooling. All endpoints use a single API key and accept the `chainid` parameter to target any supported EVM chain.
+
+<Tip>
+  The network utilization chart requires a **PRO** plan. All other block-level endpoints are available on the Free tier.
+</Tip>
+
+## Page Sections and Their Endpoints
+
+<Accordion title="Network Utilization">
+  The network utilization graph at the top of the blocks page shows the daily average percentage of gas used relative to the gas limit — a measure of how full blocks have been over time.
+
+  **Endpoint:** [`GET /stats/dailynetutilization`](/api-reference/endpoint/dailynetutilization) — **PRO**
+
+  ```http
+  GET https://api.etherscan.io/v2/api
+    ?chainid=1
+    &module=stats
+    &action=dailynetutilization
+    &startdate=2024-01-01
+    &enddate=2024-01-31
+    &sort=asc
+    &apikey=YOUR_API_KEY
+  ```
+
+  Each record returns a date and the utilization percentage for that day. Use this data to chart capacity trends over any time range.
+</Accordion>
+
+<Accordion title="Date and Time">
+  The timestamp column on each block row is driven by two complementary endpoints: one that finds the block closest to a given Unix timestamp, and one that estimates when a future block will be mined.
+
+  **Endpoints:**
+  - [`GET /block/getblocknobytime`](/api-reference/endpoint/getblocknobytime) — Block number closest to a timestamp
+  - [`GET /block/getblockcountdown`](/api-reference/endpoint/getblockcountdown) — Estimated time remaining until a future block
+
+  <CodeGroup>
+  ```http Block Number by Timestamp
+  GET https://api.etherscan.io/v2/api
+    ?chainid=1
+    &module=block
+    &action=getblocknobytime
+    &timestamp=1700000000
+    &closest=before
+    &apikey=YOUR_API_KEY
+  ```
+
+  ```http Block Countdown
+  GET https://api.etherscan.io/v2/api
+    ?chainid=1
+    &module=block
+    &action=getblockcountdown
+    &blockno=21000000
+    &apikey=YOUR_API_KEY
+  ```
+  </CodeGroup>
+
+  The `closest` parameter on `getblocknobytime` accepts `before` or `after` to control which adjacent block is returned when the timestamp falls between two blocks.
+</Accordion>
+
+<Accordion title="Transaction Count">
+  The **Txn** column displays the total number of transactions included in each block.
+
+  **Endpoint:** [`GET /block/getblocktxnscount`](/api-reference/endpoint/getblocktxnscount)
+
+  ```http
+  GET https://api.etherscan.io/v2/api
+    ?chainid=1
+    &module=block
+    &action=getblocktxnscount
+    &blockno=20000000
+    &apikey=YOUR_API_KEY
+  ```
+
+  The response returns the block number and the transaction count as a simple integer — ideal for quickly checking how busy a specific block was without fetching the full block payload.
+</Accordion>
+
+<Accordion title="Gas Used, Gas Limit, and Base Fee">
+  The gas usage column and base fee column are derived from the full block object, which is available through the Proxy module.
+
+  **Endpoint:** [`GET /proxy/eth_getBlockByNumber`](/api-reference/endpoint/ethgetblockbynumber)
+
+  Pass `boolean=false` to retrieve the block header without full transaction objects (faster), or `boolean=true` to include all transaction details.
+
+  <CodeGroup>
+  ```http Block Header Only
+  GET https://api.etherscan.io/v2/api
+    ?chainid=1
+    &module=proxy
+    &action=eth_getBlockByNumber
+    &tag=0x131AC80
+    &boolean=false
+    &apikey=YOUR_API_KEY
+  ```
+
+  ```http Block with Transactions
+  GET https://api.etherscan.io/v2/api
+    ?chainid=1
+    &module=proxy
+    &action=eth_getBlockByNumber
+    &tag=0x131AC80
+    &boolean=true
+    &apikey=YOUR_API_KEY
+  ```
+  </CodeGroup>
+
+  The response fields `gasUsed`, `gasLimit`, and `baseFeePerGas` correspond directly to the columns shown in the block list. Note that the block number must be passed as a hex string (e.g., `0x131AC80`).
+
+  <Note>
+    `baseFeePerGas` is only present on blocks after the EIP-1559 London hard fork (block 12,965,000 on Ethereum mainnet).
+  </Note>
+</Accordion>
+
+<Accordion title="Block Reward">
+  The **Reward** column shows the total ETH reward earned by the block's validator, including uncle inclusion rewards.
+
+  **Endpoint:** [`GET /block/getblockreward`](/api-reference/endpoint/getblockreward)
+
+  ```http
+  GET https://api.etherscan.io/v2/api
+    ?chainid=1
+    &module=block
+    &action=getblockreward
+    &blockno=20000000
+    &apikey=YOUR_API_KEY
+  ```
+
+  The response includes:
+  - `blockReward` — base block reward in wei
+  - `uncleInclusionReward` — reward for referencing uncle blocks
+  - `uncles` — array of uncle block details and their individual rewards
+
+  <Info>
+    On Proof-of-Stake chains (post-Merge Ethereum), block rewards are distributed to validators rather than miners, but the endpoint structure remains the same.
+  </Info>
+</Accordion>
+
+## Quick Reference
+
+| Page Section | Endpoint | Plan |
+|---|---|---|
+| Network utilization chart | `/stats/dailynetutilization` | PRO |
+| Timestamp lookup | `/block/getblocknobytime` | Free |
+| Block countdown | `/block/getblockcountdown` | Free |
+| Transaction count | `/block/getblocktxnscount` | Free |
+| Gas used, gas limit, base fee | `/proxy/eth_getBlockByNumber` | Free |
+| Block & uncle rewards | `/block/getblockreward` | Free |

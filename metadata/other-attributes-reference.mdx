@@ -1,0 +1,68 @@
+---
+title: "Etherscan Metadata Token and Contract Attributes Reference"
+sidebarTitle: "Attributes Reference"
+description: "Reference for the attribute codes returned for tokens and contracts in Etherscan Metadata API responses, including token type, reputation, and ENS."
+---
+
+In addition to nametags and reputation scores, the Etherscan Metadata API returns a set of structured attribute codes for addresses that are tokens or contracts. These codes give you machine-readable signals about the nature of the token or contract associated with an address.
+
+Attribute codes appear alongside other metadata in the `getaddresstag` response. Each attribute is represented by a short header code and carries one of the defined values described below.
+
+## Attribute Codes
+
+| Code | Name | Description |
+|:----:|------|-------------|
+| `TT` | **Token Type** | Identifies the token standard. Possible values: `erc-20` for fungible tokens and `nft` for non-fungible tokens (ERC-721 and ERC-1155). |
+| `TR` | **Token Reputation** | The reputation classification of the token. Possible values: `Ok`, `Poor`, `Unsafe`, `Suspicious`, `Spam`, and `BrandInfringement`. |
+| `SC` | **Verified Smart Contract** | Indicates the contract source code has been verified on Etherscan. Present when the contract is verified; absent otherwise. |
+| `CN` | **Contract Name** | The name of the smart contract as declared in the verified source code. |
+| `ENS` | **Ethereum Name Service** | The ENS name resolved to this address, if one exists. |
+
+<Note>
+  Not all attributes are present for every address. Only attributes that apply to the specific address are returned in the response. For example, `TT` and `TR` only appear for token contracts, and `ENS` only appears when an ENS name resolves to the queried address.
+</Note>
+
+## Token Reputation Values
+
+The `TR` attribute uses specific string values to classify token reputation:
+
+<Accordion title="Token Reputation Values">
+
+| Value | Meaning |
+|-------|---------|
+| `Ok` | The token is a legitimate, recognized token with no known negative signals. |
+| `Poor` | The token has low quality signals — potentially low liquidity, inactive, or generally poor standing. |
+| `Unsafe` | Interacting with this token carries significant risk. Exercise extreme caution. |
+| `Suspicious` | The token has been flagged as potentially malicious or deceptive. |
+| `Spam` | The token was distributed as spam, typically via unsolicited airdrops. Do not interact. |
+| `BrandInfringement` | The token is impersonating or infringing on the brand of a legitimate project. |
+
+</Accordion>
+
+## Example Response with Attributes
+
+When you call the [`getaddresstag`](/api-reference/endpoint/getaddresstag) endpoint for a token contract address, the response may include attribute codes alongside the nametag and reputation score:
+
+```json
+{
+  "status": "1",
+  "message": "OK",
+  "result": {
+    "address": "0x9f8f72aa9304c8b593d555f12ef6589cc3a579a2",
+    "nametag": "Maker: MKR Token",
+    "label": "Token",
+    "reputation": 1,
+    "attributes": {
+      "TT": "erc-20",
+      "TR": "Ok",
+      "SC": true,
+      "CN": "DSToken"
+    }
+  }
+}
+```
+
+## Related Pages
+
+- [Etherscan Metadata Introduction](/metadata/introduction) — Overview of the metadata dataset, access options, and use cases.
+- [Reputation Reference](/metadata/reputation-reference) — Descriptions of the numeric address reputation score levels.

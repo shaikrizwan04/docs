@@ -1,0 +1,199 @@
+---
+title: "Make Your First Etherscan API Call"
+sidebarTitle: "First API Call"
+description: "Learn the API base URL, query string structure, and response fields with a worked curl example that reads an ETH balance on Ethereum mainnet."
+---
+
+The Etherscan API is a plain REST API — all requests are HTTP GET calls with query string parameters, and all responses are JSON. This guide walks you through the base URL, the standard parameter set, a real working example, and what each field in the response means. You need an API key before you start — if you do not have one, [create it here](/set-up-your-api-key).
+
+## Base URL
+
+Every Etherscan API v2 call goes to the same base URL, regardless of which chain you are querying:
+
+```text
+https://api.etherscan.io/v2/api
+```
+
+Chain selection happens through the `chainid` query parameter, not through different subdomains or base paths. This means one URL and one API key serve all 60+ supported chains.
+
+## Query string structure
+
+Build a request by appending parameters to the base URL as a query string:
+
+```text
+https://api.etherscan.io/v2/api
+  ?chainid=<CHAIN_ID>
+  &module=<MODULE>
+  &action=<ACTION>
+  &<ENDPOINT_PARAMS>
+  &apikey=<YOUR_API_KEY>
+```
+
+<ResponseField name="chainid" type="integer" required>
+  Selects the chain to query. For example, `1` for Ethereum mainnet, `137` for Polygon, `42161` for Arbitrum One. See [Supported Chains](/supported-chains) for the full list.
+</ResponseField>
+
+<ResponseField name="module" type="string" required>
+  The API module to call. Examples: `account`, `contract`, `transaction`, `block`, `logs`, `stats`, `token`.
+</ResponseField>
+
+<ResponseField name="action" type="string" required>
+  The specific action to perform within the module. Examples: `balance`, `txlist`, `getabi`, `getsourcecode`.
+</ResponseField>
+
+<ResponseField name="apikey" type="string" required>
+  Your Etherscan API key. Every request must include this parameter.
+</ResponseField>
+
+## Worked example: check an ETH balance
+
+The following request reads the native ETH balance of Vitalik Buterin's public address (`0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045`) at the latest block on Ethereum mainnet.
+
+<Steps>
+  <Step title="Send the request">
+    Replace `YOUR_API_KEY` with your key and run the command:
+
+    <CodeGroup>
+
+    ```bash cURL
+    curl --request GET \
+      --url 'https://api.etherscan.io/v2/api?chainid=1&module=account&action=balance&address=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045&tag=latest&apikey=YOUR_API_KEY'
+    ```
+
+    ```python Python
+    import requests
+
+    response = requests.get(
+        "https://api.etherscan.io/v2/api",
+        params={
+            "chainid": 1,
+            "module": "account",
+            "action": "balance",
+            "address": "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
+            "tag": "latest",
+            "apikey": "YOUR_API_KEY",
+        },
+    )
+    print(response.json())
+    ```
+
+    ```javascript JavaScript
+    const params = new URLSearchParams({
+      chainid: "1",
+      module: "account",
+      action: "balance",
+      address: "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
+      tag: "latest",
+      apikey: "YOUR_API_KEY",
+    });
+
+    const res = await fetch(`https://api.etherscan.io/v2/api?${params}`);
+    const data = await res.json();
+    console.log(data);
+    ```
+
+    </CodeGroup>
+
+    Here is what each parameter does in this request:
+
+    | Parameter | Value | Purpose |
+    | --------- | ----- | ------- |
+    | `chainid` | `1` | Query Ethereum mainnet |
+    | `module` | `account` | Use the Account module |
+    | `action` | `balance` | Call the balance action |
+    | `address` | `0xd8dA6B…` | The address to check |
+    | `tag` | `latest` | Read balance at the latest block |
+    | `apikey` | `YOUR_API_KEY` | Your authentication key |
+  </Step>
+
+  <Step title="Read the response">
+    A successful response looks like this:
+
+    ```json
+    {
+      "status": "1",
+      "message": "OK",
+      "result": "172774397764084972158218"
+    }
+    ```
+
+    Every Etherscan API response shares the same top-level envelope:
+
+    <ResponseField name="status" type="string">
+      `"1"` on success, `"0"` on error. Always check this field before processing `result`.
+    </ResponseField>
+
+    <ResponseField name="message" type="string">
+      `"OK"` on success, `"NOTOK"` on error. On certain endpoint-level errors, this field may contain an error code string.
+    </ResponseField>
+
+    <ResponseField name="result" type="string | array | object">
+      The actual data returned by the endpoint. The type varies by endpoint — here it is a string containing the balance in **wei** (the smallest unit of ETH). Divide by 10¹⁸ to convert to ETH:
+
+      ```text
+      172774397764084972158218 wei ÷ 10^18 = ~172,774 ETH
+      ```
+
+      When `status` is `"0"`, `result` contains a human-readable error description instead of data.
+    </ResponseField>
+
+    <Note>
+      All balance values are returned in wei to avoid floating-point precision issues. Use your language's big-integer library when doing arithmetic on these values.
+    </Note>
+  </Step>
+
+  <Step title="Switch to another chain">
+    The same endpoint works on every supported chain. To read the same address's native token balance on Arbitrum One, change `chainid` to `42161`:
+
+    ```bash
+    curl --request GET \
+      --url 'https://api.etherscan.io/v2/api?chainid=42161&module=account&action=balance&address=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045&tag=latest&apikey=YOUR_API_KEY'
+    ```
+
+    <Tip>
+      The `module`, `action`, and all other parameters stay exactly the same — only `chainid` changes. See [Supported Chains](/supported-chains) for every available chain ID.
+    </Tip>
+  </Step>
+</Steps>
+
+## Error responses
+
+When something goes wrong, the response envelope signals it clearly:
+
+```json
+{
+  "status": "0",
+  "message": "NOTOK",
+  "result": "Max rate limit reached"
+}
+```
+
+Common error strings in `result` include:
+
+| Error string | Cause |
+| ------------ | ----- |
+| `Max rate limit reached` | You exceeded the calls-per-second limit for your plan |
+| `Invalid API Key` | The `apikey` parameter is missing or incorrect |
+| `Invalid address format` | The address parameter is malformed |
+| `No transactions found` | The query succeeded but returned an empty data set |
+
+<Warning>
+  A `status: "0"` response still returns HTTP 200. Always inspect the `status` field in the JSON body rather than relying on the HTTP status code alone.
+</Warning>
+
+## Keep your key secure
+
+Your API key counts against your plan's rate limits, so treat it like a credential.
+
+- Store it in an environment variable or secrets manager, not in source files.
+- Route all API calls through your backend — never expose the key in browser JavaScript or mobile apps.
+- If the key leaks, delete it from your [API key dashboard](https://etherscan.io/myapikey) and create a new one immediately.
+
+<CardGroup cols={2}>
+  <Card title="Supported Chains" icon="link-simple" href="/supported-chains">
+    Every chain ID you can pass as `chainid`.
+  </Card>
+  <Card title="Rate Limits" icon="gauge-high" href="/rate-limits">
+    Calls per second and daily limits for each plan.
+  </Card>
+</CardGroup>

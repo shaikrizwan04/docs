@@ -1,0 +1,97 @@
+---
+title: "Get Token Holder Count by Contract Address"
+sidebarTitle: "Holder Count"
+description: "Retrieve the total number of unique addresses that hold a given ERC-20 token. Returns a single integer count."
+---
+
+Use this endpoint to get a quick count of how many unique addresses hold an ERC-20 token. This is lighter-weight than fetching the full holder list and is ideal for dashboards, analytics, and token distribution summaries.
+
+<Note>
+  This is a PRO endpoint, available on the [Standard Plan](/rate-limits) and above.
+</Note>
+
+## Query Parameters
+
+<ParamField query="chainid" type="string" required>
+  The chain ID to query. For example, `1` for Ethereum mainnet or `42161` for Arbitrum. See the full list of [supported chains](/supported-chains).
+</ParamField>
+
+<ParamField query="module" type="string" required default="token">
+  Set to `token` for this endpoint.
+</ParamField>
+
+<ParamField query="action" type="string" required default="tokenholdercount">
+  Set to `tokenholdercount` for this endpoint.
+</ParamField>
+
+<ParamField query="contractaddress" type="string" required>
+  The ERC-20 token contract address. Example: `0xaaaebe6fe48e54f431b0c390cfaf0b017d09d42d`.
+</ParamField>
+
+<ParamField query="apikey" type="string" required>
+  Your Etherscan API key. [Set one up](/set-up-your-api-key) if you don't have one.
+</ParamField>
+
+## Response Fields
+
+<ResponseField name="status" type="string">
+  `1` if the request returned data, `0` otherwise.
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  `OK` on success, or an error description such as `NOTOK`.
+</ResponseField>
+
+<ResponseField name="result" type="string">
+  The total number of unique addresses holding the token.
+</ResponseField>
+
+## Example
+
+<CodeGroup>
+```bash cURL
+curl "https://api.etherscan.io/v2/api\
+?chainid=1\
+&module=token\
+&action=tokenholdercount\
+&contractaddress=0xaaaebe6fe48e54f431b0c390cfaf0b017d09d42d\
+&apikey=YOUR_API_KEY"
+```
+
+```javascript JavaScript
+const params = new URLSearchParams({
+  chainid: "1",
+  module: "token",
+  action: "tokenholdercount",
+  contractaddress: "0xaaaebe6fe48e54f431b0c390cfaf0b017d09d42d",
+  apikey: "YOUR_API_KEY",
+});
+
+const response = await fetch(`https://api.etherscan.io/v2/api?${params}`);
+const data = await response.json();
+console.log("Holder count:", data.result);
+```
+
+```python Python
+import requests
+
+params = {
+    "chainid": "1",
+    "module": "token",
+    "action": "tokenholdercount",
+    "contractaddress": "0xaaaebe6fe48e54f431b0c390cfaf0b017d09d42d",
+    "apikey": "YOUR_API_KEY",
+}
+
+response = requests.get("https://api.etherscan.io/v2/api", params=params)
+print("Holder count:", response.json()["result"])
+```
+</CodeGroup>
+
+```json Example Response
+{
+  "status": "1",
+  "message": "OK",
+  "result": "30506"
+}
+```

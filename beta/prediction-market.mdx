@@ -1,0 +1,59 @@
+---
+title: "Prediction Market Data APIs (Beta)"
+sidebarTitle: "Prediction Market"
+description: "Beta access to prediction market trade data from platforms like Polymarket, useful for tax, accounting, and on-chain analytics."
+---
+
+Etherscan is actively indexing trade activity from on-chain prediction markets, starting with Polymarket. Prediction markets settle real-world outcomes using smart contracts, generating a rich stream of on-chain events — bets placed, positions resolved, payouts claimed — that are difficult to reconstruct from raw transaction data alone. The beta APIs provide structured access to this data, making it significantly easier to integrate into tax software, accounting tools, or analytics dashboards.
+
+## Current Status
+
+Etherscan is currently indexing trades from **Polymarket** on the Polygon network. The team is expanding coverage to additional prediction market platforms over time.
+
+<Note>
+  These APIs are in **beta**. Endpoints, response schemas, and access requirements may change before general availability.
+</Note>
+
+## How to Get Beta Access
+
+Beta access is granted on a case-by-case basis. To request access:
+
+<Steps>
+  <Step title="Identify your use case">
+    Beta access is prioritized for teams building tax tools, accounting software, compliance systems, or analytics platforms that integrate prediction market data.
+  </Step>
+  <Step title="Contact Etherscan">
+    Send a brief description of your use case to Etherscan via the [contact form](https://etherscan.io/contactus?id=11). Include the platforms you want to integrate, your expected query volume, and your intended application.
+  </Step>
+  <Step title="Receive your credentials">
+    The team will review your request and follow up with API access details if your use case qualifies.
+  </Step>
+</Steps>
+
+## Use Cases
+
+<CardGroup cols={2}>
+  <Card title="Tax & Accounting" icon="receipt">
+    Reconstruct position history, calculate profit/loss per resolved market, and generate audit-ready transaction records for prediction market activity.
+  </Card>
+  <Card title="Portfolio Analytics" icon="chart-line">
+    Track open positions, historical performance, and exposure across multiple prediction markets from a single data source.
+  </Card>
+  <Card title="Compliance & Reporting" icon="shield-check">
+    Identify and flag transactions connected to specific prediction market contracts for regulatory reporting.
+  </Card>
+  <Card title="Research & Data Science" icon="magnifying-glass-chart">
+    Analyze market liquidity, resolution patterns, and trader behavior at scale using structured, indexed data.
+  </Card>
+</CardGroup>
+
+## Covered Platforms
+
+| Platform | Network | Status |
+|----------|---------|--------|
+| Polymarket | Polygon | Active (beta) |
+| Additional platforms | TBD | Coming soon |
+
+<Tip>
+  If you're building on a prediction market that isn't listed above and want Etherscan to index it, mention it in your contact request. The team is actively expanding coverage based on developer demand.
+</Tip>

@@ -1,0 +1,128 @@
+---
+title: "Get Token Holder List by Contract Address"
+sidebarTitle: "Holder List"
+description: "Retrieve a paginated list of all ERC-20 token holders and their balances for a given contract address. Requires a Standard plan API key."
+---
+
+Use this endpoint to retrieve the full list of ERC-20 token holders for a given contract, paginated by `page` and `offset`. Unlike the [topholders](/api-reference/endpoint/topholders) endpoint, this returns all holders in paginated form rather than just the top ranks, making it suitable for full exports and holder distribution analysis.
+
+<Note>
+  This is a PRO endpoint, available on the [Standard Plan](/rate-limits) and above.
+</Note>
+
+## Query Parameters
+
+<ParamField query="chainid" type="string" required>
+  The chain ID to query. For example, `1` for Ethereum mainnet or `42161` for Arbitrum. See the full list of [supported chains](/supported-chains).
+</ParamField>
+
+<ParamField query="module" type="string" required default="token">
+  Set to `token` for this endpoint.
+</ParamField>
+
+<ParamField query="action" type="string" required default="tokenholderlist">
+  Set to `tokenholderlist` for this endpoint.
+</ParamField>
+
+<ParamField query="contractaddress" type="string" required>
+  The ERC-20 token contract address. Example: `0xaaaebe6fe48e54f431b0c390cfaf0b017d09d42d`.
+</ParamField>
+
+<ParamField query="page" type="integer">
+  Page number for paginated results. Starts at `1`.
+</ParamField>
+
+<ParamField query="offset" type="integer">
+  Number of records per page. Example: `100`.
+</ParamField>
+
+<ParamField query="apikey" type="string" required>
+  Your Etherscan API key. [Set one up](/set-up-your-api-key) if you don't have one.
+</ParamField>
+
+## Response Fields
+
+<ResponseField name="status" type="string">
+  `1` if the request returned data, `0` otherwise.
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  `OK` on success, or an error description such as `NOTOK`.
+</ResponseField>
+
+<ResponseField name="result" type="array">
+  Array of token holder records.
+  <Expandable title="result item fields">
+    <ResponseField name="TokenHolderAddress" type="string">
+      Address of the token holder.
+    </ResponseField>
+    <ResponseField name="TokenHolderQuantity" type="string">
+      Quantity of tokens held by this address, in the token's smallest unit.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Example
+
+<CodeGroup>
+```bash cURL
+curl "https://api.etherscan.io/v2/api\
+?chainid=1\
+&module=token\
+&action=tokenholderlist\
+&contractaddress=0xaaaebe6fe48e54f431b0c390cfaf0b017d09d42d\
+&page=1\
+&offset=100\
+&apikey=YOUR_API_KEY"
+```
+
+```javascript JavaScript
+const params = new URLSearchParams({
+  chainid: "1",
+  module: "token",
+  action: "tokenholderlist",
+  contractaddress: "0xaaaebe6fe48e54f431b0c390cfaf0b017d09d42d",
+  page: "1",
+  offset: "100",
+  apikey: "YOUR_API_KEY",
+});
+
+const response = await fetch(`https://api.etherscan.io/v2/api?${params}`);
+const data = await response.json();
+console.log(data.result);
+```
+
+```python Python
+import requests
+
+params = {
+    "chainid": "1",
+    "module": "token",
+    "action": "tokenholderlist",
+    "contractaddress": "0xaaaebe6fe48e54f431b0c390cfaf0b017d09d42d",
+    "page": 1,
+    "offset": 100,
+    "apikey": "YOUR_API_KEY",
+}
+
+response = requests.get("https://api.etherscan.io/v2/api", params=params)
+print(response.json()["result"])
+```
+</CodeGroup>
+
+```json Example Response
+{
+  "status": "1",
+  "message": "OK",
+  "result": [
+    {
+      "TokenHolderAddress": "0xa5b7d615c99f011a22f16f5809890ca6900200a3",
+      "TokenHolderQuantity": "2"
+    },
+    {
+      "TokenHolderAddress": "0x0412a1d25fbdcabc536603198330021ccb13240b",
+      "TokenHolderQuantity": "3385700"
+    }
+  ]
+}
+```

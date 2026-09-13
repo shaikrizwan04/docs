@@ -1,0 +1,46 @@
+---
+title: "Build with AI: Give AI Agents Live Onchain Data Access"
+sidebarTitle: "Overview"
+description: "Give your AI agents direct access to live onchain data across 60+ EVM chains using the Etherscan MCP server, CLI, and installable agent skills."
+---
+
+The Etherscan AI tools give your agents and coding assistants the same live onchain data that powers etherscan.io — across all 60+ supported chains. Whether you are building a conversational agent, a terminal automation workflow, or a specialized onchain investigation pipeline, there is an interface designed for the job. Each tool is built around the Etherscan API, so every answer is grounded in real chain data. Start by [creating a free API key](/set-up-your-api-key), then pick the tool that fits your workflow below.
+
+<Note>
+  Chain availability and endpoint access depend on your [API plan](https://etherscan.io/api/pricing). All tools support the full list of [supported chains](/supported-chains).
+</Note>
+
+## Core tools
+
+<CardGroup cols={2}>
+  <Card title="Etherscan MCP" icon="plug" href="/build-with-ai/mcp">
+    Connect AI agents like Claude and ChatGPT to live Etherscan API data over the Model Context Protocol. Ask in plain language — the agent picks the right tools and calls the API for you.
+  </Card>
+  <Card title="Etherscan CLI" icon="terminal" href="/build-with-ai/cli">
+    Query the Etherscan API from the terminal, scripts, and CI pipelines. Structured JSON output by default, with table and CSV options for human-readable results.
+  </Card>
+  <Card title="Etherscan Orchestrator" icon="sparkles" href="/build-with-ai/skills/etherscan">
+    An installable agent skill that routes any onchain task to the right Etherscan interface — explorer website, API, CLI, or MCP — and constructs the request to spec.
+  </Card>
+  <Card title="Etherscan Flow" icon="route" href="/build-with-ai/skills/etherscan-flow">
+    An agent skill that traces, verifies, and visualizes onchain money flows into an import-ready case file on etherscan.io/flow.
+  </Card>
+  <Card title="Contract Review" icon="file-code" href="/build-with-ai/skills/etherscan-contract-review">
+    An agent skill that explains what a verified deployed contract does, with a source reference behind every claim.
+  </Card>
+  <Card title="Transaction Debugger" icon="bug" href="/build-with-ai/skills/etherscan-transaction-debugger">
+    An agent skill that explains what a transaction did and why, from live Etherscan data with verifiable evidence links.
+  </Card>
+</CardGroup>
+
+## How the tools fit together
+
+Each tool targets a different point in an AI workflow. Use them individually or combine them:
+
+- **MCP** is the right choice when you want a conversational agent to answer onchain questions interactively. Connect it once and the agent selects the right API tools on your behalf.
+- **CLI** is the right choice for terminal automation, CI pipelines, and scripting. Output is structured JSON by default so it feeds cleanly into `jq`, Python, or any downstream processor.
+- **Skills** are prompt-level instructions you install into an agent once. They teach the agent a specific onchain workflow — routing tasks (Orchestrator), tracing fund flows (Flow), reviewing contract source (Contract Review), or debugging transactions (Transaction Debugger) — so you can ask in plain language without specifying API details.
+
+## Machine-readable docs
+
+Point an agent straight at the documentation: load [`llms.txt`](https://docs.etherscan.io/llms.txt) for the index or [`llms-full.txt`](https://docs.etherscan.io/llms-full.txt) for the full export. Append `.md` to any page URL for its raw markdown. For an agent that searches the docs as it works, connect the [Docs MCP](/build-with-ai/docs-mcp) to query this documentation directly over MCP.

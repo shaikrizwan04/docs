@@ -1,0 +1,127 @@
+---
+title: "Get Contract Creator and Creation Transaction"
+sidebarTitle: "Contract Creation"
+description: "Retrieve the deployer address, creation transaction hash, block number, and creation bytecode for up to 5 contract addresses in one call."
+---
+
+Use this endpoint to look up who deployed a contract and in which transaction. You can pass up to five contract addresses in a single request as a comma-separated list. The response includes the creator address, the transaction hash that deployed the contract, the block number, the timestamp, and the full creation bytecode. If a contract was deployed by a factory, the factory address is also included.
+
+## Query Parameters
+
+<ParamField query="chainid" type="string" required>
+  The chain ID to query. For example, `1` for Ethereum mainnet or `42161` for Arbitrum. See the full list of [supported chains](/supported-chains).
+</ParamField>
+
+<ParamField query="module" type="string" required default="contract">
+  Set to `contract` for this endpoint.
+</ParamField>
+
+<ParamField query="action" type="string" required default="getcontractcreation">
+  Set to `getcontractcreation` for this endpoint.
+</ParamField>
+
+<ParamField query="contractaddresses" type="string" required>
+  Up to 5 contract addresses, comma-separated. Example: `0xB83c27805aAcA5C7082eB45C868d955Cf04C337F,0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45`.
+</ParamField>
+
+<ParamField query="apikey" type="string" required>
+  Your Etherscan API key. [Set one up](/set-up-your-api-key) if you don't have one.
+</ParamField>
+
+## Response Fields
+
+<ResponseField name="status" type="string">
+  `1` if the request returned data, `0` otherwise.
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  `OK` on success, or an error description such as `NOTOK`.
+</ResponseField>
+
+<ResponseField name="result" type="array">
+  Array of contract creation records, one per address queried.
+  <Expandable title="result item fields">
+    <ResponseField name="contractAddress" type="string">
+      Address of the deployed contract.
+    </ResponseField>
+    <ResponseField name="contractCreator" type="string">
+      Address that submitted the deployment transaction.
+    </ResponseField>
+    <ResponseField name="txHash" type="string">
+      Transaction hash of the contract deployment.
+    </ResponseField>
+    <ResponseField name="blockNumber" type="string">
+      Block number in which the contract was deployed.
+    </ResponseField>
+    <ResponseField name="timestamp" type="string">
+      Unix timestamp (seconds) of the deployment transaction.
+    </ResponseField>
+    <ResponseField name="contractFactory" type="string">
+      Address of the factory that deployed the contract, if applicable. Empty otherwise.
+    </ResponseField>
+    <ResponseField name="creationBytecode" type="string">
+      Full bytecode submitted in the deployment transaction.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Example
+
+<CodeGroup>
+```bash cURL
+curl "https://api.etherscan.io/v2/api\
+?chainid=1\
+&module=contract\
+&action=getcontractcreation\
+&contractaddresses=0xdac17f958d2ee523a2206206994597c13d831ec7\
+&apikey=YOUR_API_KEY"
+```
+
+```javascript JavaScript
+const params = new URLSearchParams({
+  chainid: "1",
+  module: "contract",
+  action: "getcontractcreation",
+  contractaddresses:
+    "0xdac17f958d2ee523a2206206994597c13d831ec7,0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45",
+  apikey: "YOUR_API_KEY",
+});
+
+const response = await fetch(`https://api.etherscan.io/v2/api?${params}`);
+const data = await response.json();
+console.log(data.result);
+```
+
+```python Python
+import requests
+
+params = {
+    "chainid": "1",
+    "module": "contract",
+    "action": "getcontractcreation",
+    "contractaddresses": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "apikey": "YOUR_API_KEY",
+}
+
+response = requests.get("https://api.etherscan.io/v2/api", params=params)
+print(response.json()["result"])
+```
+</CodeGroup>
+
+```json Example Response
+{
+  "status": "1",
+  "message": "OK",
+  "result": [
+    {
+      "contractAddress": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+      "contractCreator": "0x36928500bc1dcd7af6a2b4008875cc336b927d57",
+      "txHash": "0x2f1c5c2b44f771e942a8506148e256f94f1a464babc938ae0690c6e34cd79190",
+      "blockNumber": "4634748",
+      "timestamp": "1511829681",
+      "contractFactory": "",
+      "creationBytecode": "0x606060405260..."
+    }
+  ]
+}
+```

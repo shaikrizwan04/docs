@@ -1,0 +1,140 @@
+---
+title: "Etherscan API Rate Limits and Plan Tiers"
+sidebarTitle: "Rate Limits"
+description: "Calls-per-second and daily call limits for every Etherscan API plan, PRO endpoint access by tier, and tips for staying within your quota."
+---
+
+The Etherscan API enforces two independent limits on every account: a **calls-per-second (CPS)** ceiling that caps burst traffic, and a **daily call quota** that resets every 24 hours. Both limits are cumulative across all API keys you have created — splitting your traffic across multiple keys does not increase your allowance. Choose the plan tier that fits your throughput needs, then use the strategies below to make every call count.
+
+## Rate limits by plan
+
+| Plan | Calls / Second | Calls / Day | PRO Endpoints | Starting Price |
+| ---- | -------------- | ----------- | ------------- | -------------- |
+| **Free** | 3 | 100,000 | ✗ Not available | $0 |
+| **Lite** | 5 | 100,000 | ✗ Not available | $49 / mo |
+| **Standard** | 10 | 200,000 | ✓ Available | $199 / mo |
+| **Advanced** | 20 | 500,000 | ✓ Available | $299 / mo |
+| **Professional** | 30 | 1,000,000 | ✓ Available | $399 / mo |
+| **Pro Plus** | 30 | 1,500,000 | ✓ Available | $899 / mo |
+| **Dedicated / Custom** | Unmetered | Unmetered | ✓ Available | Contact sales |
+
+<Note>
+  Quarterly and annual subscriptions are available at discounted rates (10% off quarterly, 15% off annually). Visit [etherscan.io/api/pricing](https://etherscan.io/api/pricing) for current prices.
+</Note>
+
+<Card title="View API plans and pricing" icon="tags" href="https://etherscan.io/api/pricing" horizontal>
+  Compare tiers side by side and upgrade for higher rate limits and PRO endpoints.
+</Card>
+
+## Chain availability by plan
+
+The Free tier covers approximately 90% of supported chains. A small number of chains — including Base, BNB Smart Chain, OP Mainnet, and Avalanche C-Chain — are accessible on all paid plans. The Lite tier and above unlock access to every supported chain.
+
+<Warning>
+  Gnosis (Chain ID 100) community endpoints will require a **Lite plan or above** starting **September 1, 2026**. Pro endpoints on Gnosis require a **Standard plan or above**. Source code and ABI endpoints remain free-tier accessible on all chains.
+</Warning>
+
+## PRO endpoints
+
+PRO endpoints provide deeper historical and analytical data — for example, historical token balances, daily transaction statistics, top token holders, and address metadata. They are available on the **Standard plan and above**.
+
+<Accordion title="Which endpoints are PRO endpoints?">
+  PRO endpoints include, but are not limited to:
+
+  - **Historical balances** — `balancehistory`, `tokenbalancehistory`, `tokensupplyhistory`
+  - **Token analytics** — `topholders`, `tokenholderlist`, `tokenholdercount`, `tokeninfo`
+  - **Daily network stats** — `dailytx`, `dailygasused`, `dailyavggasprice`, `dailyavgblocksize`, and related stats endpoints
+  - **Address metadata** — `getaddresstag` (Pro Plus and above)
+  - **Advanced filters** — `advanced-filter-txlist`, `advanced-filter-tokentx`, and related filter endpoints
+
+  See the [Endpoint Overview](/endpoint-overview) for the complete list and per-endpoint plan requirements.
+</Accordion>
+
+## What happens when you hit a limit
+
+When you exceed the calls-per-second limit, the API returns an HTTP 200 response with a rate-limit error in the body:
+
+```json
+{
+  "status": "0",
+  "message": "NOTOK",
+  "result": "Max rate limit reached"
+}
+```
+
+The daily quota behaves the same way once exhausted. Both limits reset automatically — the CPS limit resets within the same second, and the daily quota resets at UTC midnight.
+
+<Warning>
+  The API returns HTTP 200 even on rate-limit errors. Check `status` in the JSON body, not the HTTP status code, to detect throttling in your code.
+</Warning>
+
+## Tips for staying within your limits
+
+Apply these strategies to get the most out of your plan quota:
+
+<AccordionGroup>
+  <Accordion title="Cache responses locally">
+    Blockchain data is immutable for confirmed blocks. Cache responses for balances, transaction history, and contract ABIs so you are not re-fetching data that cannot change. An in-memory store or Redis works well for short-lived data; a database suits long-term caching of historical records.
+  </Accordion>
+
+  <Accordion title="Use multi-address endpoints">
+    The `balancemulti` action fetches native token balances for up to 20 addresses in a single API call. Batch your requests wherever the API supports it instead of looping over individual addresses.
+
+    ```bash
+    curl 'https://api.etherscan.io/v2/api?chainid=1&module=account&action=balancemulti&address=0xAddr1,0xAddr2,0xAddr3&tag=latest&apikey=YOUR_API_KEY'
+    ```
+  </Accordion>
+
+  <Accordion title="Paginate with startblock and endblock">
+    Transaction list endpoints return up to 10,000 records per call. Use `startblock`, `endblock`, `page`, and `offset` to retrieve only the records you need rather than pulling entire histories in one request.
+
+    ```bash
+    curl 'https://api.etherscan.io/v2/api?chainid=1&module=account&action=txlist&address=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045&startblock=19000000&endblock=19100000&page=1&offset=100&apikey=YOUR_API_KEY'
+    ```
+  </Accordion>
+
+  <Accordion title="Implement exponential back-off on errors">
+    When your code receives a `Max rate limit reached` response, wait before retrying. Start with a short delay (for example, 200 ms), double it on each subsequent failure, and cap at a maximum retry count. This avoids hammering the API and burning through your quota while the back-off window clears.
+
+    ```python
+    import time, requests
+
+    def call_with_backoff(url, params, max_retries=5):
+        delay = 0.2
+        for attempt in range(max_retries):
+            r = requests.get(url, params=params)
+            data = r.json()
+            if data.get("status") == "1":
+                return data
+            if "rate limit" in data.get("result", "").lower():
+                time.sleep(delay)
+                delay *= 2
+            else:
+                raise ValueError(data.get("result"))
+        raise RuntimeError("Max retries exceeded")
+    ```
+  </Accordion>
+
+  <Accordion title="Monitor your usage with the API">
+    Use the `getapilimit` endpoint to check your current usage and remaining quota programmatically, so you can alert before hitting the ceiling rather than after:
+
+    ```bash
+    curl 'https://api.etherscan.io/v2/api?module=stats&action=getapilimit&apikey=YOUR_API_KEY'
+    ```
+
+    The response includes your current credit usage and the maximum allowed for the interval.
+  </Accordion>
+</AccordionGroup>
+
+## Upgrading your plan
+
+If you consistently approach your daily quota or need access to PRO endpoints, upgrading is straightforward from the pricing page. Plan changes take effect within 24 hours of payment confirmation.
+
+<CardGroup cols={2}>
+  <Card title="View Pricing Plans" icon="credit-card" href="https://etherscan.io/api/pricing">
+    Compare all plans and subscribe directly from the Etherscan website.
+  </Card>
+  <Card title="Supported Chains" icon="link-simple" href="/supported-chains">
+    See which chains are available on the Free tier vs. paid plans.
+  </Card>
+</CardGroup>

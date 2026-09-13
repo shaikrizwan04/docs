@@ -1,0 +1,105 @@
+---
+title: "Check Transaction Receipt Status"
+sidebarTitle: "Receipt Status"
+description: "Retrieve the transaction receipt status for a transaction hash — returns 1 for success, 0 for failure. Only available for post-Byzantium blocks."
+---
+
+Use this endpoint to check whether a transaction was successfully included and executed based on its EVM receipt status. A status of `1` means the transaction succeeded; `0` means it was reverted. Note that this endpoint only works for transactions on **post-Byzantium** blocks (Ethereum block 4,370,000 and later), as earlier blocks do not include a receipt status field.
+
+<Note>
+  To check the execution error message in addition to pass/fail status, use [getstatus](/api-reference/endpoint/getstatus) instead.
+</Note>
+
+## Query Parameters
+
+<ParamField query="chainid" type="string" required>
+  The chain ID to query. For example, `1` for Ethereum mainnet or `42161` for Arbitrum. See the full list of [supported chains](/supported-chains).
+</ParamField>
+
+<ParamField query="module" type="string" required default="transaction">
+  Set to `transaction` for this endpoint.
+</ParamField>
+
+<ParamField query="action" type="string" required default="gettxreceiptstatus">
+  Set to `gettxreceiptstatus` for this endpoint.
+</ParamField>
+
+<ParamField query="txhash" type="string" required>
+  The transaction hash to check. Example: `0x513c1ba0bebf66436b5fed86ab668452b7805593c05073eb2d51d3a52f480a76`.
+</ParamField>
+
+<ParamField query="apikey" type="string" required>
+  Your Etherscan API key. [Set one up](/set-up-your-api-key) if you don't have one.
+</ParamField>
+
+## Response Fields
+
+<ResponseField name="status" type="string">
+  `1` if the request returned data, `0` otherwise.
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  `OK` on success, or an error description such as `NOTOK`.
+</ResponseField>
+
+<ResponseField name="result" type="object">
+  <Expandable title="result fields">
+    <ResponseField name="status" type="string">
+      Transaction receipt status. `1` for success, `0` for failure. Empty for pre-Byzantium transactions.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Example
+
+<CodeGroup>
+```bash cURL
+curl "https://api.etherscan.io/v2/api\
+?chainid=1\
+&module=transaction\
+&action=gettxreceiptstatus\
+&txhash=0x513c1ba0bebf66436b5fed86ab668452b7805593c05073eb2d51d3a52f480a76\
+&apikey=YOUR_API_KEY"
+```
+
+```javascript JavaScript
+const params = new URLSearchParams({
+  chainid: "1",
+  module: "transaction",
+  action: "gettxreceiptstatus",
+  txhash: "0x513c1ba0bebf66436b5fed86ab668452b7805593c05073eb2d51d3a52f480a76",
+  apikey: "YOUR_API_KEY",
+});
+
+const response = await fetch(`https://api.etherscan.io/v2/api?${params}`);
+const data = await response.json();
+const success = data.result.status === "1";
+console.log("Transaction succeeded:", success);
+```
+
+```python Python
+import requests
+
+params = {
+    "chainid": "1",
+    "module": "transaction",
+    "action": "gettxreceiptstatus",
+    "txhash": "0x513c1ba0bebf66436b5fed86ab668452b7805593c05073eb2d51d3a52f480a76",
+    "apikey": "YOUR_API_KEY",
+}
+
+response = requests.get("https://api.etherscan.io/v2/api", params=params)
+status = response.json()["result"]["status"]
+print("Success:", status == "1")
+```
+</CodeGroup>
+
+```json Example Response
+{
+  "status": "1",
+  "message": "OK",
+  "result": {
+    "status": "1"
+  }
+}
+```

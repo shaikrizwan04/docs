@@ -1,0 +1,137 @@
+---
+title: "Get Plasma Bridge Deposits by Address"
+sidebarTitle: "txnbridge"
+description: "Returns a list of Plasma bridge deposit transactions received by an address on Polygon, Gnosis, or BitTorrent Chain mainnets."
+---
+
+The Plasma bridge is an older cross-chain messaging protocol used primarily on Polygon (previously Matic). When users deposit tokens from Ethereum mainnet into Polygon via the Plasma bridge, those deposits appear on the L2 chain as special bridge transactions. This endpoint retrieves those inbound Plasma deposit records for a specified address, including token details and amounts.
+
+<Note>
+  This endpoint is supported on **Polygon Mainnet** (`chainid=137`), **Gnosis**, and **BitTorrent Chain Mainnet**. It is not available on Ethereum mainnet.
+</Note>
+
+## Parameters
+
+<ParamField query="chainid" type="string" required>
+  The L2 chain to query. Use `137` for Polygon mainnet. See [supported chains](/supported-chains) for a full list.
+</ParamField>
+
+<ParamField query="module" type="string" required default="account">
+  Set to `account`.
+</ParamField>
+
+<ParamField query="action" type="string" required default="txnbridge">
+  Set to `txnbridge`.
+</ParamField>
+
+<ParamField query="address" type="string">
+  The address to query for Plasma deposit transactions.
+</ParamField>
+
+<ParamField query="page" type="integer">
+  Page number for pagination. Starts at `1`.
+</ParamField>
+
+<ParamField query="offset" type="integer">
+  Number of records per page. Maximum is `1000`.
+</ParamField>
+
+<ParamField query="apikey" type="string" required>
+  Your Etherscan API key. [Get one here](/set-up-your-api-key).
+</ParamField>
+
+## Response
+
+<ResponseField name="status" type="string">
+  `1` if records were returned, `0` on error or no records.
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  `OK` on success, or an error description such as `NOTOK`.
+</ResponseField>
+
+<ResponseField name="result" type="array">
+  Array of Plasma deposit transaction objects.
+
+  <Expandable title="Deposit transaction fields">
+    <ResponseField name="hash" type="string">Hash of the bridge transaction.</ResponseField>
+    <ResponseField name="blockNumber" type="string">Block number of the transaction.</ResponseField>
+    <ResponseField name="timeStamp" type="string">Unix timestamp of the transaction in seconds.</ResponseField>
+    <ResponseField name="from" type="string">Sender address (often the zero address for bridge deposits).</ResponseField>
+    <ResponseField name="address" type="string">Address that received the bridged tokens.</ResponseField>
+    <ResponseField name="amount" type="string">Amount of tokens bridged, in the token's smallest unit.</ResponseField>
+    <ResponseField name="tokenName" type="string">Name of the bridged token.</ResponseField>
+    <ResponseField name="symbol" type="string">Symbol of the bridged token.</ResponseField>
+    <ResponseField name="contractAddress" type="string">Contract address of the bridged token.</ResponseField>
+    <ResponseField name="divisor" type="string">Number of decimals the token uses.</ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Example
+
+<CodeGroup>
+```bash cURL
+curl "https://api.etherscan.io/v2/api\
+?chainid=137\
+&module=account\
+&action=txnbridge\
+&address=0x4880bd4695a8e59dc527d124085749744b6c988e\
+&page=1\
+&offset=100\
+&apikey=YOUR_API_KEY"
+```
+
+```javascript JavaScript
+const params = new URLSearchParams({
+  chainid: "137",
+  module: "account",
+  action: "txnbridge",
+  address: "0x4880bd4695a8e59dc527d124085749744b6c988e",
+  page: "1",
+  offset: "100",
+  apikey: "YOUR_API_KEY",
+});
+
+const res = await fetch(`https://api.etherscan.io/v2/api?${params}`);
+const data = await res.json();
+console.log(data.result);
+```
+
+```python Python
+import requests
+
+params = {
+    "chainid": "137",
+    "module": "account",
+    "action": "txnbridge",
+    "address": "0x4880bd4695a8e59dc527d124085749744b6c988e",
+    "page": 1,
+    "offset": 100,
+    "apikey": "YOUR_API_KEY",
+}
+
+r = requests.get("https://api.etherscan.io/v2/api", params=params)
+print(r.json()["result"])
+```
+</CodeGroup>
+
+```json Example Response
+{
+  "status": "1",
+  "message": "OK",
+  "result": [
+    {
+      "hash": "0xf645deb2b6fbb8b76ccbcf4bde782e28d3520e8a30e9a568b9b8c526e2fd8434",
+      "blockNumber": "51844560",
+      "timeStamp": "1704181285",
+      "from": "0x0000000000000000000000000000000000000000",
+      "address": "0x4880bd4695a8e59dc527d124085749744b6c988e",
+      "amount": "2341706540000000000",
+      "tokenName": "Polygon Token",
+      "symbol": "POL",
+      "contractAddress": "0x0000000000000000000000000000000000001010",
+      "divisor": "18"
+    }
+  ]
+}
+```

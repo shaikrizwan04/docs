@@ -1,0 +1,166 @@
+---
+title: "Get Internal Transactions by Address with Pagination"
+sidebarTitle: "txlistinternal"
+description: "Retrieve internal transactions triggered by smart contracts for a specific address, with block range filtering, pagination, and sort control."
+---
+
+Use this endpoint to fetch internal transactions — value transfers and calls that occur between contracts as part of executing a parent transaction — for a specific address. Unlike normal transactions, internal transactions are not directly submitted to the network; they are triggered by smart contract execution. Each record includes the call type, gas details, and an error flag if the internal call reverted.
+
+<Tip>
+  Internal transactions don't have their own hash. The `hash` field in each result is the hash of the **parent** transaction that triggered the internal call.
+</Tip>
+
+## Parameters
+
+<ParamField query="chainid" type="string" required>
+  The chain ID to query. Use `1` for Ethereum mainnet or any chain from the [supported chains](/supported-chains) list.
+</ParamField>
+
+<ParamField query="module" type="string" required default="account">
+  Set to `account` for this endpoint.
+</ParamField>
+
+<ParamField query="action" type="string" required default="txlistinternal">
+  Set to `txlistinternal` for this endpoint.
+</ParamField>
+
+<ParamField query="address" type="string" required>
+  The address to query for internal transactions.
+</ParamField>
+
+<ParamField query="startblock" type="integer" default="0">
+  Starting block number to search from.
+</ParamField>
+
+<ParamField query="endblock" type="integer" default="999999999">
+  Ending block number to search to.
+</ParamField>
+
+<ParamField query="page" type="integer" default="1">
+  Page number for pagination.
+</ParamField>
+
+<ParamField query="offset" type="integer" default="10">
+  Number of records per page.
+</ParamField>
+
+<ParamField query="sort" type="string" default="asc">
+  Sort order. Use `asc` for oldest first, `desc` for latest first.
+</ParamField>
+
+<ParamField query="apikey" type="string" required>
+  Your Etherscan API key. [Set one up](/set-up-your-api-key) if you don't have one.
+</ParamField>
+
+## Response
+
+<ResponseField name="status" type="string">
+  `1` if the request returned data, `0` otherwise.
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  `OK` on success. See [common error messages](/common-error-messages) for error values.
+</ResponseField>
+
+<ResponseField name="result" type="array">
+  An array of internal transaction objects.
+
+  <Expandable title="result[]">
+    <ResponseField name="blockNumber" type="string">Block number in which the parent transaction was included.</ResponseField>
+    <ResponseField name="timeStamp" type="string">Time the block was mined, as a UNIX timestamp in seconds.</ResponseField>
+    <ResponseField name="hash" type="string">Hash of the parent transaction that triggered this internal call.</ResponseField>
+    <ResponseField name="from" type="string">Address that initiated the internal call.</ResponseField>
+    <ResponseField name="to" type="string">Recipient address. Empty for contract-creation internal calls.</ResponseField>
+    <ResponseField name="value" type="string">Amount of the native token transferred, in wei.</ResponseField>
+    <ResponseField name="contractAddress" type="string">Address of any contract created by this internal call. Empty otherwise.</ResponseField>
+    <ResponseField name="input" type="string">Input data of the internal call, as a hex string.</ResponseField>
+    <ResponseField name="type" type="string">Type of internal call: `call`, `create`, `create2`, or `selfdestruct`.</ResponseField>
+    <ResponseField name="gas" type="string">Gas forwarded to this internal call.</ResponseField>
+    <ResponseField name="gasUsed" type="string">Gas actually consumed by this internal call.</ResponseField>
+    <ResponseField name="traceId" type="string">Position of this internal call in the transaction's execution trace.</ResponseField>
+    <ResponseField name="isError" type="string">`0` if the call succeeded, `1` if it failed.</ResponseField>
+    <ResponseField name="errCode" type="string">Error code if the call failed. Empty on success.</ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Example
+
+<CodeGroup>
+```bash cURL
+curl "https://api.etherscan.io/v2/api\
+?chainid=1\
+&module=account\
+&action=txlistinternal\
+&address=0x2c1ba59d6f58433fb1eaee7d20b26ed83bda51a3\
+&startblock=0\
+&endblock=999999999\
+&page=1\
+&offset=10\
+&sort=asc\
+&apikey=YOUR_API_KEY"
+```
+
+```python Python
+import requests
+
+params = {
+    "chainid": "1",
+    "module": "account",
+    "action": "txlistinternal",
+    "address": "0x2c1ba59d6f58433fb1eaee7d20b26ed83bda51a3",
+    "startblock": 0,
+    "endblock": 999999999,
+    "page": 1,
+    "offset": 10,
+    "sort": "asc",
+    "apikey": "YOUR_API_KEY",
+}
+
+response = requests.get("https://api.etherscan.io/v2/api", params=params)
+print(response.json())
+```
+
+```javascript JavaScript
+const params = new URLSearchParams({
+  chainid: "1",
+  module: "account",
+  action: "txlistinternal",
+  address: "0x2c1ba59d6f58433fb1eaee7d20b26ed83bda51a3",
+  startblock: "0",
+  endblock: "999999999",
+  page: "1",
+  offset: "10",
+  sort: "asc",
+  apikey: "YOUR_API_KEY",
+});
+
+const response = await fetch(`https://api.etherscan.io/v2/api?${params}`);
+const data = await response.json();
+console.log(data);
+```
+</CodeGroup>
+
+```json Response
+{
+  "status": "1",
+  "message": "OK",
+  "result": [
+    {
+      "blockNumber": "2535368",
+      "timeStamp": "1477837690",
+      "hash": "0x8a1a9989bda84f80143181a68bc137ecefa64d0d4ebde45dd94fc0cf49e70cb6",
+      "from": "0x20d42f2e99a421147acf198d775395cac2e8b03d",
+      "to": "",
+      "value": "0",
+      "contractAddress": "0x2c1ba59d6f58433fb1eaee7d20b26ed83bda51a3",
+      "input": "",
+      "type": "create",
+      "gas": "254791",
+      "gasUsed": "46750",
+      "traceId": "0",
+      "isError": "0",
+      "errCode": ""
+    }
+  ]
+}
+```

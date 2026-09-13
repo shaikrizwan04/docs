@@ -1,0 +1,96 @@
+---
+title: "Export Address Tags by Label (Legacy)"
+sidebarTitle: "exportaddresstags (Legacy)"
+description: "Exports addresses tagged with a given Etherscan label as a CSV file. Legacy endpoint — Enterprise tier. Use v2 for new projects."
+---
+
+This is the legacy version of the address tags export. It exports all addresses associated with a given label slug directly as a downloadable CSV. It is maintained for backward compatibility but only supports Ethereum mainnet and does not use the pre-signed URL pattern. For new projects, use the [multichain version](/api-reference/endpoint/exportaddresstags-v2) instead.
+
+<Warning>
+  This is the **legacy version** of this endpoint. For new projects, use the [multichain version](/api-reference/endpoint/exportaddresstags-v2).
+</Warning>
+
+<Note>
+  This is a **PRO endpoint**, available to the [Enterprise tier](https://etherscan.io/apis). Throttled to **2 calls per second** and **100 calls per day**.
+</Note>
+
+## Endpoint
+
+This endpoint uses the legacy metadata API: `https://api-metadata.etherscan.io/v1/api.ashx`
+
+## Parameters
+
+<ParamField query="module" type="string" required default="nametag">
+  Set to `nametag`.
+</ParamField>
+
+<ParamField query="action" type="string" required default="exportaddresstags">
+  Set to `exportaddresstags`.
+</ParamField>
+
+<ParamField query="label" type="string">
+  Label slug to export, e.g. `phish-hack` or `ofac-sanctioned`. Pass `all` to export every label.
+</ParamField>
+
+<ParamField query="format" type="string">
+  Export format. Currently only `csv` is supported.
+</ParamField>
+
+<ParamField query="apikey" type="string" required>
+  Your Etherscan API key. [Get one here](/set-up-your-api-key).
+</ParamField>
+
+## Response
+
+The response is a CSV file (not JSON) containing one address per row with the following semicolon-delimited columns:
+
+| Column | Description |
+|--------|-------------|
+| `address` | The tagged address |
+| `nametag` | Public name tag |
+| `internal_nametag` | Internal name tag |
+| `url` | Official URL |
+| `shortdescription` | Short description |
+| `notes_1` | Additional note |
+| `notes_2` | Additional note |
+| `labels` | Label name |
+| `labels_slug` | Label slug |
+| `reputation` | Reputation score |
+| `other_attributes` | Other attributes |
+| `lastupdatedtimestamp` | Last updated Unix timestamp |
+
+## Example
+
+<CodeGroup>
+```bash cURL
+curl "https://api-metadata.etherscan.io/v1/api.ashx\
+?module=nametag\
+&action=exportaddresstags\
+&label=ofac-sanctioned\
+&format=csv\
+&apikey=YOUR_API_KEY"
+```
+
+```python Python
+import requests
+
+params = {
+    "module": "nametag",
+    "action": "exportaddresstags",
+    "label": "ofac-sanctioned",
+    "format": "csv",
+    "apikey": "YOUR_API_KEY",
+}
+
+r = requests.get("https://api-metadata.etherscan.io/v1/api.ashx", params=params)
+# Parse the CSV response
+lines = r.text.splitlines()
+print(f"Total addresses: {len(lines) - 1}")  # -1 for header
+```
+</CodeGroup>
+
+```csv Example CSV Response (truncated)
+"address";"nametag";"internal_nametag";"url";"shortdescription";"notes_1";"notes_2";"labels";"labels_slug";"reputation";"other_attributes";"lastupdatedtimestamp"
+"0x0000000000000000000000000000000000001111";"Fake_Phishing589039";"";"";"";"There are reports that this address was used in a Phishing scam.";"";
+"Phish / Hack";"phish-hack";"2";"";"1728292621"
+```

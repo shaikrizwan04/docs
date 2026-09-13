@@ -1,0 +1,204 @@
+---
+title: "ERC-721 NFT Transfers with Advanced Directional Filter"
+sidebarTitle: "Advanced tokennfttx"
+description: "Filter ERC-721 NFT transfers by sender, recipient, and/or collection contract using AND/OR logic, with block range and pagination support."
+---
+
+The Advanced Filter variant of the ERC-721 NFT transfers endpoint gives you precise directional control over how transfers are filtered. Use `from` and `to` parameters with the `fromto_opr` operator to find all NFT transfers sent to a specific address (`to`), from a specific address (`from`), or between two specific addresses (`from` + `to` with `and`). Combine with `contractaddress` to narrow results to a single NFT collection.
+
+<Note>
+  This is a **PRO endpoint**, available on the [Standard Plan](/rate-limits) and above. It is currently in **Beta** — behavior may change.
+</Note>
+
+<Tip>
+  Explore and preview data interactively using the [Advanced Filter](https://etherscan.io/advanced-filter) page on Etherscan before integrating this endpoint.
+</Tip>
+
+## Parameters
+
+<ParamField query="chainid" type="string" required>
+  The chain ID to query. Use `1` for Ethereum mainnet or any chain from the [supported chains](/supported-chains) list.
+</ParamField>
+
+<ParamField query="module" type="string" required default="account">
+  Set to `account` for this endpoint.
+</ParamField>
+
+<ParamField query="action" type="string" required default="tokennfttx">
+  Set to `tokennfttx` for this endpoint.
+</ParamField>
+
+<ParamField query="contractaddress" type="string">
+  The ERC-721 collection contract address to filter by. Provide `contractaddress`, `from`, or `to` — at least one is required.
+</ParamField>
+
+<ParamField query="from" type="string">
+  Filter transfers by sender address. Provide `from`, `to`, or `contractaddress`.
+</ParamField>
+
+<ParamField query="to" type="string">
+  Filter transfers by recipient address. Provide `from`, `to`, or `contractaddress`.
+</ParamField>
+
+<ParamField query="fromto_opr" type="string">
+  Required when `from` or `to` is provided. Use `and` to require both addresses to match, or `or` to match transfers where either address matches.
+</ParamField>
+
+<ParamField query="startblock" type="integer" default="0">
+  Starting block number to search from.
+</ParamField>
+
+<ParamField query="endblock" type="string" default="latest">
+  Ending block number to search to. Use `latest` for the current block.
+</ParamField>
+
+<ParamField query="page" type="integer" default="1">
+  Page number for pagination.
+</ParamField>
+
+<ParamField query="offset" type="integer" default="10">
+  Number of records per page.
+</ParamField>
+
+<ParamField query="sort" type="string" default="desc">
+  Sort order. Use `asc` for oldest first, `desc` for latest first.
+</ParamField>
+
+<ParamField query="apikey" type="string" required>
+  Your Etherscan API key. [Set one up](/set-up-your-api-key) if you don't have one.
+</ParamField>
+
+## Response
+
+<ResponseField name="status" type="string">
+  `1` if the request returned data, `0` otherwise.
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  `OK` on success. See [common error messages](/common-error-messages) for error values.
+</ResponseField>
+
+<ResponseField name="result" type="array">
+  An array of ERC-721 transfer objects matching the filter criteria.
+
+  <Expandable title="result[]">
+    <ResponseField name="blockNumber" type="string">Block number in which the transaction was included.</ResponseField>
+    <ResponseField name="timeStamp" type="string">Time the block was mined, as a UNIX timestamp in seconds.</ResponseField>
+    <ResponseField name="hash" type="string">The transaction hash.</ResponseField>
+    <ResponseField name="nonce" type="string">Number of transactions sent from the sender before this one.</ResponseField>
+    <ResponseField name="blockHash" type="string">Hash of the block containing the transaction.</ResponseField>
+    <ResponseField name="from" type="string">Address that sent the NFT.</ResponseField>
+    <ResponseField name="contractAddress" type="string">Contract address of the NFT collection.</ResponseField>
+    <ResponseField name="to" type="string">Address that received the NFT.</ResponseField>
+    <ResponseField name="tokenID" type="string">The unique identifier of the specific NFT transferred.</ResponseField>
+    <ResponseField name="tokenName" type="string">Name of the NFT collection.</ResponseField>
+    <ResponseField name="tokenSymbol" type="string">Symbol of the NFT collection.</ResponseField>
+    <ResponseField name="tokenDecimal" type="string">Number of decimals (always `0` for ERC-721).</ResponseField>
+    <ResponseField name="transactionIndex" type="string">Index position of the transaction within the block.</ResponseField>
+    <ResponseField name="gas" type="string">Maximum gas the sender allowed.</ResponseField>
+    <ResponseField name="gasPrice" type="string">Price paid per unit of gas, in wei.</ResponseField>
+    <ResponseField name="gasUsed" type="string">Units of gas actually consumed.</ResponseField>
+    <ResponseField name="cumulativeGasUsed" type="string">Total gas used up to and including this transaction in the block.</ResponseField>
+    <ResponseField name="input" type="string">Input data sent with the transaction.</ResponseField>
+    <ResponseField name="methodId" type="string">First four bytes of input data identifying the called function.</ResponseField>
+    <ResponseField name="functionName" type="string">Decoded function signature when the contract is verified.</ResponseField>
+    <ResponseField name="confirmations" type="string">Number of blocks mined after the block containing this transaction.</ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Example
+
+This example fetches all CryptoKitties NFTs received by a specific address.
+
+<CodeGroup>
+```bash cURL
+curl "https://api.etherscan.io/v2/api\
+?chainid=1\
+&module=account\
+&action=tokennfttx\
+&contractaddress=0x06012c8cf97bead5deae237070f9587f8e7a266d\
+&to=0x6975be450864c02b4613023c2152ee0743572325\
+&fromto_opr=or\
+&startblock=0\
+&endblock=latest\
+&page=1\
+&offset=10\
+&sort=desc\
+&apikey=YOUR_API_KEY"
+```
+
+```python Python
+import requests
+
+params = {
+    "chainid": "1",
+    "module": "account",
+    "action": "tokennfttx",
+    "contractaddress": "0x06012c8cf97bead5deae237070f9587f8e7a266d",
+    "to": "0x6975be450864c02b4613023c2152ee0743572325",
+    "fromto_opr": "or",
+    "startblock": 0,
+    "endblock": "latest",
+    "page": 1,
+    "offset": 10,
+    "sort": "desc",
+    "apikey": "YOUR_API_KEY",
+}
+
+response = requests.get("https://api.etherscan.io/v2/api", params=params)
+print(response.json())
+```
+
+```javascript JavaScript
+const params = new URLSearchParams({
+  chainid: "1",
+  module: "account",
+  action: "tokennfttx",
+  contractaddress: "0x06012c8cf97bead5deae237070f9587f8e7a266d",
+  to: "0x6975be450864c02b4613023c2152ee0743572325",
+  fromto_opr: "or",
+  startblock: "0",
+  endblock: "latest",
+  page: "1",
+  offset: "10",
+  sort: "desc",
+  apikey: "YOUR_API_KEY",
+});
+
+const response = await fetch(`https://api.etherscan.io/v2/api?${params}`);
+const data = await response.json();
+console.log(data);
+```
+</CodeGroup>
+
+```json Response
+{
+  "status": "1",
+  "message": "OK",
+  "result": [
+    {
+      "blockNumber": "4708120",
+      "timeStamp": "1512907118",
+      "hash": "0x031e6968a8de362e4328d60dcc7f72f0d6fc84284c452f63176632177146de66",
+      "nonce": "0",
+      "blockHash": "0x4be19c278bfaead5cb0bc9476fa632e2447f6e6259e0303af210302d22779a24",
+      "from": "0xb1690c08e213a35ed9bab7b318de14420fb57d8c",
+      "contractAddress": "0x06012c8cf97bead5deae237070f9587f8e7a266d",
+      "to": "0x6975be450864c02b4613023c2152ee0743572325",
+      "tokenID": "202106",
+      "tokenName": "CryptoKitties",
+      "tokenSymbol": "CK",
+      "tokenDecimal": "0",
+      "transactionIndex": "81",
+      "gas": "158820",
+      "gasPrice": "40000000000",
+      "gasUsed": "60508",
+      "cumulativeGasUsed": "4880352",
+      "input": "deprecated",
+      "methodId": "0x454a2ab3",
+      "functionName": "bid(uint256 _tokenId)",
+      "confirmations": "18759540"
+    }
+  ]
+}
+```

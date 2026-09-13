@@ -1,0 +1,128 @@
+---
+title: "Export Address Tags by Label (Multichain)"
+sidebarTitle: "exportaddresstags v2"
+description: "Returns a temporary download URL for all addresses tagged with a given label, as a CSV or ZIP file. Enterprise plan required."
+---
+
+Etherscan labels tens of thousands of addresses across every chain it indexes. This endpoint generates a pre-signed download URL (valid for 5 minutes) for a CSV or ZIP export of all addresses that carry a specific label — such as `phish-hack`, `ofac-sanctioned`, or `binance`. You can also pass `all` to export every labeled address in a single file. To discover valid label slugs, first call the [Export Label Master List](/api-reference/endpoint/getlabelmasterlist-v2) endpoint.
+
+<Note>
+  Metadata Exports are available exclusively to [Enterprise plan](https://etherscan.io/api/pricing) customers. [Contact Sales](https://etherscan.io/api/pricing#contactSection) to explore Enterprise access.
+</Note>
+
+<Warning>
+  This endpoint is throttled to **2 calls per second** and **100 calls per day**.
+</Warning>
+
+<Tip>
+  The `result` field is a temporary download URL, not the data itself. Fetch that URL within **5 minutes**. The response is a CSV (or ZIP containing a CSV) with address metadata including name tags, labels, reputation scores, and notes.
+</Tip>
+
+## Endpoint
+
+This endpoint uses the metadata API base URL: `https://api-metadata.etherscan.io/v2/api`
+
+## Parameters
+
+<ParamField query="chainid" type="string" required>
+  Chain ID for the export. Refer to supported mainnet chains on the [supported chains](/supported-chains) page.
+</ParamField>
+
+<ParamField query="module" type="string" required default="nametag">
+  Set to `nametag`.
+</ParamField>
+
+<ParamField query="action" type="string" required default="exportaddresstags">
+  Set to `exportaddresstags`.
+</ParamField>
+
+<ParamField query="label" type="string">
+  Label slug to export, e.g. `ofac-sanctioned`, `phish-hack`, or `binance`. Pass `all` to export every labeled address.
+</ParamField>
+
+<ParamField query="format" type="string">
+  Export format: `csv` for a single CSV file, or `zip` for a ZIP-compressed CSV. Defaults to `csv`.
+</ParamField>
+
+<ParamField query="apikey" type="string" required>
+  Your Etherscan API key. [Get one here](/set-up-your-api-key).
+</ParamField>
+
+## Response
+
+<ResponseField name="status" type="string">
+  `1` if a URL was generated, `0` on error.
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  `OK` on success, or an error description such as `NOTOK`.
+</ResponseField>
+
+<ResponseField name="result" type="string">
+  Pre-signed temporary download URL for the address tags export file.
+</ResponseField>
+
+## Example
+
+<CodeGroup>
+```bash cURL
+# Step 1: Get the download URL
+curl "https://api-metadata.etherscan.io/v2/api\
+?chainid=1\
+&module=nametag\
+&action=exportaddresstags\
+&label=ofac-sanctioned\
+&format=csv\
+&apikey=YOUR_API_KEY"
+
+# Step 2: Download the CSV using the returned URL
+# curl "<result_url_from_step_1>" -o addresses.csv
+```
+
+```javascript JavaScript
+const params = new URLSearchParams({
+  chainid: "1",
+  module: "nametag",
+  action: "exportaddresstags",
+  label: "ofac-sanctioned",
+  format: "csv",
+  apikey: "YOUR_API_KEY",
+});
+
+const res = await fetch(`https://api-metadata.etherscan.io/v2/api?${params}`);
+const { result: downloadUrl } = await res.json();
+
+// Download the CSV
+const csvRes = await fetch(downloadUrl);
+const csv = await csvRes.text();
+console.log(csv.split("\n").slice(0, 5).join("\n"));
+```
+
+```python Python
+import requests
+
+params = {
+    "chainid": "1",
+    "module": "nametag",
+    "action": "exportaddresstags",
+    "label": "ofac-sanctioned",
+    "format": "csv",
+    "apikey": "YOUR_API_KEY",
+}
+
+r = requests.get("https://api-metadata.etherscan.io/v2/api", params=params)
+download_url = r.json()["result"]
+
+# Download the CSV
+csv_data = requests.get(download_url).text
+print(csv_data[:500])
+```
+</CodeGroup>
+
+```json Example API Response
+{
+  "status": "1",
+  "message": "OK",
+  "result": "https://metadata-export.etherscan.io/1/ofac-sanctioned_latest_nametags.csv?X-Amz-Expires=300&..."
+}
+```

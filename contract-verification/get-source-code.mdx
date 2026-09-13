@@ -1,0 +1,157 @@
+---
+title: "Get Verified Contract Source Code, ABI, and Settings"
+sidebarTitle: "Get Source Code"
+description: "Retrieve a verified contract's source code, ABI, and compiler settings from any supported EVM chain using the getsourcecode action."
+---
+
+Once a contract is verified, its source code, ABI, and compiler settings become publicly readable through the API. The `getsourcecode` action returns everything in a single call — the full source, the ABI you need to encode calls and decode events, and the exact compiler settings that reproduced the deployed bytecode. It's the read counterpart to [verifying a contract](/contract-verification/verify-with-api).
+
+<Tip>
+  One request works on every supported chain — just change the `chainid`. For example, set `chainid=42161` to read a contract on Arbitrum. See [Supported Chains](/supported-chains) for the full list.
+</Tip>
+
+## Get the source code
+
+<Steps>
+  <Step title="Make the request">
+    Send a `GET` to the `getsourcecode` action with the contract `address`. The example below reads the USDT contract on Ethereum mainnet.
+
+    ```bash
+    curl --request GET \
+      --url 'https://api.etherscan.io/v2/api?chainid=1&module=contract&action=getsourcecode&address=0xdAC17F958D2ee523a2206206994597C13D831ec7&apikey=YourApiKey'
+    ```
+  </Step>
+
+  <Step title="Read the response">
+    The `result` is an array containing a single object. For a verified contract, it includes the source code alongside every setting used to compile it.
+
+    ```json
+    {
+      "status": "1",
+      "message": "OK",
+      "result": [
+        {
+          "SourceCode": "pragma solidity ^0.4.17;\r\n\r\nlibrary SafeMath { ... }\r\n\r\ncontract TetherToken is Pausable, StandardToken, BlackList { ... }",
+          "ABI": "[{\"constant\":true,\"inputs\":[],\"name\":\"name\", ... }]",
+          "ContractName": "TetherToken",
+          "CompilerVersion": "v0.4.18+commit.9cf6e910",
+          "CompilerType": "solc",
+          "OptimizationUsed": "0",
+          "Runs": "0",
+          "ConstructorArguments": "000000000000000000000000000000000000000000000000000000174876e800...",
+          "EVMVersion": "Default",
+          "Library": "",
+          "ContractFileName": "",
+          "LicenseType": "",
+          "Proxy": "0",
+          "Implementation": "",
+          "SwarmSource": "bzzr://645ee12d73db47fd78ba77fa1f824c3c8f9184061b3b10386beb4dc9236abb28",
+          "SimilarMatch": ""
+        }
+      ]
+    }
+    ```
+  </Step>
+</Steps>
+
+## Response fields
+
+Each field in the result object describes a specific aspect of the verified contract:
+
+<ResponseField name="SourceCode" type="string">
+  The verified source code. Returns a single Solidity file for single-file verifications, or a Standard JSON input object (wrapped in double braces `{{ }}`) when the contract was verified using Standard JSON.
+</ResponseField>
+
+<ResponseField name="ABI" type="string">
+  The contract ABI as a JSON string. Parse it to encode function calls and decode event logs. If the contract is not verified, this field reads `Contract source code not verified`.
+</ResponseField>
+
+<ResponseField name="ContractName" type="string">
+  The name of the verified contract.
+</ResponseField>
+
+<ResponseField name="CompilerVersion" type="string">
+  The full compiler version string used to build the contract, such as `v0.8.28+commit.7893614a`.
+</ResponseField>
+
+<ResponseField name="CompilerType" type="string">
+  The compiler used. `solc` for Solidity contracts.
+</ResponseField>
+
+<ResponseField name="OptimizationUsed" type="string">
+  `1` if the optimizer was enabled at compilation, `0` if not.
+</ResponseField>
+
+<ResponseField name="Runs" type="string">
+  The number of optimizer runs used during compilation.
+</ResponseField>
+
+<ResponseField name="ConstructorArguments" type="string">
+  The ABI-encoded constructor arguments in hex, appended during deployment. Empty if the contract has no constructor arguments.
+</ResponseField>
+
+<ResponseField name="EVMVersion" type="string">
+  The EVM version the contract was compiled for. Returns `Default` when no explicit version was set.
+</ResponseField>
+
+<ResponseField name="Library" type="string">
+  Library name and address pairs used by the contract, if any.
+</ResponseField>
+
+<ResponseField name="Proxy" type="string">
+  `1` if the contract is a verified proxy, `0` otherwise.
+</ResponseField>
+
+<ResponseField name="Implementation" type="string">
+  The implementation contract address for verified proxies. Empty for non-proxy contracts.
+</ResponseField>
+
+<ResponseField name="SwarmSource" type="string">
+  The Swarm content hash embedded in the contract bytecode metadata, if present.
+</ResponseField>
+
+## Check whether a contract is verified
+
+You can call `getsourcecode` on any address — including unverified ones. For an unverified contract, the response still returns `status: 1`, but the `ABI` field reads `Contract source code not verified` and `SourceCode` is empty. Always check these fields before attempting to use the source or ABI.
+
+```json
+{
+  "status": "1",
+  "message": "OK",
+  "result": [
+    {
+      "SourceCode": "",
+      "ABI": "Contract source code not verified",
+      "ContractName": "",
+      "CompilerVersion": ""
+    }
+  ]
+}
+```
+
+If the contract is not yet verified, [verify it with the API](/contract-verification/verify-with-api) or through your build toolchain first.
+
+## Get just the ABI
+
+When you only need the ABI — for example to build a transaction or decode logs — use the `getabi` action instead. It returns the ABI JSON directly, without the surrounding source code and compiler settings.
+
+<CodeGroup>
+
+```bash cURL
+curl --request GET \
+  --url 'https://api.etherscan.io/v2/api?chainid=1&module=contract&action=getabi&address=0xdAC17F958D2ee523a2206206994597C13D831ec7&apikey=YourApiKey'
+```
+
+```json Response
+{
+  "status": "1",
+  "message": "OK",
+  "result": "[{\"constant\":true,\"inputs\":[],\"name\":\"name\",\"outputs\":[{\"name\":\"\",\"type\":\"string\"}],\"payable\":false,\"type\":\"function\"}, ...]"
+}
+```
+
+</CodeGroup>
+
+<Note>
+  The `getabi` response is a JSON string, not a parsed object. Call `JSON.parse()` (or your language's equivalent) on `result` before using it.
+</Note>

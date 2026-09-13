@@ -1,0 +1,169 @@
+---
+title: "Security and Compliance Workflows with Etherscan"
+sidebarTitle: "Security & Compliance"
+description: "Screen addresses, trace fund origins, verify contracts, and build risk dashboards using Etherscan labels, reputation data, and contract metadata."
+---
+
+Security and compliance workflows combine several distinct signals: who an address is, where its funds originated, who it transacts with, and what smart contracts it interacts with. The Etherscan API exposes each of these as queryable data, giving you the building blocks for address screeners, transaction monitors, risk dashboards, and contract verification tools. Labels and reputation data from Etherscan provide context and inputs for your own screening rules — your product's policies and risk thresholds determine the final decisions.
+
+<Tip>
+  Every endpoint in this guide works across all 60+ supported chains. Set `chainid=42161` to screen the same address on Arbitrum, or run the same checks on every chain where your users operate. See [Supported Chains](/supported-chains) for the full list.
+</Tip>
+
+## Address Identity and Reputation
+
+Enrich an address with Etherscan's name tags, category labels, and reputation data before applying your own screening rules.
+
+<Steps>
+  <Step title="Get address metadata">
+    Retrieve the name tag, labels, and reputation data Etherscan maintains for an address, using [Etherscan Metadata](/metadata/introduction). This is the same data shown on etherscan.io.
+
+    <Note>
+      `getaddresstag` is a PRO endpoint available on the **Pro Plus plan**.
+    </Note>
+
+    ```bash
+    curl --request GET \
+      --url 'https://api.etherscan.io/v2/api?chainid=1&module=nametag&action=getaddresstag&address=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045&apikey=YOUR_API_KEY'
+    ```
+
+    Labels you'll commonly encounter include categories like `Exchange`, `Bridge`, `DEX`, `phish-hack`, and `ofac-sanctioned`. Combine these with your product's risk policies to classify addresses automatically.
+
+    <Tip>
+      Labels are context signals, not conclusions. Use them alongside your own rules and risk thresholds to make screening decisions appropriate for your use case.
+    </Tip>
+  </Step>
+
+  <Step title="Export addresses by label category">
+    For watchlist and bulk screening workflows, retrieve all addresses in a specific label category at once — rather than checking addresses one by one.
+
+    ```bash
+    curl --request GET \
+      --url 'https://api.etherscan.io/v2/api?chainid=1&module=nametag&action=exportaddresstags&label=ofac-sanctioned&apikey=YOUR_API_KEY'
+    ```
+
+    Use `getlabelmasterlist` to discover which label categories are available:
+
+    ```bash
+    curl --request GET \
+      --url 'https://api.etherscan.io/v2/api?chainid=1&module=nametag&action=getlabelmasterlist&apikey=YOUR_API_KEY'
+    ```
+
+    <Tip>
+      Refresh exported label categories on a schedule (daily or weekly) to keep your local screening data current as Etherscan adds or updates labels.
+    </Tip>
+  </Step>
+</Steps>
+
+## Transaction Monitoring
+
+Monitor an address's activity and surface interactions with known risky entities by combining transaction data with label lookups.
+
+<Steps>
+  <Step title="Retrieve transaction activity">
+    Pull the full activity history for an address across three transaction types:
+
+    <Tabs>
+      <Tab title="Normal Transactions">
+        Transactions signed by the address — native coin sends, receives, and contract calls.
+
+        ```bash
+        curl --request GET \
+          --url 'https://api.etherscan.io/v2/api?chainid=1&module=account&action=txlist&address=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045&page=1&offset=100&sort=desc&apikey=YOUR_API_KEY'
+        ```
+      </Tab>
+      <Tab title="Internal Transactions">
+        Value transfers triggered by contract execution — required for a complete fund movement picture.
+
+        ```bash
+        curl --request GET \
+          --url 'https://api.etherscan.io/v2/api?chainid=1&module=account&action=txlistinternal&address=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045&page=1&offset=100&sort=desc&apikey=YOUR_API_KEY'
+        ```
+      </Tab>
+      <Tab title="Token Transfers">
+        ERC-20 token transfers in and out of the address.
+
+        ```bash
+        curl --request GET \
+          --url 'https://api.etherscan.io/v2/api?chainid=1&module=account&action=tokentx&address=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045&page=1&offset=100&sort=desc&apikey=YOUR_API_KEY'
+        ```
+      </Tab>
+    </Tabs>
+  </Step>
+
+  <Step title="Screen counterparties">
+    For each `to` and `from` address in the transaction results, call `getaddresstag` to check for labels. Match against your internal risk rules to surface transactions that need review — for example, any interaction with an address labeled `ofac-sanctioned` or `phish-hack`.
+
+    <Tip>
+      User activity can span multiple networks. Apply the same monitoring workflow across every `chainid` your users interact with to avoid blind spots.
+    </Tip>
+  </Step>
+</Steps>
+
+## Fund Tracing
+
+Understand where an address received its initial funds — a useful signal when investigating a new or suspicious address.
+
+<Steps>
+  <Step title="Find the funding source">
+    Return the address and transaction hash that first funded an externally owned account (EOA). Use this as additional context when evaluating whether an address's origin is consistent with its claimed identity.
+
+    <Note>
+      `fundedby` is a PRO endpoint available on the **Standard plan and above**.
+    </Note>
+
+    ```bash
+    curl --request GET \
+      --url 'https://api.etherscan.io/v2/api?chainid=1&module=account&action=fundedby&address=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045&apikey=YOUR_API_KEY'
+    ```
+
+    A response showing funding from a known mixer, sanctioned entity, or anonymous contract is a meaningful risk signal to feed into your screening logic.
+  </Step>
+</Steps>
+
+## Contract Context
+
+Evaluate a smart contract before your application interacts with it, or as part of a due-diligence workflow.
+
+<Steps>
+  <Step title="Check the contract source code">
+    Retrieve the verified source code and contract metadata for any address. Unverified contracts — where `SourceCode` is empty in the response — carry higher risk since their behavior cannot be independently audited.
+
+    ```bash
+    curl --request GET \
+      --url 'https://api.etherscan.io/v2/api?chainid=1&module=contract&action=getsourcecode&address=0xdAC17F958D2ee523a2206206994597C13D831ec7&apikey=YOUR_API_KEY'
+    ```
+  </Step>
+
+  <Step title="Retrieve the contract ABI">
+    Fetch the ABI for a verified contract to decode its method calls and understand exactly what functions it exposes. This lets you interpret what a transaction actually did, beyond the raw calldata.
+
+    ```bash
+    curl --request GET \
+      --url 'https://api.etherscan.io/v2/api?chainid=1&module=contract&action=getabi&address=0xdAC17F958D2ee523a2206206994597C13D831ec7&apikey=YOUR_API_KEY'
+    ```
+  </Step>
+</Steps>
+
+## Putting It Together
+
+<CardGroup cols={2}>
+  <Card title="Address Screening" icon="shield-check">
+    `getaddresstag` — enrich any address with labels and reputation before applying your risk rules.
+  </Card>
+  <Card title="Watchlist Management" icon="list-check">
+    `exportaddresstags` refreshed on a schedule — keep a local copy of sanctioned and risky address lists.
+  </Card>
+  <Card title="Transaction Monitoring" icon="eye">
+    `txlist` + `txlistinternal` + `tokentx` + `getaddresstag` on counterparties — surface interactions that need review.
+  </Card>
+  <Card title="Address Investigation" icon="magnifying-glass">
+    `fundedby` + transaction history — trace fund origins and build an activity timeline.
+  </Card>
+  <Card title="Contract Review" icon="file-code">
+    `getsourcecode` + `getabi` — verify contracts and decode their interactions before trusting them.
+  </Card>
+  <Card title="Multi-Chain Coverage" icon="link">
+    Repeat every workflow with a different `chainid` — one API key covers all 60+ supported chains.
+  </Card>
+</CardGroup>

@@ -1,0 +1,97 @@
+---
+title: "Get Estimated Confirmation Time for Gas Price"
+sidebarTitle: "gasestimate"
+description: "Returns the estimated confirmation time in seconds for a transaction submitted with a specific gas price in wei."
+---
+
+Before submitting a transaction, you can use this endpoint to estimate how long it will take to confirm given the gas price you plan to offer. Pass any gas price in wei and receive back an estimated wait time in seconds. This is useful for building dynamic gas price UIs or for pre-flight checks in automated transaction pipelines.
+
+## Parameters
+
+<ParamField query="chainid" type="string" required>
+  The chain to query. Use `1` for Ethereum mainnet. See [supported chains](/supported-chains) for a full list.
+</ParamField>
+
+<ParamField query="module" type="string" required default="gastracker">
+  Set to `gastracker`.
+</ParamField>
+
+<ParamField query="action" type="string" required default="gasestimate">
+  Set to `gasestimate`.
+</ParamField>
+
+<ParamField query="gasprice" type="string">
+  The gas price in wei. For example, `2000000000` represents 2 Gwei.
+</ParamField>
+
+<ParamField query="apikey" type="string" required>
+  Your Etherscan API key. [Get one here](/set-up-your-api-key).
+</ParamField>
+
+## Response
+
+<ResponseField name="status" type="string">
+  `1` if the request succeeded, `0` on error.
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  `OK` on success, or an error description such as `NOTOK`.
+</ResponseField>
+
+<ResponseField name="result" type="string">
+  The estimated confirmation time in seconds for a transaction at the given gas price.
+</ResponseField>
+
+## Example
+
+<CodeGroup>
+```bash cURL
+curl "https://api.etherscan.io/v2/api\
+?chainid=1\
+&module=gastracker\
+&action=gasestimate\
+&gasprice=2000000000\
+&apikey=YOUR_API_KEY"
+```
+
+```javascript JavaScript
+const params = new URLSearchParams({
+  chainid: "1",
+  module: "gastracker",
+  action: "gasestimate",
+  gasprice: "2000000000",
+  apikey: "YOUR_API_KEY",
+});
+
+const res = await fetch(`https://api.etherscan.io/v2/api?${params}`);
+const data = await res.json();
+console.log(`Estimated confirmation: ${data.result} seconds`);
+```
+
+```python Python
+import requests
+
+params = {
+    "chainid": "1",
+    "module": "gastracker",
+    "action": "gasestimate",
+    "gasprice": "2000000000",
+    "apikey": "YOUR_API_KEY",
+}
+
+r = requests.get("https://api.etherscan.io/v2/api", params=params)
+print(r.json()["result"])  # e.g., "45"
+```
+</CodeGroup>
+
+```json Example Response
+{
+  "status": "1",
+  "message": "OK",
+  "result": "45"
+}
+```
+
+<Tip>
+  Pair this endpoint with the [Gas Oracle](/api-reference/endpoint/gasoracle) to first retrieve the current recommended gas prices, then estimate confirmation times for each tier.
+</Tip>

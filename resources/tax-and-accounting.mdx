@@ -1,0 +1,162 @@
+---
+title: "Tax, Accounting, and Audit Workflows with Etherscan"
+sidebarTitle: "Tax & Accounting"
+description: "Pull complete transaction history, historical balances, and address labels to support crypto tax filing, accounting ledgers, and audit workflows."
+---
+
+Accurate tax and accounting records for onchain activity require four things: a complete ledger of fund movements, token transfer details, point-in-time balance snapshots for period-end reporting, and readable labels for the counterparties involved. The Etherscan API provides each of these as distinct, queryable endpoints. This guide shows you how to combine them — and how to repeat the same workflow across multiple chains for entities operating on more than one network.
+
+<Tip>
+  Every endpoint in this guide works across all 60+ supported chains. Set `chainid=42161` for Arbitrum, `chainid=137` for Polygon, or any other supported network to pull the same data for the same address on a different chain. See [Supported Chains](/supported-chains) for the full list.
+</Tip>
+
+## Transaction History
+
+Reconstruct every fund movement in and out of an address in chronological order. A complete ledger requires three separate calls: normal transactions, internal transactions, and token transfers.
+
+<Steps>
+  <Step title="Get normal transactions">
+    Fetch the transactions the address signed — native coin sends, receives, and contract calls. Sort ascending (`sort=asc`) to build the ledger from the earliest transaction forward.
+
+    ```bash
+    curl --request GET \
+      --url 'https://api.etherscan.io/v2/api?chainid=1&module=account&action=txlist&address=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045&page=1&offset=100&sort=asc&apikey=YOUR_API_KEY'
+    ```
+
+    <Tip>
+      For ongoing tracking, store the block number of the last processed transaction and use `startblock=<last_block>` on subsequent requests to import only new activity, rather than re-fetching the entire history each time.
+    </Tip>
+  </Step>
+
+  <Step title="Get internal transactions">
+    Internal transactions are native coin transfers triggered during contract execution — for example, ETH received when withdrawing from a lending protocol. These don't appear in the normal transaction list, so they must be fetched separately to avoid gaps in your ledger.
+
+    ```bash
+    curl --request GET \
+      --url 'https://api.etherscan.io/v2/api?chainid=1&module=account&action=txlistinternal&address=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045&page=1&offset=100&sort=asc&apikey=YOUR_API_KEY'
+    ```
+  </Step>
+
+  <Step title="Get ERC-20 token transfers">
+    Fetch every ERC-20 token transfer in or out of the address. Each record includes the token symbol, amount, and decimal precision — the inputs needed for cost-basis calculations.
+
+    ```bash
+    curl --request GET \
+      --url 'https://api.etherscan.io/v2/api?chainid=1&module=account&action=tokentx&address=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045&page=1&offset=100&sort=asc&apikey=YOUR_API_KEY'
+    ```
+  </Step>
+</Steps>
+
+## Historical Balances
+
+Snapshot the wallet's holdings at a specific point in time for period-end balance sheets, year-end reporting, or any regulatory requirement that needs a point-in-time value.
+
+<Steps>
+  <Step title="Convert a date to a block number">
+    Before querying a historical balance, map a calendar date to the nearest block at or before that timestamp. The API returns the block number, which you pass to the balance endpoints below.
+
+    ```bash
+    # 1735689600 = 2026-01-01 00:00:00 UTC
+    curl --request GET \
+      --url 'https://api.etherscan.io/v2/api?chainid=1&module=block&action=getblocknobytime&timestamp=1735689600&closest=before&apikey=YOUR_API_KEY'
+    ```
+  </Step>
+
+  <Step title="Get the native balance at that block">
+    Retrieve the native coin balance at the block number returned in the previous step. The value is returned in wei — divide by 10¹⁸ for ETH. 
+    
+    <Note>
+      `balancehistory` is a PRO endpoint available on the **Standard plan and above**.
+    </Note>
+
+    ```bash
+    curl --request GET \
+      --url 'https://api.etherscan.io/v2/api?chainid=1&module=account&action=balancehistory&address=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045&blockno=21525890&apikey=YOUR_API_KEY'
+    ```
+  </Step>
+</Steps>
+
+## Token Balances and Reconciliation
+
+Combine current and historical token holdings for portfolio reconciliation against your accounting ledger.
+
+<Steps>
+  <Step title="Get current ERC-20 holdings">
+    Fetch the ERC-20 tokens currently held by the address. Use this to reconcile your ledger balance against the actual onchain state.
+
+    <Note>
+      `addresstokenbalance` is a PRO endpoint available on the **Standard plan and above**.
+    </Note>
+
+    ```bash
+    curl --request GET \
+      --url 'https://api.etherscan.io/v2/api?chainid=1&module=account&action=addresstokenbalance&address=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045&page=1&offset=100&apikey=YOUR_API_KEY'
+    ```
+
+    <Tip>
+      Token amounts are returned in the token's smallest unit. Use the `tokenDecimal` field in each record to convert to a human-readable value before performing any calculations.
+    </Tip>
+  </Step>
+
+  <Step title="Get historical ERC-20 balances">
+    Query the balance of a specific ERC-20 token at a given block number. Use this alongside `balancehistory` for complete period-end snapshots across both native and token holdings.
+
+    <Note>
+      `tokenbalancehistory` is a PRO endpoint available on the **Standard plan and above**.
+    </Note>
+
+    ```bash
+    curl --request GET \
+      --url 'https://api.etherscan.io/v2/api?chainid=1&module=account&action=tokenbalancehistory&address=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045&contractaddress=0xdAC17F958D2ee523a2206206994597C13D831ec7&blockno=21525890&apikey=YOUR_API_KEY'
+    ```
+  </Step>
+</Steps>
+
+## Address Labels for Audit Trails
+
+Attach human-readable entity names to addresses so your reports and audit trails are easy to read and explain to auditors or tax authorities.
+
+<Steps>
+  <Step title="Look up an address name tag">
+    Return the name tag and category labels Etherscan maintains for any address — the same data shown on etherscan.io. Use this to attribute counterparties in your transaction ledger, replacing raw addresses with entity names like "Uniswap V3: Router" or "Coinbase 4".
+
+    <Note>
+      `getaddresstag` is a PRO endpoint available on the **Pro Plus plan**. See [Etherscan Metadata](/metadata/introduction) for full reference documentation.
+    </Note>
+
+    ```bash
+    curl --request GET \
+      --url 'https://api.etherscan.io/v2/api?chainid=1&module=nametag&action=getaddresstag&address=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045&apikey=YOUR_API_KEY'
+    ```
+  </Step>
+</Steps>
+
+## Multi-Chain Entities
+
+For wallets and entities operating across multiple networks, repeat each workflow above with a different `chainid` and merge the results. A single Etherscan API key covers all supported chains.
+
+```bash
+# Pull normal transactions on three chains for the same address
+curl 'https://api.etherscan.io/v2/api?chainid=1&module=account&action=txlist&address=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045&sort=asc&apikey=YOUR_API_KEY'
+
+curl 'https://api.etherscan.io/v2/api?chainid=42161&module=account&action=txlist&address=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045&sort=asc&apikey=YOUR_API_KEY'
+
+curl 'https://api.etherscan.io/v2/api?chainid=137&module=account&action=txlist&address=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045&sort=asc&apikey=YOUR_API_KEY'
+```
+
+## Putting It Together
+
+<CardGroup cols={2}>
+  <Card title="Transaction Ledger" icon="book">
+    `txlist` + `txlistinternal` + `tokentx` — the complete record of every fund movement, sorted chronologically.
+  </Card>
+  <Card title="Period-End Snapshots" icon="calendar">
+    `getblocknobytime` → `balancehistory` + `tokenbalancehistory` — holdings at any historical point in time.
+  </Card>
+  <Card title="Portfolio Reconciliation" icon="scale-balanced">
+    `addresstokenbalance` — current holdings to verify against your running ledger balance.
+  </Card>
+  <Card title="Entity Attribution" icon="tag">
+    `getaddresstag` — readable counterparty names for reports and audit documentation.
+  </Card>
+</CardGroup>

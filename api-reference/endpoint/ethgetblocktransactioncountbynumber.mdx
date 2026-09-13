@@ -1,0 +1,98 @@
+---
+title: "Get Transaction Count in Block by Number"
+sidebarTitle: "eth_getBlockTransactionCountByNumber"
+description: "Returns the total number of transactions in a block identified by its block number, as a hex-encoded integer."
+---
+
+This endpoint mirrors the standard `eth_getBlockTransactionCountByNumber` JSON-RPC method. Use it to quickly determine how many transactions are packed into a specific block without fetching the full block data. This is useful for pagination calculations when you want to iterate over transactions in a block one by one.
+
+<Note>
+  This is a **Geth/Parity Proxy** endpoint that wraps the standard JSON-RPC interface.
+</Note>
+
+## Parameters
+
+<ParamField query="chainid" type="string" required>
+  The chain to query. Use `1` for Ethereum mainnet. See [supported chains](/supported-chains) for a full list.
+</ParamField>
+
+<ParamField query="module" type="string" required default="proxy">
+  Set to `proxy`.
+</ParamField>
+
+<ParamField query="action" type="string" required default="eth_getBlockTransactionCountByNumber">
+  Set to `eth_getBlockTransactionCountByNumber`.
+</ParamField>
+
+<ParamField query="tag" type="string" required>
+  Hex-encoded block number, e.g. `0x10FB78`, or `latest`.
+</ParamField>
+
+<ParamField query="apikey" type="string" required>
+  Your Etherscan API key. [Get one here](/set-up-your-api-key).
+</ParamField>
+
+## Response
+
+<ResponseField name="jsonrpc" type="string">
+  JSON-RPC version. Always `"2.0"`.
+</ResponseField>
+
+<ResponseField name="id" type="integer">
+  Request ID echoed back.
+</ResponseField>
+
+<ResponseField name="result" type="string">
+  Total number of transactions in the block, as a `0x`-prefixed hex string.
+</ResponseField>
+
+## Example
+
+<CodeGroup>
+```bash cURL
+curl "https://api.etherscan.io/v2/api\
+?chainid=1\
+&module=proxy\
+&action=eth_getBlockTransactionCountByNumber\
+&tag=0x10FB78\
+&apikey=YOUR_API_KEY"
+```
+
+```javascript JavaScript
+const params = new URLSearchParams({
+  chainid: "1",
+  module: "proxy",
+  action: "eth_getBlockTransactionCountByNumber",
+  tag: "0x10FB78",
+  apikey: "YOUR_API_KEY",
+});
+
+const res = await fetch(`https://api.etherscan.io/v2/api?${params}`);
+const data = await res.json();
+console.log(`Transactions in block: ${parseInt(data.result, 16)}`);
+```
+
+```python Python
+import requests
+
+params = {
+    "chainid": "1",
+    "module": "proxy",
+    "action": "eth_getBlockTransactionCountByNumber",
+    "tag": "0x10FB78",
+    "apikey": "YOUR_API_KEY",
+}
+
+r = requests.get("https://api.etherscan.io/v2/api", params=params)
+count = int(r.json()["result"], 16)
+print(f"Transaction count: {count}")
+```
+</CodeGroup>
+
+```json Example Response
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": "0x79"
+}
+```

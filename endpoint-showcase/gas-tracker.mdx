@@ -1,0 +1,150 @@
+---
+title: "Endpoints Behind the Etherscan Gas Tracker"
+sidebarTitle: "Gas Tracker"
+description: "Discover the Etherscan API endpoints that power the gas tracker page, including the gas oracle, confirmation time estimates, and daily averages."
+---
+
+The [gas tracker](https://etherscan.io/gastracker) on etherscan.io gives you real-time gas price suggestions at three speed tiers and estimates how long each tier takes to confirm. These live figures are backed by the Gas Tracker module, which also includes PRO endpoints for historical daily gas data. This guide maps each section of the gas tracker page to the endpoint behind it, so you can embed live gas prices in your dapp's UI, automate gas-aware transaction submission, or analyze gas trends over time. All endpoints use a single API key and accept the `chainid` parameter for any supported chain.
+
+## Page Sections and Their Endpoints
+
+<Accordion title="Gas Prices (Low / Average / High)">
+  The three gas price tiers — **Low**, **Average**, and **High** — along with their corresponding base fees and priority fees come from the Gas Oracle endpoint.
+
+  **Endpoint:** [`GET /gastracker/gasoracle`](/api-reference/endpoint/gasoracle)
+
+  ```http
+  GET https://api.etherscan.io/v2/api
+    ?chainid=1
+    &module=gastracker
+    &action=gasoracle
+    &apikey=YOUR_API_KEY
+  ```
+
+  **Example response:**
+
+  ```json
+  {
+    "status": "1",
+    "message": "OK",
+    "result": {
+      "LastBlock": "20000000",
+      "SafeGasPrice": "12",
+      "ProposeGasPrice": "14",
+      "FastGasPrice": "18",
+      "suggestBaseFee": "11.5",
+      "gasUsedRatio": "0.52,0.61,0.44"
+    }
+  }
+  ```
+
+  | Field | Description |
+  |---|---|
+  | `SafeGasPrice` | Low-speed price in Gwei — likely to confirm within a few minutes |
+  | `ProposeGasPrice` | Average-speed price in Gwei — the recommended standard price |
+  | `FastGasPrice` | High-speed price in Gwei — for time-sensitive transactions |
+  | `suggestBaseFee` | Current EIP-1559 base fee |
+  | `gasUsedRatio` | Comma-separated ratios of gas used vs. gas limit for recent blocks |
+
+  Poll this endpoint every 15–30 seconds to keep your gas UI in sync with current network conditions.
+</Accordion>
+
+<Accordion title="Confirmation Time Estimate">
+  Below the gas price tiers, the gas tracker displays an estimated confirmation time for a given gas price. This is powered by the gas estimate endpoint, which accepts a gas price in wei and returns the expected wait in seconds.
+
+  **Endpoint:** [`GET /gastracker/gasestimate`](/api-reference/endpoint/gasestimate)
+
+  ```http
+  GET https://api.etherscan.io/v2/api
+    ?chainid=1
+    &module=gastracker
+    &action=gasestimate
+    &gasprice=14000000000
+    &apikey=YOUR_API_KEY
+  ```
+
+  The `gasprice` parameter is in **wei** (not Gwei). To convert: multiply your desired Gwei price by `1,000,000,000`. For example, 14 Gwei = `14000000000` wei.
+
+  The response returns a single integer representing the estimated confirmation time in seconds:
+
+  ```json
+  {
+    "status": "1",
+    "message": "OK",
+    "result": "15"
+  }
+  ```
+
+  <Tip>
+    Combine this endpoint with the Gas Oracle in your UI: fetch the oracle to get the three price tiers, then call `gasestimate` with each price to show users the estimated wait for each tier.
+  </Tip>
+</Accordion>
+
+<Accordion title="Daily Average Gas Price (Historical Chart)">
+  The historical gas price chart on the gas tracker page is backed by the daily average gas price endpoint, which returns a time series of daily Gwei averages.
+
+  **Endpoint:** [`GET /gastracker/dailyavggasprice`](/api-reference/endpoint/dailyavggasprice) — **PRO**
+
+  ```http
+  GET https://api.etherscan.io/v2/api
+    ?chainid=1
+    &module=stats
+    &action=dailyavggasprice
+    &startdate=2024-01-01
+    &enddate=2024-01-31
+    &sort=asc
+    &apikey=YOUR_API_KEY
+  ```
+
+  Each entry in the response includes:
+  - `UTCDate` — the date in `YYYY-MM-DD` format
+  - `unixTimeStamp` — Unix timestamp for that day
+  - `avgGasPrice_Wei` — the average gas price for that day in wei
+
+  Use this data to build gas cost trend charts, set dynamic gas budget alerts, or backfill historical gas data for analytics pipelines.
+
+  <Note>
+    This endpoint requires a Standard plan or above. The real-time `gasoracle` and `gasestimate` endpoints are available on the Free tier.
+  </Note>
+</Accordion>
+
+## Quick Reference
+
+| Page Section | Endpoint | Plan |
+|---|---|---|
+| Low / Average / High gas prices | `/gastracker/gasoracle` | Free |
+| Confirmation time estimate | `/gastracker/gasestimate` | Free |
+| Daily average gas price (historical) | `/stats/dailyavggasprice` | PRO |
+
+## Common Integration Pattern
+
+Use the Gas Oracle and Gas Estimate together to build a complete gas selector UI:
+
+```javascript
+// 1. Fetch current gas prices
+const oracleRes = await fetch(
+  'https://api.etherscan.io/v2/api?chainid=1&module=gastracker&action=gasoracle&apikey=YOUR_API_KEY'
+);
+const oracle = await oracleRes.json();
+const { SafeGasPrice, ProposeGasPrice, FastGasPrice } = oracle.result;
+
+// 2. Estimate confirmation time for each tier
+async function getEstimate(gweiPrice) {
+  const weiPrice = BigInt(gweiPrice) * BigInt(1e9);
+  const res = await fetch(
+    `https://api.etherscan.io/v2/api?chainid=1&module=gastracker&action=gasestimate&gasprice=${weiPrice}&apikey=YOUR_API_KEY`
+  );
+  const data = await res.json();
+  return data.result; // seconds
+}
+
+const [slowTime, avgTime, fastTime] = await Promise.all([
+  getEstimate(SafeGasPrice),
+  getEstimate(ProposeGasPrice),
+  getEstimate(FastGasPrice),
+]);
+
+console.log(`Slow:    ${SafeGasPrice} Gwei (~${slowTime}s)`);
+console.log(`Average: ${ProposeGasPrice} Gwei (~${avgTime}s)`);
+console.log(`Fast:    ${FastGasPrice} Gwei (~${fastTime}s)`);
+```

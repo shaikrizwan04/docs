@@ -1,0 +1,106 @@
+---
+title: "Get Contract Bytecode at an Address"
+sidebarTitle: "eth_getCode"
+description: "Returns the deployed bytecode stored at a given address at a specified block. Returns 0x for externally owned accounts."
+---
+
+This endpoint mirrors the standard `eth_getCode` JSON-RPC method, returning the bytecode deployed at an address. For smart contracts, this is the compiled EVM bytecode. For externally owned accounts (wallets), the result is `0x` — an empty byte string. Use this to verify whether an address is a contract, to retrieve bytecode for analysis, or to check that deployment was successful.
+
+<Note>
+  This is a **Geth/Parity Proxy** endpoint that wraps the standard JSON-RPC interface.
+</Note>
+
+## Parameters
+
+<ParamField query="chainid" type="string" required>
+  The chain to query. Use `1` for Ethereum mainnet. See [supported chains](/supported-chains) for a full list.
+</ParamField>
+
+<ParamField query="module" type="string" required default="proxy">
+  Set to `proxy`.
+</ParamField>
+
+<ParamField query="action" type="string" required default="eth_getCode">
+  Set to `eth_getCode`.
+</ParamField>
+
+<ParamField query="address" type="string" required>
+  The address to retrieve bytecode for.
+</ParamField>
+
+<ParamField query="tag" type="string" required>
+  Block parameter: `latest`, `earliest`, or a hex-encoded block number.
+</ParamField>
+
+<ParamField query="apikey" type="string" required>
+  Your Etherscan API key. [Get one here](/set-up-your-api-key).
+</ParamField>
+
+## Response
+
+<ResponseField name="jsonrpc" type="string">
+  JSON-RPC version. Always `"2.0"`.
+</ResponseField>
+
+<ResponseField name="id" type="integer">
+  Request ID echoed back.
+</ResponseField>
+
+<ResponseField name="result" type="string">
+  Deployed bytecode as a `0x`-prefixed hex string. Returns `0x` for non-contract addresses.
+</ResponseField>
+
+## Example
+
+<CodeGroup>
+```bash cURL
+curl "https://api.etherscan.io/v2/api\
+?chainid=1\
+&module=proxy\
+&action=eth_getCode\
+&address=0xf75e354c5edc8efed9b59ee9f67a80845ade7d0c\
+&tag=latest\
+&apikey=YOUR_API_KEY"
+```
+
+```javascript JavaScript
+const params = new URLSearchParams({
+  chainid: "1",
+  module: "proxy",
+  action: "eth_getCode",
+  address: "0xf75e354c5edc8efed9b59ee9f67a80845ade7d0c",
+  tag: "latest",
+  apikey: "YOUR_API_KEY",
+});
+
+const res = await fetch(`https://api.etherscan.io/v2/api?${params}`);
+const { result } = await res.json();
+const isContract = result !== "0x" && result !== "0x0";
+console.log(`Is contract: ${isContract}`);
+```
+
+```python Python
+import requests
+
+params = {
+    "chainid": "1",
+    "module": "proxy",
+    "action": "eth_getCode",
+    "address": "0xf75e354c5edc8efed9b59ee9f67a80845ade7d0c",
+    "tag": "latest",
+    "apikey": "YOUR_API_KEY",
+}
+
+r = requests.get("https://api.etherscan.io/v2/api", params=params)
+bytecode = r.json()["result"]
+print(f"Is contract: {bytecode not in ('0x', '0x0')}")
+```
+</CodeGroup>
+
+```json Example Response (truncated)
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": "0x6060604052361561004d576000357c..."
+}
+```

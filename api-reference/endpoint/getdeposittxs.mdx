@@ -1,0 +1,151 @@
+---
+title: "Get L1→L2 Deposit Transactions by Address"
+sidebarTitle: "getdeposittxs"
+description: "Returns cross-chain deposit transactions from Ethereum L1 to an L2 network (Arbitrum, Optimism) for a specified address."
+---
+
+When users or protocols bridge assets from Ethereum mainnet to an L2 chain like Arbitrum or Optimism, the deposit appears as a special system transaction on the L2 side. This endpoint retrieves those inbound L1-to-L2 deposit records for a given address, including the originating L1 transaction hash, token details, and bridge metadata. Use it to reconcile cross-chain balances or to track bridge activity for compliance purposes.
+
+<Note>
+  This endpoint is supported on **Arbitrum One** (`chainid=42161`), **Arbitrum Sepolia** (`chainid=421614`), **OP Mainnet** (`chainid=10`), and **OP Sepolia** (`chainid=11155420`).
+</Note>
+
+## Parameters
+
+<ParamField query="chainid" type="string" required>
+  The L2 chain to query. Use `10` for Optimism or `42161` for Arbitrum. See [supported chains](/supported-chains) for a full list.
+</ParamField>
+
+<ParamField query="module" type="string" required default="account">
+  Set to `account`.
+</ParamField>
+
+<ParamField query="action" type="string" required default="getdeposittxs">
+  Set to `getdeposittxs`.
+</ParamField>
+
+<ParamField query="address" type="string" required>
+  The address to query for cross-chain deposit transactions.
+</ParamField>
+
+<ParamField query="page" type="integer">
+  Page number for pagination. Starts at `1`.
+</ParamField>
+
+<ParamField query="offset" type="integer">
+  Number of records per page.
+</ParamField>
+
+<ParamField query="sort" type="string">
+  Sort order: `asc` for oldest-first, `desc` for newest-first.
+</ParamField>
+
+<ParamField query="apikey" type="string" required>
+  Your Etherscan API key. [Get one here](/set-up-your-api-key).
+</ParamField>
+
+## Response
+
+<ResponseField name="status" type="string">
+  `1` if records were returned, `0` on error or no records.
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  `OK` on success, or an error description such as `NOTOK`.
+</ResponseField>
+
+<ResponseField name="result" type="array">
+  Array of L2 deposit transaction objects.
+
+  <Expandable title="Deposit transaction fields">
+    <ResponseField name="blockNumber" type="string">Block number on the L2 chain.</ResponseField>
+    <ResponseField name="timeStamp" type="string">Unix timestamp of the transaction in seconds.</ResponseField>
+    <ResponseField name="hash" type="string">L2 transaction hash.</ResponseField>
+    <ResponseField name="from" type="string">L2 system address that processed the deposit.</ResponseField>
+    <ResponseField name="to" type="string">Recipient address on L2.</ResponseField>
+    <ResponseField name="value" type="string">Native token amount transferred, in wei.</ResponseField>
+    <ResponseField name="gas" type="string">Gas limit for the transaction.</ResponseField>
+    <ResponseField name="gasPrice" type="string">Gas price in wei.</ResponseField>
+    <ResponseField name="gasUsed" type="string">Gas consumed by the transaction.</ResponseField>
+    <ResponseField name="isError" type="string">`0` for success, `1` for failure.</ResponseField>
+    <ResponseField name="L1transactionhash" type="string">Hash of the originating L1 transaction.</ResponseField>
+    <ResponseField name="L1TxOrigin" type="string">Address on L1 that initiated the deposit.</ResponseField>
+    <ResponseField name="tokenAddress" type="string">Token contract address, or `ETH` for the native token.</ResponseField>
+    <ResponseField name="tokenValue" type="string">Amount of tokens deposited, in the token's smallest unit.</ResponseField>
+    <ResponseField name="tokenSentTo" type="string">Address on L2 the tokens were sent to.</ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Example
+
+<CodeGroup>
+```bash cURL
+curl "https://api.etherscan.io/v2/api\
+?chainid=10\
+&module=account\
+&action=getdeposittxs\
+&address=0x80f3950a4d371c43360f292a4170624abd9eed03\
+&page=1\
+&offset=100\
+&sort=asc\
+&apikey=YOUR_API_KEY"
+```
+
+```javascript JavaScript
+const params = new URLSearchParams({
+  chainid: "10",
+  module: "account",
+  action: "getdeposittxs",
+  address: "0x80f3950a4d371c43360f292a4170624abd9eed03",
+  page: "1",
+  offset: "100",
+  sort: "asc",
+  apikey: "YOUR_API_KEY",
+});
+
+const res = await fetch(`https://api.etherscan.io/v2/api?${params}`);
+const data = await res.json();
+console.log(data.result);
+```
+
+```python Python
+import requests
+
+params = {
+    "chainid": "10",
+    "module": "account",
+    "action": "getdeposittxs",
+    "address": "0x80f3950a4d371c43360f292a4170624abd9eed03",
+    "page": 1,
+    "offset": 100,
+    "sort": "asc",
+    "apikey": "YOUR_API_KEY",
+}
+
+r = requests.get("https://api.etherscan.io/v2/api", params=params)
+print(r.json()["result"])
+```
+</CodeGroup>
+
+```json Example Response (truncated)
+{
+  "status": "1",
+  "message": "OK",
+  "result": [
+    {
+      "blockNumber": "132992375",
+      "timeStamp": "1741583527",
+      "hash": "0x64ccd0cfa9f333578b36227492f3bc7f5f3ec4bfa82cdc46f82884db680d8e5b",
+      "from": "0x36bde71c97b33cc4729cf772ae268934f7ab70b2",
+      "to": "0x4200000000000000000000000000000000000007",
+      "value": "598200000000000",
+      "gasUsed": "117234",
+      "isError": "0",
+      "L1transactionhash": "0x303bd05c47e62e1243a33210e535ebc70a7567e53a9972fbdef52ee5bcda5acb",
+      "tokenAddress": "ETH",
+      "tokenSentTo": "0x80f3950a4d371c43360f292a4170624abd9eed03",
+      "tokenValue": "598200000000000"
+    }
+  ]
+}
+```

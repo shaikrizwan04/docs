@@ -1,0 +1,112 @@
+---
+title: "Check Contract Execution Status"
+sidebarTitle: "Execution Status"
+description: "Retrieve the contract execution status for a transaction hash, indicating whether the transaction errored and the error description if so."
+---
+
+Use this endpoint to check whether a specific transaction encountered a contract execution error. This is distinct from a transaction receipt status — a transaction may have been included in a block (receipt status = 1) but still failed during contract execution. The `isError` field tells you exactly this, and `errDescription` gives you the revert reason when available.
+
+<Note>
+  This endpoint reflects the contract execution result, not the transaction receipt. For receipt status only, use [gettxreceiptstatus](/api-reference/endpoint/gettxreceiptstatus).
+</Note>
+
+## Query Parameters
+
+<ParamField query="chainid" type="string" required>
+  The chain ID to query. For example, `1` for Ethereum mainnet or `42161` for Arbitrum. See the full list of [supported chains](/supported-chains).
+</ParamField>
+
+<ParamField query="module" type="string" required default="transaction">
+  Set to `transaction` for this endpoint.
+</ParamField>
+
+<ParamField query="action" type="string" required default="getstatus">
+  Set to `getstatus` for this endpoint.
+</ParamField>
+
+<ParamField query="txhash" type="string" required>
+  The transaction hash to check. Example: `0x15f8e5ea1079d9a0bb04a4c58ae5fe7654b5b2b4463375ff7ffb490aa0032f3a`.
+</ParamField>
+
+<ParamField query="apikey" type="string" required>
+  Your Etherscan API key. [Set one up](/set-up-your-api-key) if you don't have one.
+</ParamField>
+
+## Response Fields
+
+<ResponseField name="status" type="string">
+  `1` if the request returned data, `0` otherwise.
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  `OK` on success, or an error description such as `NOTOK`.
+</ResponseField>
+
+<ResponseField name="result" type="object">
+  <Expandable title="result fields">
+    <ResponseField name="isError" type="string">
+      `1` if the transaction failed during contract execution, `0` if it succeeded.
+    </ResponseField>
+    <ResponseField name="errDescription" type="string">
+      Human-readable description of the execution error when `isError` is `1`. Empty on success.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Example
+
+<CodeGroup>
+```bash cURL
+curl "https://api.etherscan.io/v2/api\
+?chainid=1\
+&module=transaction\
+&action=getstatus\
+&txhash=0x15f8e5ea1079d9a0bb04a4c58ae5fe7654b5b2b4463375ff7ffb490aa0032f3a\
+&apikey=YOUR_API_KEY"
+```
+
+```javascript JavaScript
+const params = new URLSearchParams({
+  chainid: "1",
+  module: "transaction",
+  action: "getstatus",
+  txhash: "0x15f8e5ea1079d9a0bb04a4c58ae5fe7654b5b2b4463375ff7ffb490aa0032f3a",
+  apikey: "YOUR_API_KEY",
+});
+
+const response = await fetch(`https://api.etherscan.io/v2/api?${params}`);
+const data = await response.json();
+const { isError, errDescription } = data.result;
+if (isError === "1") {
+  console.error("Transaction failed:", errDescription);
+}
+```
+
+```python Python
+import requests
+
+params = {
+    "chainid": "1",
+    "module": "transaction",
+    "action": "getstatus",
+    "txhash": "0x15f8e5ea1079d9a0bb04a4c58ae5fe7654b5b2b4463375ff7ffb490aa0032f3a",
+    "apikey": "YOUR_API_KEY",
+}
+
+response = requests.get("https://api.etherscan.io/v2/api", params=params)
+result = response.json()["result"]
+if result["isError"] == "1":
+    print("Error:", result["errDescription"])
+```
+</CodeGroup>
+
+```json Example Response
+{
+  "status": "1",
+  "message": "OK",
+  "result": {
+    "isError": "1",
+    "errDescription": "Bad jump destination"
+  }
+}
+```

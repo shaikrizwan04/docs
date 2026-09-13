@@ -1,0 +1,115 @@
+---
+title: "Get All Supported Chains (Chainlist)"
+sidebarTitle: "chainlist"
+description: "Returns the list of all mainnet and testnet chains supported by the Etherscan API, including chain IDs, explorer URLs, and status."
+---
+
+The Etherscan API supports 60+ EVM chains through a single unified endpoint using the `chainid` query parameter. This endpoint returns the complete list of supported chains — both mainnets and testnets — along with the chain ID, block explorer URL, API URL, and current operational status for each. Use it to dynamically build chain selectors, validate chain IDs before making other API calls, or monitor per-chain availability.
+
+## Endpoint
+
+The chainlist endpoint uses a dedicated path: `https://api.etherscan.io/v2/chainlist`
+
+No `module` or `action` parameters are required.
+
+## Parameters
+
+This endpoint accepts no query parameters.
+
+## Response
+
+<ResponseField name="comments" type="string">
+  Description of the response format and available status codes.
+</ResponseField>
+
+<ResponseField name="totalcount" type="number">
+  Total number of chains in the list.
+</ResponseField>
+
+<ResponseField name="result" type="array">
+  Array of supported chain objects.
+
+  <Expandable title="Chain object fields">
+    <ResponseField name="chainname" type="string">
+      Human-readable name of the chain, e.g. `Ethereum Mainnet`.
+    </ResponseField>
+    <ResponseField name="chainid" type="string">
+      Numeric chain ID as a string, e.g. `1` for Ethereum, `137` for Polygon.
+    </ResponseField>
+    <ResponseField name="blockexplorer" type="string">
+      URL of the chain's block explorer, e.g. `https://etherscan.io/`.
+    </ResponseField>
+    <ResponseField name="apiurl" type="string">
+      Ready-to-use API base URL for this chain, including the `chainid` parameter.
+    </ResponseField>
+    <ResponseField name="status" type="number">
+      Operational status: `1` = OK, `0` = Offline, `2` = Degraded.
+    </ResponseField>
+    <ResponseField name="comment" type="string">
+      Additional notes about the chain's status, if any.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Example
+
+<CodeGroup>
+```bash cURL
+curl "https://api.etherscan.io/v2/chainlist"
+```
+
+```javascript JavaScript
+const res = await fetch("https://api.etherscan.io/v2/chainlist");
+const data = await res.json();
+
+// Find Arbitrum
+const arbitrum = data.result.find(c => c.chainname.includes("Arbitrum One"));
+console.log(`Arbitrum chain ID: ${arbitrum.chainid}`);
+console.log(`Status: ${arbitrum.status === 1 ? "OK" : "Issues"}`);
+```
+
+```python Python
+import requests
+
+r = requests.get("https://api.etherscan.io/v2/chainlist")
+data = r.json()
+
+print(f"Total chains: {data['totalcount']}")
+for chain in data["result"][:5]:
+    status = {1: "OK", 0: "Offline", 2: "Degraded"}.get(chain["status"], "Unknown")
+    print(f"{chain['chainname']} (id={chain['chainid']}): {status}")
+```
+</CodeGroup>
+
+```json Example Response (truncated)
+{
+  "comments": "List of API endpoints maintained by Etherscan EAAS. Available Status codes are (0)=Offline, (1)=Ok, (2)=Degraded",
+  "totalcount": 67,
+  "result": [
+    {
+      "chainname": "Ethereum Mainnet",
+      "chainid": "1",
+      "blockexplorer": "https://etherscan.io/",
+      "apiurl": "https://api.etherscan.io/v2/api?chainid=1",
+      "status": 1,
+      "comment": ""
+    },
+    {
+      "chainname": "Base Mainnet",
+      "chainid": "8453",
+      "blockexplorer": "https://basescan.org/",
+      "apiurl": "https://api.etherscan.io/v2/api?chainid=8453",
+      "status": 1,
+      "comment": ""
+    },
+    {
+      "chainname": "Arbitrum One Mainnet",
+      "chainid": "42161",
+      "blockexplorer": "https://arbiscan.io/",
+      "apiurl": "https://api.etherscan.io/v2/api?chainid=42161",
+      "status": 1,
+      "comment": ""
+    }
+  ]
+}
+```

@@ -1,0 +1,126 @@
+---
+title: "Check Etherscan API Status and Diagnose Failures"
+sidebarTitle: "API Status"
+description: "Check live API uptime, distinguish service outages from request errors in your own code, and know exactly what to do when API calls fail."
+---
+
+When an API call fails, the first question to answer is whether the problem is on Etherscan's side or in your own request. An outage and a malformed request both result in a failed call, but they have very different fixes. This page gives you a reliable diagnostic process: check the status page first, then rule out issues in your own request before reaching out for support.
+
+## Check the Status Page
+
+Before debugging your code, check whether Etherscan's services are experiencing an incident.
+
+<Card title="Etherscan API Status" icon="heart-pulse" href="https://status.etherscan.io/" horizontal>
+  Live uptime metrics and incident history for all Etherscan services. Check here first when calls fail unexpectedly.
+</Card>
+
+The status page shows real-time uptime for each service component and a history of past incidents. If an incident is listed as active, wait for it to resolve before investigating your own code.
+
+## Rule Out Issues in Your Own Request
+
+If the status page shows no active incident, the problem is most likely in your request. Work through these steps to isolate it.
+
+<Steps>
+  <Step title="Confirm the API responds to a basic call">
+    This request fetches the latest Ethereum block number — a simple, dependency-free call that tests both connectivity and your API key.
+
+    ```bash
+    curl --request GET \
+      --url 'https://api.etherscan.io/v2/api?chainid=1&module=proxy&action=eth_blockNumber&apikey=YOUR_API_KEY'
+    ```
+
+    **Interpret the result:**
+    - A hex block number in `"result"` (e.g., `"0x146A7B8"`) means the API is up and your key is valid. The problem is in the specific request that's failing.
+    - An error message in `"result"` points to your request parameters or API key. See [Common Error Messages](/common-error-messages) for what each error means.
+  </Step>
+
+  <Step title="Check your API usage quota">
+    Confirm you haven't exhausted your daily call limit using the `getapilimit` endpoint.
+
+    ```bash
+    curl --request GET \
+      --url 'https://api.etherscan.io/v2/api?module=getapilimit&action=getapilimit&apikey=YOUR_API_KEY'
+    ```
+
+    The response shows your daily call allowance and how many calls you've used today:
+
+    ```json
+    {
+      "status": "1",
+      "message": "OK",
+      "result": {
+        "credits_used": 2150,
+        "credits_limit": 100000,
+        "reset_time": "2026-01-02 00:00:00 UTC"
+      }
+    }
+    ```
+
+    If `credits_used` equals `credits_limit`, your daily quota is exhausted. Calls will resume after the `reset_time`, or you can [upgrade your plan](https://etherscan.io/api/pricing) for a higher daily limit.
+  </Step>
+
+  <Step title="Verify your request parameters">
+    If the basic call succeeds and your quota isn't exhausted, check the failing request against these common mistakes:
+
+    - **`chainid` is required** on every V2 API call. Missing or invalid chain IDs return an error immediately.
+    - **One chain at a time** — you cannot pass multiple chain IDs in a single request.
+    - **`module` and `action`** must match a valid endpoint exactly. Check against the [API Reference](/api-reference/endpoint/balance).
+    - **Addresses** must be in `0x`-prefixed 40-character hex format.
+    - **PRO endpoints** are only available on mainnet networks, not testnets.
+  </Step>
+</Steps>
+
+## Understand the Response Format
+
+Every API response — success or failure — uses the same JSON structure. Check `status` first:
+
+<Tabs>
+  <Tab title="Success response">
+    ```json
+    {
+      "status": "1",
+      "message": "OK",
+      "result": "..."
+    }
+    ```
+    `status: "1"` means the call succeeded. The data you requested is in `result`.
+  </Tab>
+  <Tab title="Error response">
+    ```json
+    {
+      "status": "0",
+      "message": "NOTOK",
+      "result": "Max rate limit reached, please use API Key for higher rate limit"
+    }
+    ```
+    `status: "0"` means the call failed. The specific reason is in `result`. See [Common Error Messages](/common-error-messages) for a full list.
+  </Tab>
+</Tabs>
+
+<Note>
+  HTTP status codes are not a reliable indicator of API-level success. The API may return HTTP 200 with `"status": "0"` when a request fails logically. Always check the `status` field in the JSON response body.
+</Note>
+
+## What to Do When Calls Fail
+
+<Accordion title="Intermittent failures or timeouts">
+  Intermittent failures are often caused by temporary high load on shared infrastructure or by queries that are too broad. Try:
+
+  1. Retrying after a short delay with exponential backoff.
+  2. Narrowing the block range with `startblock` and `endblock`.
+  3. Reducing the `offset` to request fewer records per page.
+
+  See [Best Practices](/resources/best-practices) for retry patterns and query optimization tips.
+</Accordion>
+
+<Accordion title="Failures across all chains with no status incident">
+  If basic calls fail across multiple chains, your API key is the most likely cause — it may be inactive, expired, or from a different explorer. Verify your key at [etherscan.io/myapikey](https://etherscan.io/myapikey) and confirm it's an Etherscan key, not a key from Polygonscan, Arbiscan, or another chain-specific explorer.
+</Accordion>
+
+<Accordion title="Failures on a specific chain only">
+  Chain-specific failures while other chains work normally usually indicate either a chain-level incident or a plan limitation. Check the status page for that chain and confirm your plan includes access to it on [Supported Chains](/supported-chains).
+</Accordion>
+
+## Still Stuck?
+
+If your key is valid, your quota isn't exhausted, the status page shows no incident, and the failing request looks correct — [contact Etherscan support](/resources/contact-us). Include the failing request URL (with your API key replaced by a placeholder), the full response body, and the chain ID you're querying.

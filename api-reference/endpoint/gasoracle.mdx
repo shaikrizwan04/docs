@@ -1,0 +1,118 @@
+---
+title: "Get Gas Oracle — Current Gas Price Recommendations"
+sidebarTitle: "gasoracle"
+description: "Returns current gas price recommendations in gwei — Safe, Propose, and Fast tiers — plus the suggested EIP-1559 base fee."
+---
+
+The Gas Oracle provides a real-time snapshot of network gas prices, broken into three tiers: safe (low priority), propose (standard), and fast (high priority). It also returns the EIP-1559 `suggestBaseFee` and the gas utilization ratio for recent blocks — giving you everything you need to build a dynamic gas price selector or to benchmark transaction costs. This endpoint is currently available on Ethereum, BNB Smart Chain, Polygon, Celo, Gnosis, and Linea mainnets.
+
+## Parameters
+
+<ParamField query="chainid" type="string" required>
+  The chain to query. Use `1` for Ethereum mainnet. See [supported chains](/supported-chains) for a full list.
+</ParamField>
+
+<ParamField query="module" type="string" required default="gastracker">
+  Set to `gastracker`.
+</ParamField>
+
+<ParamField query="action" type="string" required default="gasoracle">
+  Set to `gasoracle`.
+</ParamField>
+
+<ParamField query="apikey" type="string" required>
+  Your Etherscan API key. [Get one here](/set-up-your-api-key).
+</ParamField>
+
+## Response
+
+<ResponseField name="status" type="string">
+  `1` if the request succeeded, `0` on error.
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  `OK` on success, or an error description such as `NOTOK`.
+</ResponseField>
+
+<ResponseField name="result" type="object">
+  Gas price recommendations object.
+
+  <Expandable title="Result fields">
+    <ResponseField name="LastBlock" type="string">
+      The latest block number used to compute these estimates.
+    </ResponseField>
+    <ResponseField name="SafeGasPrice" type="string">
+      Recommended gas price for a low-priority transaction, in gwei. Suitable when confirmation time is not critical.
+    </ResponseField>
+    <ResponseField name="ProposeGasPrice" type="string">
+      Recommended gas price for a standard-priority transaction, in gwei. Expected to confirm within a few blocks.
+    </ResponseField>
+    <ResponseField name="FastGasPrice" type="string">
+      Recommended gas price for a high-priority transaction, in gwei. Targets confirmation in the next block.
+    </ResponseField>
+    <ResponseField name="suggestBaseFee" type="string">
+      The suggested EIP-1559 base fee for the next block, in gwei.
+    </ResponseField>
+    <ResponseField name="gasUsedRatio" type="string">
+      Comma-separated gas utilization ratios for the most recent blocks. Each value is between `0` (empty) and `1` (full).
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Example
+
+<CodeGroup>
+```bash cURL
+curl "https://api.etherscan.io/v2/api\
+?chainid=1\
+&module=gastracker\
+&action=gasoracle\
+&apikey=YOUR_API_KEY"
+```
+
+```javascript JavaScript
+const params = new URLSearchParams({
+  chainid: "1",
+  module: "gastracker",
+  action: "gasoracle",
+  apikey: "YOUR_API_KEY",
+});
+
+const res = await fetch(`https://api.etherscan.io/v2/api?${params}`);
+const { result } = await res.json();
+console.log(`Safe: ${result.SafeGasPrice} Gwei`);
+console.log(`Propose: ${result.ProposeGasPrice} Gwei`);
+console.log(`Fast: ${result.FastGasPrice} Gwei`);
+```
+
+```python Python
+import requests
+
+params = {
+    "chainid": "1",
+    "module": "gastracker",
+    "action": "gasoracle",
+    "apikey": "YOUR_API_KEY",
+}
+
+r = requests.get("https://api.etherscan.io/v2/api", params=params)
+result = r.json()["result"]
+print(f"Safe: {result['SafeGasPrice']} Gwei")
+print(f"Fast: {result['FastGasPrice']} Gwei")
+```
+</CodeGroup>
+
+```json Example Response
+{
+  "status": "1",
+  "message": "OK",
+  "result": {
+    "LastBlock": "23467872",
+    "SafeGasPrice": "0.496839934",
+    "ProposeGasPrice": "0.496840168",
+    "FastGasPrice": "0.55411917",
+    "suggestBaseFee": "0.496839934",
+    "gasUsedRatio": "0.405942555555556,0.784013777777778,0.502624148542588,0.719479644444444,0.45673524947105"
+  }
+}
+```

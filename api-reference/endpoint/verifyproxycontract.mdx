@@ -1,0 +1,121 @@
+---
+title: "Verify Proxy Contract"
+sidebarTitle: "Verify Proxy"
+description: "Submit a proxy contract for verification on Etherscan to link it with its implementation contract. Optionally enforce a specific implementation address."
+---
+
+Use this endpoint to verify a proxy contract and associate it with its implementation. Etherscan uses proxy patterns (EIP-1167, EIP-1967, EIP-897, etc.) to automatically detect the implementation address, or you can supply an expected implementation address for additional validation. After submission, poll [checkproxyverification](/api-reference/endpoint/checkproxyverification) with the returned GUID to confirm the result.
+
+<Warning>
+  The proxy contract itself must already be source-verified before you submit it for proxy verification. If it is not verified, the API will return an error.
+</Warning>
+
+## Query Parameters
+
+<ParamField query="chainid" type="string" required>
+  The chain ID of the network where the proxy is deployed. Example: `1` for Ethereum mainnet. See [supported chains](/supported-chains).
+</ParamField>
+
+<ParamField query="module" type="string" required default="contract">
+  Set to `contract` for this endpoint.
+</ParamField>
+
+<ParamField query="action" type="string" required default="verifyproxycontract">
+  Set to `verifyproxycontract` for this endpoint.
+</ParamField>
+
+<ParamField query="apikey" type="string" required>
+  Your Etherscan API key. [Set one up](/set-up-your-api-key) if you don't have one.
+</ParamField>
+
+## Request Body
+
+Send the following fields as `application/x-www-form-urlencoded`.
+
+<ParamField body="address" type="string" required>
+  The proxy contract address to verify. Example: `0xdAC17F958D2ee523a2206206994597C13D831ec7`.
+</ParamField>
+
+<ParamField body="expectedimplementation" type="string">
+  Optional. The expected implementation contract address. If provided, verification fails if the resolved implementation does not match. Example: `0xB0F24CEB2616F6Bb608B00875Db306167c0f2E8C`.
+</ParamField>
+
+## Response Fields
+
+<ResponseField name="status" type="string">
+  `1` if the request was accepted, `0` if it failed.
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  `OK` on success, or an error description such as `NOTOK`.
+</ResponseField>
+
+<ResponseField name="result" type="string">
+  A GUID string for the proxy verification submission. Use it with [checkproxyverification](/api-reference/endpoint/checkproxyverification) to poll the result.
+</ResponseField>
+
+## Example
+
+<CodeGroup>
+```bash cURL
+curl -X POST "https://api.etherscan.io/v2/api\
+?chainid=1\
+&module=contract\
+&action=verifyproxycontract\
+&apikey=YOUR_API_KEY" \
+-d "address=0xdAC17F958D2ee523a2206206994597C13D831ec7" \
+-d "expectedimplementation=0xB0F24CEB2616F6Bb608B00875Db306167c0f2E8C"
+```
+
+```javascript JavaScript
+const params = new URLSearchParams({
+  chainid: "1",
+  module: "contract",
+  action: "verifyproxycontract",
+  apikey: "YOUR_API_KEY",
+});
+
+const body = new URLSearchParams({
+  address: "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+  expectedimplementation: "0xB0F24CEB2616F6Bb608B00875Db306167c0f2E8C",
+});
+
+const response = await fetch(
+  `https://api.etherscan.io/v2/api?${params}`,
+  { method: "POST", body }
+);
+const data = await response.json();
+console.log("Proxy Verification GUID:", data.result);
+```
+
+```python Python
+import requests
+
+params = {
+    "chainid": "1",
+    "module": "contract",
+    "action": "verifyproxycontract",
+    "apikey": "YOUR_API_KEY",
+}
+
+payload = {
+    "address": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+    "expectedimplementation": "0xB0F24CEB2616F6Bb608B00875Db306167c0f2E8C",
+}
+
+response = requests.post(
+    "https://api.etherscan.io/v2/api",
+    params=params,
+    data=payload
+)
+print("Proxy Verification GUID:", response.json()["result"])
+```
+</CodeGroup>
+
+```json Example Response
+{
+  "status": "1",
+  "message": "OK",
+  "result": "a7lpxkm9kpcpicx7daftmjifrfhiuhf5vqqnawhkfhzfrcpnxj"
+}
+```

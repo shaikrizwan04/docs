@@ -1,0 +1,150 @@
+---
+title: "Etherscan API Supported Chains and Chain IDs"
+sidebarTitle: "Supported Chains"
+description: "All 60+ EVM chains supported by the Etherscan API, with chain IDs, plan availability, and how to switch chains with the chainid parameter."
+---
+
+The Etherscan API gives you access to onchain data across 60+ EVM-compatible chains through a single endpoint and a single API key. To switch chains, change the `chainid` query parameter in your request — everything else stays the same. Mainnets and their corresponding testnets are both supported, so you can develop and test against the same API before deploying to production.
+
+## Switching chains
+
+Every API call goes to `https://api.etherscan.io/v2/api`. The `chainid` parameter tells the API which network to query:
+
+```bash
+# Ethereum mainnet
+curl 'https://api.etherscan.io/v2/api?chainid=1&module=account&action=balance&address=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045&tag=latest&apikey=YOUR_API_KEY'
+
+# Base mainnet — only chainid changes
+curl 'https://api.etherscan.io/v2/api?chainid=8453&module=account&action=balance&address=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045&tag=latest&apikey=YOUR_API_KEY'
+
+# Arbitrum One — only chainid changes
+curl 'https://api.etherscan.io/v2/api?chainid=42161&module=account&action=balance&address=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045&tag=latest&apikey=YOUR_API_KEY'
+```
+
+<Tip>
+  Source code and ABI endpoints are available on all chains for every API plan, including the Free tier.
+</Tip>
+
+## Plan availability
+
+Some chains require a paid plan. Chains marked **Free Tier Available** are accessible on every plan, including the free tier. Chains marked **Paid Tier Only** require a Lite plan or higher.
+
+<Note>
+  Gnosis (Chain ID 100) community endpoints will require a **Lite plan or above** starting **September 1, 2026**. Pro endpoints on Gnosis require a **Standard plan or above**. Source code and ABI endpoints remain available on the Free tier.
+</Note>
+
+## Major mainnets
+
+The table below lists the most widely-used mainnet chains. Use the chain ID in the `chainid` parameter of any API request.
+
+| Chain | Chain ID | Free Tier |
+| ----- | --------- | --------- |
+| Ethereum | `1` | ✅ Available |
+| BNB Smart Chain | `56` | ✅ Available |
+| Polygon | `137` | ✅ Available |
+| Optimism (OP Mainnet) | `10` | ✅ Available |
+| Arbitrum One | `42161` | ✅ Available |
+| Base | `8453` | ✅ Available |
+| Avalanche C-Chain | `43114` | ✅ Available |
+| Linea | `59144` | ✅ Available |
+| Gnosis | `100` | ✅ Available |
+| Blast | `81457` | ✅ Available |
+| Celo | `42220` | ✅ Available |
+| Mantle | `5000` | ✅ Available |
+| opBNB | `204` | ✅ Available |
+| Taiko | `167000` | ✅ Available |
+| Sonic | `146` | ✅ Available |
+| Unichain | `130` | ✅ Available |
+| Berachain | `80094` | ✅ Available |
+| Sei | `1329` | ✅ Available |
+| ApeChain | `33139` | ✅ Available |
+| World | `480` | ✅ Available |
+| Abstract | `2741` | ✅ Available |
+| Fraxtal | `252` | ✅ Available |
+| Monad | `143` | ✅ Available |
+| HyperEVM | `999` | ✅ Available |
+| MegaETH | `4326` | ✅ Available |
+| XDC | `50` | ✅ Available |
+| BitTorrent Chain | `199` | ✅ Available |
+| Memecore | `4352` | ✅ Available |
+| Katana | `747474` | ✅ Available |
+
+## Testnets
+
+All major chains have testnet equivalents. Use these for development and integration testing without spending real funds.
+
+| Testnet | Chain ID |
+| ------- | --------- |
+| Ethereum Sepolia | `11155111` |
+| Ethereum Hoodi | `560048` |
+| BNB Smart Chain Testnet | `97` |
+| Polygon Amoy | `80002` |
+| OP Sepolia | `11155420` |
+| Arbitrum Sepolia | `421614` |
+| Base Sepolia | `84532` |
+| Avalanche Fuji | `43113` |
+| Linea Sepolia | `59141` |
+| Blast Sepolia | `168587773` |
+| Celo Sepolia | `11142220` |
+| Mantle Sepolia | `5003` |
+| Taiko Hoodi | `167013` |
+| Berachain Bepolia | `80069` |
+| Unichain Sepolia | `1301` |
+| Abstract Sepolia | `11124` |
+| Monad Testnet | `10143` |
+| Sei Testnet | `1328` |
+| ApeChain Curtis | `33111` |
+| World Sepolia | `4801` |
+| Sonic Testnet | `14601` |
+| XDC Apothem | `51` |
+| BitTorrent Chain Testnet | `1029` |
+| Fraxtal Hoodi | `2523` |
+| opBNB Testnet | `5611` |
+| Katana Bokuto | `737373` |
+| Memecore Insectarium | `43522` |
+
+## Retrieve the chain list programmatically
+
+Use the `chainlist` endpoint to fetch the complete, up-to-date list of all supported chains — including their chain IDs, names, and explorer URLs — directly from the API:
+
+```bash
+curl 'https://api.etherscan.io/v2/api?module=chainlist&action=chainlist&apikey=YOUR_API_KEY'
+```
+
+A successful response returns an array of chain objects:
+
+```json
+{
+  "status": "1",
+  "message": "OK",
+  "result": [
+    {
+      "chainname": "Ethereum Mainnet",
+      "chainid": "1",
+      "blockexplorer": "https://etherscan.io",
+      "apiurl": "https://api.etherscan.io/v2/api"
+    },
+    {
+      "chainname": "BNB Smart Chain Mainnet",
+      "chainid": "56",
+      "blockexplorer": "https://bscscan.com",
+      "apiurl": "https://api.etherscan.io/v2/api"
+    }
+  ]
+}
+```
+
+<Tip>
+  Call the `chainlist` endpoint at application startup to keep your supported-chain list in sync automatically, rather than hardcoding chain IDs.
+</Tip>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Make Your First Call" icon="rocket" href="/make-your-first-call">
+    See the full query structure and response format with a worked example.
+  </Card>
+  <Card title="Rate Limits" icon="gauge-high" href="/rate-limits">
+    Understand which chains require a paid plan and the call limits for each tier.
+  </Card>
+</CardGroup>

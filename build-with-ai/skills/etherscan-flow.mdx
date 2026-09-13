@@ -1,0 +1,146 @@
+---
+title: "Etherscan Flow: Trace and Visualize Onchain Money Flows"
+sidebarTitle: "Flow"
+description: "Install the Etherscan Flow skill to trace, verify, and visualize onchain money flows into an import-ready case file on etherscan.io/flow."
+---
+
+The Etherscan Flow skill turns your AI agent into an onchain investigator. Give it a transaction hash, a wallet address, a resolvable entity name, a draft case, or a source URL — and it queries live Etherscan API data hop by hop, then returns a single import-ready Flow Case file of nodes and edges. Every address, amount, and transaction hash in the output is grounded in a real API response, so you can verify the entire case before drawing conclusions.
+
+The skill runs in three modes:
+
+- **Strict trace** — start from a transaction hash or address and follow the money forward and backward through the chain.
+- **Business/entity profile** — start from a DAO, protocol, or business name, resolve it to verified addresses, then summarize income, spending, and totals.
+- **Document import** — paste a draft case, notes, or a URL, and the skill verifies every address and claim against the live API before producing the final case file.
+
+Where the general [Etherscan Orchestrator](/build-with-ai/skills/etherscan) routes a task to the right Etherscan interface, Etherscan Flow owns a full multi-step investigation workflow on top of the API.
+
+<Note>
+  Roles, labels, and notes in a case are the agent's inference over public Etherscan data — not Etherscan verdicts, accusations, or legal findings.
+</Note>
+
+## Get started
+
+<Steps>
+  <Step title="Install the skill">
+    <Tabs>
+      <Tab title="Claude Code CLI / Codex CLI">
+        Add the skill with the [skills.sh](https://skills.sh) CLI. The `-g` flag installs it globally and `-a '*'` installs it for every configured agent:
+
+        ```bash
+        npx skills add https://github.com/etherscan/skills --skill etherscan-flow -g -a '*' -y
+        ```
+
+        Or clone the repository and copy the folder manually:
+
+        ```bash
+        git clone https://github.com/etherscan/skills.git etherscan-skills
+        cp -r etherscan-skills/skills/etherscan-flow ~/.claude/skills/
+        ```
+      </Tab>
+
+      <Tab title="Claude Desktop">
+        Claude Desktop installs a skill from a ZIP file you upload. The ZIP must contain exactly one `SKILL.md` file.
+
+        1. Download the [Etherscan skills repo](https://github.com/etherscan/skills/archive/refs/heads/main.zip), unzip it, and compress just the `skills-main/skills/etherscan-flow` folder into `etherscan-flow.zip`:
+
+           ```
+           skills-main/
+           └── skills/
+               ├── etherscan/
+               ├── etherscan-contract-review/
+               ├── etherscan-flow/               ← zip this folder
+               └── etherscan-transaction-debugger/
+           ```
+
+        2. In Claude Desktop, go to **Settings > Skills > Add > Upload a skill** and select `etherscan-flow.zip`.
+
+        3. The Etherscan Flow skill is now active and ready to use.
+      </Tab>
+    </Tabs>
+  </Step>
+
+  <Step title="Run your first trace">
+    Describe the case in plain language. Include `use etherscan-flow skill` to activate it:
+
+    ```text
+    trace this scam 0x<txhash>. use etherscan-flow skill
+    ```
+
+    The agent pulls live transactions, follows the money hop by hop, and returns a single import-ready Flow Case JSON file.
+  </Step>
+</Steps>
+
+## Provide an API key
+
+Etherscan Flow calls the Etherscan API, which requires an [API key](/set-up-your-api-key). The skill resolves a key in this order — first usable match wins:
+
+1. The Etherscan [CLI](/build-with-ai/cli) config
+2. The Etherscan [MCP](/build-with-ai/mcp) connection
+3. An inline `apikey=` in your request
+4. The `ETHERSCAN_API_KEY` environment variable
+5. A local key file
+
+<Tip>
+  Resolving the key through the CLI or MCP keeps it out of the chat transcript entirely.
+</Tip>
+
+## Example prompts
+
+### Trace a transaction or address
+
+```text
+trace this scam 0x<txhash>
+```
+
+```text
+follow the money from this victim wallet 0x<address>
+```
+
+```text
+this is the scammer address 0x<address>, find the victims
+```
+
+```text
+build a case for this hack 0x<address> apikey=YOUR_KEY
+```
+
+### Profile a DAO, protocol, or business
+
+```text
+show ENS DAO as a business
+```
+
+```text
+show ENS DAO as a business using these treasury, controller, and timelock addresses:
+0x<address> 0x<address>
+```
+
+```text
+map income and spending for this protocol treasury 0x<address>
+```
+
+### Import and verify a draft case
+
+```text
+extract the flows from this gist and build the case:
+https://gist.github.com/<user>/<id> apikey=YOUR_KEY
+```
+
+```text
+someone reported this scam on X — verify it and build the case:
+https://x.com/<user>/status/<id>
+```
+
+```text
+here's my draft case JSON — validate it and produce a verified version: <pasted draft>
+```
+
+## Run without approving every call
+
+A single trace can make up to 100 API calls, so your agent may prompt you to approve each one. That prompt comes from your agent's own permission system, not from Etherscan Flow.
+
+You can safely approve them all at once: every call is a read-only `GET` to `api.etherscan.io`, so nothing is written or spent. To configure bulk approval in Claude Code, Codex, or Claude.ai, see [Stop it asking permission for every call](https://github.com/etherscan/skills/blob/main/skills/etherscan-flow/README.md#stop-it-asking-permission-for-every-call) in the skill's README.
+
+## Output
+
+The skill produces a single Flow Case JSON file. To visualize it, open [etherscan.io/flow](https://etherscan.io/flow), choose **Import**, and paste the file. The schema maps one to one with no reformatting needed.

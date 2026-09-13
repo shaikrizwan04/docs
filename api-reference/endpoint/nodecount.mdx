@@ -1,0 +1,99 @@
+---
+title: "Get Total Discoverable Ethereum Node Count"
+sidebarTitle: "nodecount"
+description: "Returns the total number of discoverable Ethereum nodes on the network along with the date the count was last measured."
+---
+
+This endpoint gives you a current snapshot of the Ethereum peer-to-peer network size by returning the number of actively discoverable nodes. The count reflects nodes that are reachable through standard discovery protocols at the time of measurement. Use this to monitor decentralization trends or to display current network health in dashboards.
+
+## Parameters
+
+<ParamField query="chainid" type="string" required>
+  The chain to query. Use `1` for Ethereum mainnet. See [supported chains](/supported-chains) for a full list.
+</ParamField>
+
+<ParamField query="module" type="string" required default="stats">
+  Set to `stats`.
+</ParamField>
+
+<ParamField query="action" type="string" required default="nodecount">
+  Set to `nodecount`.
+</ParamField>
+
+<ParamField query="apikey" type="string" required>
+  Your Etherscan API key. [Get one here](/set-up-your-api-key).
+</ParamField>
+
+## Response
+
+<ResponseField name="status" type="string">
+  `1` if the request succeeded, `0` on error.
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  `OK` on success, or an error description such as `NOTOK`.
+</ResponseField>
+
+<ResponseField name="result" type="object">
+  Current node count data.
+
+  <Expandable title="Result fields">
+    <ResponseField name="UTCDate" type="string">
+      Date of the measurement in `YYYY-MM-DD` format (UTC).
+    </ResponseField>
+    <ResponseField name="TotalNodeCount" type="string">
+      Number of discoverable nodes on the network at the time of measurement.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Example
+
+<CodeGroup>
+```bash cURL
+curl "https://api.etherscan.io/v2/api\
+?chainid=1\
+&module=stats\
+&action=nodecount\
+&apikey=YOUR_API_KEY"
+```
+
+```javascript JavaScript
+const params = new URLSearchParams({
+  chainid: "1",
+  module: "stats",
+  action: "nodecount",
+  apikey: "YOUR_API_KEY",
+});
+
+const res = await fetch(`https://api.etherscan.io/v2/api?${params}`);
+const { result } = await res.json();
+console.log(`Nodes: ${result.TotalNodeCount} as of ${result.UTCDate}`);
+```
+
+```python Python
+import requests
+
+params = {
+    "chainid": "1",
+    "module": "stats",
+    "action": "nodecount",
+    "apikey": "YOUR_API_KEY",
+}
+
+r = requests.get("https://api.etherscan.io/v2/api", params=params)
+result = r.json()["result"]
+print(f"Nodes: {result['TotalNodeCount']} as of {result['UTCDate']}")
+```
+</CodeGroup>
+
+```json Example Response
+{
+  "status": "1",
+  "message": "OK",
+  "result": {
+    "UTCDate": "2025-09-25",
+    "TotalNodeCount": "11786"
+  }
+}
+```

@@ -1,0 +1,285 @@
+---
+title: "Endpoints Behind an Etherscan Address Page"
+sidebarTitle: "Address Page"
+description: "Discover the Etherscan API endpoints that power every section of an address page, from ETH balance to token transfers and NFT holdings."
+---
+
+Every address page on etherscan.io is assembled from multiple API endpoints working together. When you open a page like [vitalik.eth](https://etherscan.io/address/vitalik.eth), you see balances, transaction history, token holdings, and more — each section is driven by a specific endpoint you can call directly. This guide maps each visible section of the address page to the exact endpoint behind it, so you can replicate or build on any part of it in your own application. All endpoints use a single API key and support all 60+ chains via the `chainid` parameter.
+
+<Tip>
+  Endpoints marked **PRO** require a Standard plan or above. Free-tier keys still have access to balances, transaction history, and all token transfer endpoints.
+</Tip>
+
+## Page Sections and Their Endpoints
+
+<Accordion title="Name Tag and Labels">
+  The entity name and labels shown beside an address (e.g., "Ethereum Foundation", exchange labels) are powered by the Nametag endpoint.
+
+  **Endpoint:** [`GET /nametag/getaddresstag`](/api-reference/endpoint/getaddresstag) — **PRO**
+
+  Returns the name tag and entity labels associated with a specific address.
+
+  ```http
+  GET https://api.etherscan.io/v2/api
+    ?chainid=1
+    &module=account
+    &action=getaddresstag
+    &address=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045
+    &apikey=YOUR_API_KEY
+  ```
+
+  <Note>
+    For the full multichain dataset of labeled addresses, explore the [Metadata CSV](/metadata/introduction#metadata-csv-enterprise) enterprise offering.
+  </Note>
+</Accordion>
+
+<Accordion title="ETH Balance">
+  The ETH balance shown in the Overview panel comes from the balance endpoint. Use the historical variant to look up the balance at any past block.
+
+  **Endpoints:**
+  - [`GET /account/balance`](/api-reference/endpoint/balance) — Current native token balance
+  - [`GET /account/balancehistory`](/api-reference/endpoint/balancehistory) — Historical balance at a given block (**PRO**)
+
+  <CodeGroup>
+  ```http Current Balance
+  GET https://api.etherscan.io/v2/api
+    ?chainid=1
+    &module=account
+    &action=balance
+    &address=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045
+    &tag=latest
+    &apikey=YOUR_API_KEY
+  ```
+
+  ```http Historical Balance
+  GET https://api.etherscan.io/v2/api
+    ?chainid=1
+    &module=account
+    &action=balancehistory
+    &address=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045
+    &blockno=17000000
+    &apikey=YOUR_API_KEY
+  ```
+  </CodeGroup>
+
+  The returned balance is in wei. Divide by `1e18` to convert to ETH.
+</Accordion>
+
+<Accordion title="ETH Value (USD)">
+  The USD value displayed next to the ETH balance is calculated using the latest ETH price.
+
+  **Endpoint:** [`GET /stats/ethprice`](/api-reference/endpoint/ethprice) — ETH price in USD and BTC
+
+  ```http
+  GET https://api.etherscan.io/v2/api
+    ?chainid=1
+    &module=stats
+    &action=ethprice
+    &apikey=YOUR_API_KEY
+  ```
+
+  Multiply the `ethusd` field from the response by the ETH balance to reproduce the USD value shown on the page.
+</Accordion>
+
+<Accordion title="Token Holdings">
+  The token portfolio panel lists all ERC-20 tokens held by the address along with their USD values.
+
+  **Endpoints:**
+  - [`GET /account/addresstokenbalance`](/api-reference/endpoint/addresstokenbalance) — Full ERC-20 holdings and portfolio value (**PRO**)
+  - [`GET /account/tokenbalance`](/api-reference/endpoint/tokenbalance) — Balance for a single ERC-20 token
+
+  <CodeGroup>
+  ```http All Token Holdings (PRO)
+  GET https://api.etherscan.io/v2/api
+    ?chainid=1
+    &module=account
+    &action=addresstokenbalance
+    &address=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045
+    &page=1
+    &offset=100
+    &apikey=YOUR_API_KEY
+  ```
+
+  ```http Single Token Balance
+  GET https://api.etherscan.io/v2/api
+    ?chainid=1
+    &module=account
+    &action=tokenbalance
+    &contractaddress=0xdAC17F958D2ee523a2206206994597C13D831ec7
+    &address=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045
+    &tag=latest
+    &apikey=YOUR_API_KEY
+  ```
+  </CodeGroup>
+</Accordion>
+
+<Accordion title="Funded By">
+  The "Funded by" field shows which address sent the first ETH to this account — useful for tracing fund origins.
+
+  **Endpoint:** [`GET /account/fundedby`](/api-reference/endpoint/fundedby) — **PRO**
+
+  Returns the funding address and the originating transaction hash.
+
+  ```http
+  GET https://api.etherscan.io/v2/api
+    ?chainid=1
+    &module=account
+    &action=fundedby
+    &address=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045
+    &apikey=YOUR_API_KEY
+  ```
+
+  <Note>
+    This endpoint is only available for EOA (externally owned) addresses, not contract addresses.
+  </Note>
+</Accordion>
+
+<Accordion title="Transactions Tab">
+  The **Transactions** tab lists all normal (L1) transactions sent to or from the address.
+
+  **Endpoint:** [`GET /account/txlist`](/api-reference/endpoint/txlist)
+
+  Use `page` and `offset` for pagination, and `sort=desc` to get the most recent transactions first.
+
+  ```http
+  GET https://api.etherscan.io/v2/api
+    ?chainid=1
+    &module=account
+    &action=txlist
+    &address=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045
+    &startblock=0
+    &endblock=99999999
+    &page=1
+    &offset=25
+    &sort=desc
+    &apikey=YOUR_API_KEY
+  ```
+</Accordion>
+
+<Accordion title="Internal Transactions Tab">
+  The **Internal Transactions** tab shows contract-driven ETH transfers that don't appear as standalone transactions on the blockchain.
+
+  **Endpoint:** [`GET /account/txlistinternal`](/api-reference/endpoint/txlistinternal)
+
+  ```http
+  GET https://api.etherscan.io/v2/api
+    ?chainid=1
+    &module=account
+    &action=txlistinternal
+    &address=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045
+    &startblock=0
+    &endblock=99999999
+    &page=1
+    &offset=25
+    &sort=desc
+    &apikey=YOUR_API_KEY
+  ```
+
+  You can also scope internal transactions to a single transaction hash using [`txlistinternal` by hash](/api-reference/endpoint/txlistinternal-txhash).
+</Accordion>
+
+<Accordion title="Token Transfers (ERC-20) Tab">
+  The **Token Transfers (ERC-20)** tab lists all ERC-20 transfer events associated with the address.
+
+  **Endpoint:** [`GET /account/tokentx`](/api-reference/endpoint/tokentx)
+
+  Filter by a specific token contract by adding `contractaddress`.
+
+  ```http
+  GET https://api.etherscan.io/v2/api
+    ?chainid=1
+    &module=account
+    &action=tokentx
+    &address=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045
+    &page=1
+    &offset=25
+    &sort=desc
+    &apikey=YOUR_API_KEY
+  ```
+</Accordion>
+
+<Accordion title="NFT Transfers Tab">
+  The **NFT Transfers** tab covers ERC-721 and ERC-1155 token movements for the address.
+
+  **Endpoints:**
+  - [`GET /account/tokennfttx`](/api-reference/endpoint/tokennfttx) — ERC-721 (NFT) transfers
+  - [`GET /account/token1155tx`](/api-reference/endpoint/token1155tx) — ERC-1155 token transfers
+
+  <CodeGroup>
+  ```http ERC-721 Transfers
+  GET https://api.etherscan.io/v2/api
+    ?chainid=1
+    &module=account
+    &action=tokennfttx
+    &address=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045
+    &page=1
+    &offset=25
+    &sort=desc
+    &apikey=YOUR_API_KEY
+  ```
+
+  ```http ERC-1155 Transfers
+  GET https://api.etherscan.io/v2/api
+    ?chainid=1
+    &module=account
+    &action=token1155tx
+    &address=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045
+    &page=1
+    &offset=25
+    &sort=desc
+    &apikey=YOUR_API_KEY
+  ```
+  </CodeGroup>
+</Accordion>
+
+<Accordion title="Assets (NFT Holdings)">
+  The **Assets** panel shows the full NFT collection held by the address across all contracts.
+
+  **Endpoints:**
+  - [`GET /account/addresstokennftbalance`](/api-reference/endpoint/addresstokennftbalance) — NFT holdings summary (**PRO**)
+  - [`GET /account/addresstokennftinventory`](/api-reference/endpoint/addresstokennftinventory) — Token IDs for a specific NFT contract (**PRO**)
+
+  <CodeGroup>
+  ```http NFT Holdings Summary (PRO)
+  GET https://api.etherscan.io/v2/api
+    ?chainid=1
+    &module=account
+    &action=addresstokennftbalance
+    &address=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045
+    &page=1
+    &offset=100
+    &apikey=YOUR_API_KEY
+  ```
+
+  ```http NFT Inventory by Contract (PRO)
+  GET https://api.etherscan.io/v2/api
+    ?chainid=1
+    &module=account
+    &action=addresstokennftinventory
+    &address=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045
+    &contractaddress=0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D
+    &page=1
+    &offset=100
+    &apikey=YOUR_API_KEY
+  ```
+  </CodeGroup>
+</Accordion>
+
+## Quick Reference
+
+| Page Section | Endpoint | Plan |
+|---|---|---|
+| Name tag & labels | `/nametag/getaddresstag` | PRO |
+| ETH balance | `/account/balance` | Free |
+| Historical ETH balance | `/account/balancehistory` | PRO |
+| USD value | `/stats/ethprice` | Free |
+| ERC-20 holdings | `/account/addresstokenbalance` | PRO |
+| Single token balance | `/account/tokenbalance` | Free |
+| Funded by | `/account/fundedby` | PRO |
+| Normal transactions | `/account/txlist` | Free |
+| Internal transactions | `/account/txlistinternal` | Free |
+| ERC-20 transfers | `/account/tokentx` | Free |
+| ERC-721 transfers | `/account/tokennfttx` | Free |
+| ERC-1155 transfers | `/account/token1155tx` | Free |
+| NFT holdings | `/account/addresstokennftbalance` | PRO |
+| NFT inventory | `/account/addresstokennftinventory` | PRO |
